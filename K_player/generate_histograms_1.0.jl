@@ -10,7 +10,7 @@ logbins = true
 zipf_plot = false
 tail_plot = true
 
-js = ["prl","prd","pre"]
+js = ["prl","prd"]
 #js = journals_short
 
 for j in js
