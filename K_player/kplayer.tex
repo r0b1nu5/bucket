@@ -1,0 +1,165 @@
+%%\documentclass[aps,prb,floatfix,showpacs,preprint]{revtex4}
+\documentclass[aps,prl,floatfix,twocolumn]{revtex4-1}
+
+\usepackage{epsfig}
+\usepackage{verbatim}	 % for block comments \begin{comment} \end{comment}
+\usepackage{amssymb}
+% \usepackage{bbold}
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{psfrag}
+\bibliographystyle{apsrev}
+\usepackage{color}
+% \usepackage{ulem}
+\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{amscd}
+\usepackage{eucal}
+\usepackage{bm}
+%\usepackage{pslatex}
+\usepackage{hyperref}
+\usepackage{lipsum}
+\usepackage{mathtools}
+\usepackage{multirow}
+% \usepackage{natbib}
+
+\begin{document}
+
+\title{The K-player: some authors beat the power law}
+
+\author{A. B.\textsuperscript{1,2}, M. N.\textsuperscript{2,3}, and X. Y.\textsuperscript{3,1}}
+% \author{R. Delabays\textsuperscript{1,2} and M. Tyloo\textsuperscript{1,3}}
+\affiliation{\textsuperscript{1} Concordia Research Station, Antarctica. \\
+\textsuperscript{2} International Space Station (ISS), Low Orbit. \\
+\textsuperscript{3} Professor Khromov, Research Vessel, Arctic Ocean.}
+% \affiliation{\textsuperscript{1} School of Engineering, University of Applied Sciences of Western Switzerland HES-SO CH-1951 Sion, Switzerland. \\
+% \textsuperscript{2} Automatic Control Laboratory, Swiss Federal Institute of Technology (ETH) Z\"urich,  Switzerland. \\
+% \textsuperscript{3} Institute of Physics, EPF Lausanne, CH-1015 Lausanne, Switzerland. }
+
+\date{\today}
+
+\begin{abstract}
+ \textcolor{red}{\lipsum[1]}
+\end{abstract}
+
+\maketitle
+
+\section{Introduction} 
+As pointed out by Sekara et al.~\cite{Sek18}, publishing in a peer-reviewed journal is more likely if one author of the paper already published in the same journal.
+An outcome that could be expected of such an observation is a high representation of a few authors in a given journal. 
+
+In line with this, a scientist whose research topic is well-aligned with a journal topic is likely to publish a large proportion of their work in this journal.
+Leading to a high representation of this author. 
+
+In this manuscript, we support these expectations, showing that in a selection of \textcolor{red}{twelve} journals, the distribution of the number of authors with respect to the number of articles published within a journal is close to a power-law, and in particular has a heavy tail. 
+Furthermore, we observe that whereas in general this distribution has a slightly thinner tail than a power-law, in some journals, there exists a few authors whose number of publications is significantly larger than what the power-law would predict. 
+We refer to those authors as \emph{K-players} to emphasize their preponderant role in the journal. 
+
+We relate this power-law-like distribution to a mechanism that can be compared to \emph{preferential attachement} in the context of network evolution. 
+It has been shown that such a mechanism of network construction leads to a degree distribution that follows a power-law~\cite{Kra00}.
+
+\begin{figure*}
+ \centering
+ \includegraphics[width=\textwidth]{figures/ABCDEFGHIJKL.pdf}
+ \caption{Blah...}
+ \label{fig:1}
+\end{figure*}
+
+\section{Methodology}
+We consider an arbitrary selection of 12 journals, labelled by capital letters, ${\cal J}=\{A,B,...,L\}$, available on the Web of Science database (WoS)~\cite{WoS}. 
+Each element of ${\cal J}$ corresponds to a peer-reviewed journal with a significant number of publications within the last decades. 
+We do not explicitly give the journals' names for privacy reasons.
+
+Within each journal $j\in {\cal J}$, we count the number $n^j_i$ of articles published by author $i$, which gives the set of data $\{n^j_i\}$. 
+We restricted our investigation to publications labelled as ``Article'' in the WoS database.
+For some journals, the number of authors was too large to be downloaded from the Web of Science database. 
+As a consequence, some authors having published only one or two articles in these journals had to be removed from the data. 
+As this might influence our results, we indicate when this was the case in the captions. 
+Note also that we did not take into account articles published anonymously. 
+\textcolor{red}{Do the same for the time-splitted data !!!}
+
+From these data, we can the compute 
+\begin{align}
+ a_j(n)\coloneqq\#\{i\colon n^j_i = n\}\, ,
+\end{align}
+which are represented in logarithmic scales in Fig.~\ref{fig:1}, for each journal. 
+We then fit a power law (black dashed lines in Fig.~\ref{fig:1}) to the data of each journal $j\in{\cal J}$. 
+The exponent $s_j$ of the power law 
+\begin{align}
+ z_j(n) &= C_jn^{-s_j}
+\end{align}
+is obtained by a maximum likelihood estimator, following~\cite{Cla09}, and $C_j$ is the constant normalizing the distribution. 
+Finally, we compute the theoretical maximum number of articles, $m_j$, which is the value satisfying $N_jz_j(m_j)\approx1$, where $N_j$ is the total number of articles published in journal $j$. 
+
+\textcolor{red}{
+Following the warnings of Broido and Clauset~\cite{Bro18}, about the over-representation of power-laws data analysis, we have carefully considered other possible distributions, namely BLAH, BLAH, AND BLAH. 
+The best estimate of the distributions observed were the power-law with exponents given in Fig.~\ref{fig:1}. 
+}
+
+
+
+
+\section{Results}
+To the eye, the histograms for all journals considered follow a power law, also called a Zipf's law for discrete-valued variables. 
+Performing a Kolmogorov-Smirnov test on the data set, we observe that this fit does not perform very good. 
+\textcolor{red}{However, trying to fit other standard (and less standard) distributions, we were unable to find a better fit, mostly because the distribution tails of other distributions are too thin. 
+Thus even if the data does not follow precisely a power-law, they are close to one, with a thinner tail. 
+}
+These discrepancies might be due to the size of the data sets, which are rather small compared to what would be needed to accurately give a power-law~\textcolor{red}{[REF]}.
+
+\paragraph{}
+{\bf General explanation. }
+Our explanation to this fact is that the evolution of the number of articles in a journal is described by a \emph{preferential attachment} process. 
+In other words, it means the probability that a new article published in a given journal 
+is signed by an author is proportional to the number of articles published by this author in the given journal. 
+Heuristically, our argument is that if an author published a lot of article in a journal, it means (i) that they write a lot of papers, 
+and (ii) that their research topic is well-aligned with the topics covered by the journal. 
+Consequences (i) and (ii) together imply that this author is likely to published again in this journal. 
+
+To make this more rigorous, compared for \textcolor{red}{two} journals the number of authors having published $k$ articles at time $t$ 
+with the number of articles published by these authors between times $t$ and $t+1$. 
+Defining $m_k(t,s)$ as the number of articles published between $t$ and $s$ by the authors with $k$ articles at time $t$, we plot in Fig.~\textcolor{red}{Figure} the values of 
+$m_k(t,t+1)/N_k(t)$ with respect to $k$ for years $t\in\{1999,...,2008\}$. 
+These values have a linear correlation coefficient of \textcolor{red}{BLAH}, supporting a fairly good linear dependence, 
+\begin{align}
+ m_k(t,t+1) &\approx k\cdot N_k(t)\, . 
+\end{align}
+\textcolor{red}{Restrict the data to a time span of max. 30 years to remove authors who are not publishing anymore.}
+
+\begin{figure*}
+ \centering
+ \includegraphics[width=\textwidth]{figures/CHI_correl.pdf}
+ \caption{Blih...}
+ \label{fig:2}
+\end{figure*}
+
+
+The probability that a new paper is signed by an author with $k$ publications is then proportional to $k$. 
+The dynamics of the number of authors with $k$ articles is then described by Eq.~(1) in~\cite{Kra00}, with exponent $\gamma\approx 1$. 
+According to~\cite{Kra00}, after a long enough time, the distribution of $N_k$ follows a power law, which agrees with our observations.
+
+\paragraph{}
+{\bf Exceptions. }
+The general distribution of the number of authors with respect to the number of paper per author is quite clear in our analysis. 
+However, in some journals, we observe anomalies (\textcolor{red}{see Figs...}). 
+It appears that sometimes, some authors publish more articles in a journal than what our Zipf's law distribution would predict. 
+These authors, who we refer to as \emph{K-players}, are supposedly some very influencial scientists in the journal considered here, and they literally \emph{beat the power law}.
+
+\paragraph{}
+{\bf Remark.}\textit{
+We emphasize that we checked that these K-players are not artifacts due to multiple authors having the same name which would count as the same person. 
+In all cases presented here, there is a unique person appearing in the authors' list of a very large number of papers. 
+}
+
+\section{Conclusion}
+The aim of this manuscript is to point out some puzzling observations that could lead to further investigations. 
+Our investigation are limited to a rather small number of journals and would need a large scale study to confirm the general validity of this power law behavior. 
+However, in our opinion, the regularity of our observations regardless of the size and age of the journal, 
+as well as with respect of the time interval considered are sufficient evidence to formulate a conjecture. 
+
+
+\bibliographystyle{apsrev4-1}
+\bibliography{bibliography}
+
+\end{document}

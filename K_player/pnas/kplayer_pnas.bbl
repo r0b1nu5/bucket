@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+
+\bibitem{WoS}
+http://apps.webofknowledge.com (2018).
+
+\bibitem{Bro18}
+Broido AD, Clauset A (year?) Scale-free networks are rare.
+\newblock {\em arXiv preprint: 1801.03400}.
+
+\bibitem{Cla09}
+Clauset A, Shalizi CR, Newman MEJ (2009) Power-{Law} {Distributions} in
+  {Empirical} {Data}.
+\newblock {\em SIAM Review} 51(4):661--703.
+
+\bibitem{Kra00}
+Krapivsky PL, Redner S, Leyvraz F (2000) Connectivity of growing random
+  networks.
+\newblock {\em Phys. Rev. Lett.} 85(21):4629--4632.
+
+\end{thebibliography}
