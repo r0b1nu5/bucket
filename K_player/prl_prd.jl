@@ -64,5 +64,7 @@ yticks((0:5:37),(mi_prd:5:ma_prd))
 ylabel("PRD: # of articles")
 title("log(# of authors)")
 
+println("(96,77): CMS experiment at LHC, CERN")
+println("(66,104): ATLAS experiment at LHC, CERN")
 
 
