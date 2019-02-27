@@ -1,5 +1,7 @@
 # Computes the s coefficient of the Zipf's law with max likelihood for the data set x.
 
+using SpecialFunctions
+
 function ml_zipf(x::Array{Float64,1})
 	mi = minimum(x)
 	ma = maximum(x)
@@ -42,7 +44,7 @@ function ml_clauset(x::Array{Float64,1})
 	ma = maximum(x)
 	n = length(x)
 	
-	l = .01
+	l = 1.01
 	u = 10.
 	s = 10.
 	
@@ -52,13 +54,7 @@ function ml_clauset(x::Array{Float64,1})
 	
 	while error > 1e-5
 		ss = LinRange(l,u,100)
-		zeta = Array{Float64,1}()
-		for si in ss
-			push!(zeta,sum((mi:ma).^(-si)))
-		end
-		
-		L = -n*log.(zeta) - ss.*sum_data
-		
+		L = -n*log.([zeta(si,mi) for si in ss]) - ss.*sum_data
 		id = findmax(L)[2]
 		l = max(l,ss[max(id-1,1)])
 		u = min(u,ss[min(id+1,100)])

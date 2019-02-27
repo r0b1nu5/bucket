@@ -5,10 +5,13 @@ using PyPlot, DelimitedFiles, SpecialFunctions, Logging
 include("ml_zipf_1.0.jl")
 include("journals.jl")
 include("my_histo.jl")
+include("mle.jl")
 
 logbins = true
 zipf_plot = false
 tail_plot = true
+pl = true
+pl_co = false
 
 js = ["prl","prd"]
 #js = journals_short
@@ -26,17 +29,30 @@ if logbins
 		figure(j)
 		PyPlot.plot([i,i],[1e-8,sum(num.==i)/length(num)],"-b",linewidth=2,color=journals_colors[j][1])
 	end
-	
+
+# MLE of power law
+	@info("Power law...")	
 	s = ml_clauset(num)
 	C = 1/zeta(s,mi)
 #	C = 1/sum((1:1e7).^(-s))
+	
 # Plot the power-law
+if pl
 	Hs = sum(1.0./((mi:ma).^s))
 	z = C * ((mi:ma).^(-s))
 	PyPlot.plot(mi:ma,z,"--k",label="Zipf's law fit, s = $(round(s; digits=3))",linewidth=2)
 	max_k = ceil(Int64,(length(num)/Hs)^(1/s))
 	PyPlot.plot([max_k,max_k],[.5/length(num),maximum(z)*length(num)*2],":k",linewidth=2)
-	
+end	
+# MLE of power law with cutoff
+if pl_co
+	@info("Power law with cutoff...")
+	a,l = mle_pl_cutoff(num)
+	C = 1/real(polylog(a,Complex(exp(-l))))
+	zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
+	PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
+end
+
 	title(journals_code[j]*", max. # articles predicted: $(ceil(Int,max_k))")
 	xlabel("Number of articles")
 	ylabel("Number of authors")
