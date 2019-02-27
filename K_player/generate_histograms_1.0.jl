@@ -1,6 +1,6 @@
 #TODO Fit other distributions as: exponential, log-normal, Weibull or PL with cutoff...
 
-using PyPlot, DelimitedFiles, SpecialFunctions
+using PyPlot, DelimitedFiles, SpecialFunctions, Logging
 
 include("ml_zipf_1.0.jl")
 include("journals.jl")
@@ -15,13 +15,13 @@ js = ["prl","prd"]
 
 for j in js
 # Plot histogram
-	println("Collecting data")
+	@info("Collecting data")
 	num = Array{Float64,1}(vec(readdlm("./data/"*j*".txt",'\t')[2:end-2,2]))
 	mi = minimum(num)
 	ma = maximum(num)
 	nbins = Int(ma)
 if logbins
-	println("Entering logbins")
+	@info("Entering logbins")
 	for i in mi:ma
 		figure(j)
 		PyPlot.plot([i,i],[1e-8,sum(num.==i)/length(num)],"-b",linewidth=2,color=journals_colors[j][1])
