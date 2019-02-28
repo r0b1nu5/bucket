@@ -11,10 +11,10 @@ zipf_plot = false
 tail_plot = true
 pl = true
 pl_co = false
-expo = false # useless
+expo = false # useless, tail is too weak
 yule = false
-poisson = false # useless
-stretch_expo = false # not done, tail is to weak
+poisson = false # useless, tail is too weak
+stretch_expo = false # not done, tail is too weak
 # TODO log-normal...
 
 js = ["prl","prd"]
