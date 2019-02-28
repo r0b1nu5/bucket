@@ -1,4 +1,3 @@
-#TODO Fit other distributions as: exponential, log-normal, Weibull or PL with cutoff...
 
 using PyPlot, DelimitedFiles, SpecialFunctions, Logging
 
@@ -12,6 +11,11 @@ zipf_plot = false
 tail_plot = true
 pl = true
 pl_co = false
+expo = false # useless
+yule = false
+poisson = false # useless
+stretch_expo = false # not done, tail is to weak
+# TODO log-normal...
 
 js = ["prl","prd"]
 #js = journals_short
@@ -51,6 +55,34 @@ if pl_co
 	C = 1/real(polylog(a,Complex(exp(-l))))
 	zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
 	PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
+end
+
+# MLE of exponential distribution
+if expo
+	@info("Exponential distribution...")
+	l = mle_exp(num,mi)
+	C = (1-exp(-l))*exp(l*mi)
+	zzz = C .* exp.(-l.*(mi:ma))
+	PyPlot.plot(mi:ma,zzz,":k",label="Exp distribution",linewidth=3)
+end
+
+# MLE of Yule distribution
+if yule
+	@info("Yule distribution...")
+	a = mle_yule(num,mi)
+#	C = (a-1)*gamma(mi+a-1)/gamma(mi)
+#	zzzz = C .* gamma.((mi:ma))./gamma.((mi:ma).+a)
+	zzzz = (a-1)*beta.(mi:ma,a)
+	PyPlot.plot(mi:ma,zzzz,"--b",label="Yule distribution",linewidth=3)
+end
+
+# MLE of Poisson distribution
+if poisson
+	@info("Poisson distribution...")
+	mu = mle_poisson(num,mi)
+	C = exp(mu) - sum(mu.^(0:mi-1)./(factorial.(0:mi-1)))
+	z5 = C .* mu.^(mi:ma)./(factorial.(mi:ma))
+	PyPlot.plot(mi:ma,z5,"--g",label="Poisson distribution",linewidth=3)
 end
 
 	title(journals_code[j]*", max. # articles predicted: $(ceil(Int,max_k))")
