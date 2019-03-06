@@ -1,6 +1,70 @@
-include("ml_zipf.jl")
-using Logging
-@Logging.configure(level=INFO)
+include("mle.jl")
+using SpecialFunctions 
+
+## ======================= Goodness-of-fit estimates ================================
+
+function gof_pl(x::Array{Float64,1},s0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
+	KS0 = KS_pl(x,s0,C0,mi)
+	n_data = length(x)
+
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+#		if (i%100 == 0)
+			@info("GoF power law: $i/$n_sample")
+#		end
+		z = rand_pl(rand(n_data),s0,C0,mi)
+		s = mle_pl(z)
+		C = 1/zeta(s,mi)
+		KS = KS_pl(z,s,C,mi)
+		push!(KSs,KS)
+	end
+
+	p = sum(KSs .> KS0)/n_sample
+
+	return p
+end
+
+
+
+## ============================ Kolmogorov-Smirnov measures ==================================
+
+function KS_pl(x::Array{Float64,1},s::Float64,C::Float64,mi::Float64)
+	mi = minimum(x)
+	ma = maximum(x)
+	n = length(x)
+
+	cdf = [C*mi^(-s),]
+	ecdf = [sum(x .<= mi)/n,]
+	for i in (mi+1):ma
+		push!(cdf,cdf[end]+C*i^(-s))
+		push!(ecdf,sum(x .<= i)/n)
+	end
+	
+	KS = maximum(abs.(cdf[Array{Int,1}(mi:ma)]-ecdf[Array{Int,1}(mi:ma)]))
+
+	return KS
+end
+
+
+## ================================== Synthetic variables generation ================================
+
+function rand_pl(y::Array{Float64,1},s::Float64,C::Float64,mi::Float64=1.)
+	x = 0.
+	n = mi - 1
+	todo = trues(length(y))
+	ns = n*ones(length(y))
+	while x < maximum(y)
+		ns += todo .* ones(length(y))
+		n += 1
+		x += C*n^(-s)
+		todo = [y[i] > x for i in 1:length(y)]
+	end
+
+	return ns
+end
+
+
+## Old functions
 
 function my_gof(x::Array{Float64,1}, n_bins::Int64, n_sample::Int64=2500)
 	mi = minimum(x)
@@ -80,23 +144,9 @@ function gof(x::Array{Float64,1}, n_sample::Int64 = 2500)
 	return p
 end
 
-function pl(y::Array{Float64,1},s::Float64,C::Float64,mi::Float64=1.)
-	x = 0.
-	n = mi - 1
-	todo = ones(Bool,length(y))
-	ns = n*ones(length(y))
-	while x < maximum(y)
-		ns += todo .* ones(length(y))
-		n += 1
-		x += C*n^(-s)
-	       	todo = (y .> x)
-	end
-
-	return ns
-end
 
 
-function pl(y::Float64,s::Float64,C::Float64,mi::Float64=1.)
+function old_pl(y::Float64,s::Float64,C::Float64,mi::Float64=1.)
 	x = 0.
 	n = mi - 1
 	while x < y
@@ -159,7 +209,7 @@ function my_KS(x::Array{Float64,1},s::Float64,C::Float64,bins::Array{Float64,1},
 end
 
 
-function KS_pl(x::Array{Float64,1},s::Float64,C::Float64)
+function KS_pl_old(x::Array{Float64,1},s::Float64,C::Float64)
 	mi = minimum(x)
 	ma = maximum(x)
 	n = length(mi:ma)

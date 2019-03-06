@@ -1,4 +1,29 @@
-
+function mle_pl(x::Array{Float64,1})
+	mi = minimum(x)
+	ma = maximum(x)
+	n = length(x)
+	
+	l = 1.01
+	u = 10.
+	s = 10.
+	
+	sum_data = sum(log.(x))
+	
+	error = 1000
+	
+	while error > 1e-5
+		ss = LinRange(l,u,100)
+		L = -n*log.([zeta(si,mi) for si in ss]) - ss.*sum_data
+		id = findmax(L)[2]
+		l = max(l,ss[max(id-1,1)])
+		u = min(u,ss[min(id+1,100)])
+		error = u - l
+	end
+	
+	s = (l+u)/2
+	
+	return s
+end
 
 function mle_pl_cutoff(x::Array{Float64,1})
 	side = 2.99
