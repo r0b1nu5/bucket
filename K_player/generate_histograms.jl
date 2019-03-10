@@ -7,8 +7,8 @@ include("gof.jl")
 
 zipf_plot = false
 tail_plot = false
-pl = true
-pl_co = false
+pl = false
+pl_co = true
 expo = false # useless, tail is too weak
 yule = false
 poisson = false # useless, tail is too weak
@@ -28,6 +28,8 @@ for j in js
 	ma = maximum(num)
 	nbins = Int(ma)
 	ps = Array{Float64,1}()
+	distributions = Array{String,1}()
+	max_k = 0.
 
 	for i in mi:ma
 		figure(j)
@@ -37,25 +39,33 @@ for j in js
 # Power law
 	if pl
 		@info("$j: Power law...")	
-# MLE
+## MLE
 		s = mle_pl(num)
 		C = 1/zeta(s,mi)
-# Goodness-of-fit
+## Goodness-of-fit
 		p_pl = gof_pl(num,s,C,mi,25)
 		push!(ps,p_pl)
+		push!(distributions,"Power law")
 		@info(j*", power law: p-value = $p_pl")
-# Plot
+## Plot
 		Hs = sum(1.0./((mi:ma).^s))
 		z = C * ((mi:ma).^(-s))
 		PyPlot.plot(mi:ma,z,"--k",label="Zipf's law fit, s = $(round(s; digits=3))",linewidth=2)
 		max_k = ceil(Int64,(length(num)/Hs)^(1/s))
 		PyPlot.plot([max_k,max_k],[.5/length(num),maximum(z)*length(num)*2],":k",linewidth=2)
 	end	
-# MLE of power law with cutoff
+# Power law with cutoff
 	if pl_co
 		@info("Power law with cutoff...")
-		a,l = mle_pl_cutoff(num)
+## MLE
+		a,l = mle_plc(num)
 		C = 1/real(polylog(a,Complex(exp(-l))))
+## Goodness-of-fit
+		p_plc = gof_plc(num,a,l,C,mi,5)
+		push!(ps,p_plc)
+		push!(distributions,"Power law with cutoff")
+		@info(j*", power law with cutoff: p-value = $p_plc")
+## Plot
 		zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
 		PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
 	end
@@ -91,7 +101,7 @@ for j in js
 	title(journals_code[j]*", max. # articles predicted: $(ceil(Int,max_k))")
 	xlabel("Number of articles")
 	ylabel("Number of authors")
-	axis([.9,max(ma*2,2*max_k),.5/length(num),maximum(z)*2])
+	axis([.9,max(ma*2,2*max_k),.5/length(num),2.])
 	loglog()
 	legend()
 

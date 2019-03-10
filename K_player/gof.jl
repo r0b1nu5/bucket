@@ -4,7 +4,7 @@ using SpecialFunctions
 ## ======================= Goodness-of-fit estimates ================================
 
 function gof_pl(x::Array{Float64,1},s0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
-	KS0 = KS_pl(x,s0,C0,mi)
+	KS0 = KS_pl(x,s0,C0)
 	n_data = length(x)
 
 	KSs = Array{Float64,1}()
@@ -15,7 +15,28 @@ function gof_pl(x::Array{Float64,1},s0::Float64,C0::Float64,mi::Float64,n_sample
 		z = rand_pl(rand(n_data),s0,C0,mi)
 		s = mle_pl(z)
 		C = 1/zeta(s,mi)
-		KS = KS_pl(z,s,C,mi)
+		KS = KS_pl(z,s,C)
+		push!(KSs,KS)
+	end
+
+	p = sum(KSs .> KS0)/n_sample
+
+	return p
+end
+
+function gof_plc(x::Array{Float64,1},a0::Float64,l0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
+	KS0 = KS_plc(x,a0,l0,C0)
+	n_data = length(x)
+	
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+		if (i%100 == 0) || i == n_sample
+			@info("GoF power law with cutoff: $i/$n_sample")
+		end
+		z = rand_plc(rand(n_data),a0,l0,C0,mi)
+		a,l = mle_plc(z)
+		C = 1/real(polylog(a,Complex(exp(-l))))
+		KS = KS_plc(z,a,l,C)
 		push!(KSs,KS)
 	end
 
@@ -25,10 +46,9 @@ function gof_pl(x::Array{Float64,1},s0::Float64,C0::Float64,mi::Float64,n_sample
 end
 
 
-
 ## ============================ Kolmogorov-Smirnov measures ==================================
 
-function KS_pl(x::Array{Float64,1},s::Float64,C::Float64,mi::Float64)
+function KS_pl(x::Array{Float64,1},s::Float64,C::Float64)
 	mi = minimum(x)
 	ma = maximum(x)
 	n = length(x)
@@ -40,7 +60,24 @@ function KS_pl(x::Array{Float64,1},s::Float64,C::Float64,mi::Float64)
 		push!(ecdf,sum(x .<= i)/n)
 	end
 	
-	KS = maximum(abs.(cdf[Array{Int,1}(mi:ma)]-ecdf[Array{Int,1}(mi:ma)]))
+	KS = maximum(abs.(cdf[Array{Int,1}(mi:ma)] - ecdf[Array{Int,1}(mi:ma)]))
+
+	return KS
+end
+
+function KS_plc(x::Array{Float64,1},a::Float64,l::Float64,C::Float64)
+	mi = minimum(x)
+	ma = maximum(x)
+	n = length(x)
+
+	cdf = [C*mi^(-a)*exp(-l*mi),]
+	ecdf = [sum(x .<= mi)/n,]
+	for i in (mi+1):ma
+		push!(cdf,cdf[end]+C*i^(-a)*exp(-l*i))
+		push!(ecdf,sum(x .<= i)/n)
+	end
+
+	KS = maximum(abs.(cdf[Array{Int,1}(mi:ma)] - ecdf[Array{Int,1}(mi:ma)]))
 
 	return KS
 end
@@ -63,6 +100,20 @@ function rand_pl(y::Array{Float64,1},s::Float64,C::Float64,mi::Float64=1.)
 	return ns
 end
 
+function rand_plc(y::Array{Float64,1},a::Float64,l::Float64,C::Float64,mi::Float64=1.)
+	x = 0.
+	n = mi - 1
+	todo = trues(length(y))
+	ns = n*ones(length(y))
+	while x < maximum(y)
+		ns += todo .* ones(length(y))
+		n += 1
+		x += C*n^(-a)*exp(-l*n)
+		todo = [y[i] > x for i in 1:length(y)]
+	end
+
+	return ns
+end
 
 ## Old functions
 

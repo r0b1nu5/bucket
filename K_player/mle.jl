@@ -25,7 +25,7 @@ function mle_pl(x::Array{Float64,1})
 	return s
 end
 
-function mle_pl_cutoff(x::Array{Float64,1})
+function mle_plc(x::Array{Float64,1})
 	side = 2.99
 	atemp = 3.
 	ltemp = 3.
