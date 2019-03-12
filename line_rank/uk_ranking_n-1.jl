@@ -3,20 +3,16 @@ using DelimitedFiles,Statistics,LinearAlgebra,PyPlot
 include("kuramoto.jl")
 include("L2B.jl")
 include("gen_idx.jl")
+include("res_dist.jl")
 
 lin_or_sin = "sin"
 ntw = "uk"
 
-tau = 0.25 # duration of the line contingency
 P0 = .2
 
 eps = 1e-6
 max_iter = 100000
 h = 0.025
-
-if tau < h
-	@warn("τ must be larger than h")
-end
 
 # Choose network
 if ntw == "uk"
@@ -33,16 +29,23 @@ for i in 1:2*m
 end
 L = Array{Float64,2}(diagm(0 => vec(sum(A, dims=2))) - A)
 
+# Computing resistance distances
+Om = res_dist(L)
+
 line_list = Array{Array{Int,1},1}()
+dist = Array{Float64,1}()
 for i in 1:m
-	push!(line_list,Array{Int,1}(vec(Asp[2*i-1,[1,2]])))
+	l = Array{Int,1}(vec(Asp[2*i-1,[1,2]]))
+	push!(line_list,l)
+	push!(dist,Om[l[1],l[2]])
 end
+Om = res_dist(L)
 
 mm = .2*ones(n)
 dd = .1*ones(n)
 
 P = zeros(n)
-P[gen_idx] = P0*ones(length(gen_idx))
+P[gen_idx] = .2*ones(length(gen_idx))
 P .-= mean(P)
 
 th0 = zeros(n)
@@ -63,46 +66,42 @@ P2s = Array{Float64,1}()
 
 # Simulate line contingency for each line and compute performance measures
 for l in line_list
-	@info(l)
-	global P1s,P2s
-	Ltemp = copy(L)
-	Ltemp[l,l] += [-1 1;1 -1]
-	ls = eigvals(Ltemp)
-	if sum(abs.(eigvals(Ltemp)) .< 1e-8) > 1
+	if abs(-L[l[1],l[2]] - Om[l[1],l[2]]) > 1e-8
+		@info(l)
+		global P1s,P2s
+		Ltemp = copy(L)
+		Ltemp[l,l] += [-1 1;1 -1]
+		ls = eigvals(Ltemp)
+		if sum(abs.(eigvals(Ltemp)) .< 1e-8) > 1
+			push!(P1s,Inf)
+			push!(P2s,Inf)
+		else
+			if lin_or_sin == "sin"
+				xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)])
+			elseif lin_or_sin == "lin"
+				xs2,dxs2 = kuramoto2_lin(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)])
+			end
+			
+			ths = xs2[1:n,:]
+			omegs = xs2[(n+1):(2*n),:]
+			
+			x2 = vec(ths[1:n,:])
+				
+			if lin_or_sin == "sin"		
+				push!(P1s,h*sum((ths-repeat(x2[1:n],outer=(1,size(ths)[2]))).^2)/abs(1-cos(x2[l[1]]-x2[l[2]])))
+				push!(P2s,h*sum(omegs.^2)/abs(1-cos(x2[l[1]]-x2[l[2]])))
+			elseif lin_or_sin == "lin"
+				push!(P1s,h*sum((ths-repeat(x2[1:n],outer=(1,size(ths)[2]))).^2)/(x2[l[1]]-x2[l[2]])^2)
+				push!(P2s,h*sum(omegs.^2)/(x2[l[1]]-x2[l[2]])^2)
+			end
+				
+		end
+	else
 		push!(P1s,Inf)
 		push!(P2s,Inf)
-	else
-		if lin_or_sin == "sin"
-			xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,floor(Int,tau/h),eps,h)
-			xs3,dxs3 = kuramoto2(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true,max_iter,eps,h)
-		elseif lin_or_sin == "lin"
-			xs2,dxs2 = kuramoto2_lin(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,floor(Int,tau/h),eps,h)
-			xs3,dxs3 = kuramoto2_lin(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true,max_iter,eps,h)
-		end
-		
-		ths = [xs2[1:n,:] xs3[1:n,:]]
-		omegs = [xs2[(n+1):(2*n),:] xs3[(n+1):(2*n),:]]
-		
-		if lin_or_sin == "sin"		
-			push!(P1s,h*sum((ths-repeat(x1[1:n],outer=(1,size(ths)[2]))).^2)/abs(1-cos(x1[l[1]]-x1[l[2]])))
-			push!(P2s,h*sum(omegs.^2)/abs(1-cos(x1[l[1]]-x1[l[2]])))
-		elseif lin_or_sin == "lin"
-			push!(P1s,h*sum((ths-repeat(x1[1:n],outer=(1,size(ths)[2]))).^2)/(x1[l[1]]-x1[l[2]])^2)
-			push!(P2s,h*sum(omegs.^2)/(x1[l[1]]-x1[l[2]])^2)
-		end
-			
 	end
 end
-
-# Computing resistance distances
-Om = res_dist(L)
-
-line_list = Array{Array{Int,1},1}()
-dist = Array{Float64,1}()
-for i in 1:m
-	push!(line_list,Array{Int,1}(vec(Asp[2*i-1,[1,2]])))
-	push!(dist,Om[line_list[end][1],line_list[end][2]])
-end
+	
 
 @info("Computing δKf1")
 
@@ -143,7 +142,7 @@ r4 = sum((t .- mean(t)).*(y .- mean(y)))/(sqrt(sum((t .- mean(t)).^2))*sqrt(sum(
 r5 = sum((t .- mean(t)).*(z .- mean(z)))/(sqrt(sum((t .- mean(t)).^2))*sqrt(sum((z .- mean(z)).^2)))
 
 # Plot
-figure(ntw*"_"*lin_or_sin*"_contingency_$P0",(15,8))
+figure(ntw*"_"*lin_or_sin*"_n-1_$P0",(15,8))
 
 PyPlot.subplot(1,5,1)
 PyPlot.plot(dKf1,P1s,"ob")
