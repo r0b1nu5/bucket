@@ -1,11 +1,9 @@
 using LinearAlgebra
 
-function res_dist(L::Array{Float64,2})
+function res_dist(L::Union{Array{Float64,2},SparseMatrixCSC{Float64,Int64}})
 	n = size(L)[1]
 	
-	Ga = L + ones(n,n)
-	
-	Gai = inv(Ga)
+	Gai = pinv(Array(L))
 	
 	Om = zeros(n,n)
 	for i in 1:n-1

@@ -39,7 +39,6 @@ for i in 1:m
 	push!(line_list,l)
 	push!(dist,Om[l[1],l[2]])
 end
-Om = res_dist(L)
 
 mm = .2*ones(n)
 dd = .1*ones(n)
