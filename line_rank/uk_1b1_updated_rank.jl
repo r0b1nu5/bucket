@@ -104,7 +104,7 @@ while run2 && count < m - n + 1
 	
 end
 
-writedlm("data/ranks_updated_rank.csv",ranks2,',')
-writedlm("data/rmvd_updated_rank.csv",rmvd2,',')
-writedlm("data/cuts_updated_rank.csv",cuts2,',')
+writedlm("data/ranks_updated_rank_$P0.csv",ranks2,',')
+writedlm("data/rmvd_updated_rank_$P0.csv",rmvd2,',')
+writedlm("data/cuts_updated_rank_$P0.csv",cuts2,',')
 

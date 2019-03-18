@@ -2,7 +2,7 @@ using DelimitedFiles,Statistics,LinearAlgebra,PyPlot
 
 include("kuramoto.jl")
 include("L2B.jl")
-include("gen_idx.jl")
+include("uk_gen_idx.jl")
 include("res_dist.jl")
 
 lin_or_sin = "sin"
@@ -23,11 +23,8 @@ end
 n = Int(maximum(Asp))
 m = Int(size(Asp)[1]/2)
 
-A = zeros(n,n)
-for i in 1:2*m
-	A[Int(Asp[i,1]),Int(Asp[i,2])] = 1.
-end
-L = Array{Float64,2}(diagm(0 => vec(sum(A, dims=2))) - A)
+A = sparse(vec(Asp[:,1]),vec(Asp[:,2]),ones(size(Asp)[1]))
+L = spdiagm(0 => vec(sum(A,dims=2))) - A
 
 # Computing resistance distances
 Om = res_dist(L)
@@ -68,17 +65,15 @@ for l in line_list
 	if abs(-L[l[1],l[2]] - Om[l[1],l[2]]) > 1e-8
 		@info(l)
 		global P1s,P2s
-		Ltemp = copy(L)
-		Ltemp[l,l] += [-1 1;1 -1]
-		ls = eigvals(Ltemp)
-		if sum(abs.(eigvals(Ltemp)) .< 1e-8) > 1
+		Ltemp = rm_line(L,l)
+		if !isconnected(Ltemp)
 			push!(P1s,Inf)
 			push!(P2s,Inf)
 		else
 			if lin_or_sin == "sin"
-				xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)])
+				xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true)
 			elseif lin_or_sin == "lin"
-				xs2,dxs2 = kuramoto2_lin(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)])
+				xs2,dxs2 = kuramoto2_lin(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true)
 			end
 			
 			ths = xs2[1:n,:]

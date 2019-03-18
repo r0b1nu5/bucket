@@ -1,3 +1,5 @@
+using SparseArrays
+
 include("L2B.jl")
 
 ## INPUT
@@ -48,8 +50,10 @@ function kuramoto(L::Array{Float64,2},P::Array{Float64,1},th0::Array{Float64,1},
 		end
 	end
 	
-	ths = th2
-	dths = dth
+	if !store_history
+		ths = th2
+		dths = dth
+	end
 	return ths,dths,iter
 end
 
@@ -113,8 +117,10 @@ function kuramoto2(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,1},P
 		end
 	end
 	
-	xs = x2
-	dxs = dx
+	if !store_history
+		xs = x2
+		dxs = dx
+	end
 	return xs,dxs,iter
 end
 
@@ -177,12 +183,14 @@ function kuramoto2(L::SparseMatrixCSC{Float64,Int64},m::Array{Float64,1},d::Arra
 		end
 	end
 	
-	xs = x2
-	dxs = dx
+	if !store_history
+		xs = x2
+		dxs = dx
+	end
 	return xs,dxs,iter
 end
 
-function kuramoto2_lin(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,1},P::Array{Float64,1},th0::Array{Float64,1},omeg0::Array{Float64,1},verb::Bool=true,max_iter::Int=100000,eps::Float64=1e-6,h::Float64=0.025)
+function kuramoto2_lin(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,1},P::Array{Float64,1},th0::Array{Float64,1},omeg0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=100000,eps::Float64=1e-6,h::Float64=0.025)
 	n = size(L)[1]
 	
 	M = diagm(0 => m)
@@ -224,10 +232,16 @@ function kuramoto2_lin(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,
 		
 		error = maximum(abs.(dx))
 		
-		xs = [xs x2]
-		dxs = [dxs dx]
+		if store_history
+			xs = [xs x2]
+			dxs = [dxs dx]
+		end
 	end
 	
+	if !store_history
+		xs = x2
+		dxs = dx
+	end
 	return xs,dxs
 end
 

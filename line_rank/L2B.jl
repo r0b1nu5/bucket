@@ -1,3 +1,5 @@
+using SparseArrays
+
 function L2B(L::Array{Float64,2})
 	n = size(L)[1]
 	

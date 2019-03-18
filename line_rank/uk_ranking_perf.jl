@@ -2,7 +2,9 @@ using DelimitedFiles,Statistics,LinearAlgebra,PyPlot
 
 include("kuramoto.jl")
 include("L2B.jl")
-include("gen_idx.jl")
+include("uk_gen_idx.jl")
+include("isconnected.jl")
+include("rm_line.jl")
 
 lin_or_sin = "sin"
 ntw = "uk"
@@ -27,15 +29,12 @@ end
 n = Int(maximum(Asp))
 m = Int(size(Asp)[1]/2)
 
-A = zeros(n,n)
-for i in 1:2*m
-	A[Int(Asp[i,1]),Int(Asp[i,2])] = 1.
-end
-L = Array{Float64,2}(diagm(0 => vec(sum(A, dims=2))) - A)
+A = sparse(vec(Asp[:,1]),vec(Asp[:,2]),ones(size(Asp)[1]))
+L = spdiagm(0 => vec(sum(A,dims=2))) - A
 
-line_list = Array{Array{Int,1},1}()
+line_list = Array{Tuple{Int64,Int64},1}()
 for i in 1:m
-	push!(line_list,Array{Int,1}(vec(Asp[2*i-1,[1,2]])))
+	push!(line_list,(Int64(Asp[2*i-1,1]),Int64(Asp[2*i-1,2])))
 end
 
 mm = .2*ones(n)
@@ -51,9 +50,9 @@ x0 = [th0;omeg0]
 
 # Find fixed point
 if lin_or_sin == "sin"
-	xs1,dxs1 = kuramoto2(L,mm,dd,P,x0[1:n],x0[(n+1):(2*n)],true,max_iter,eps,h)
+	xs1,dxs1 = kuramoto2(L,mm,dd,P,x0[1:n],x0[(n+1):(2*n)])
 elseif lin_or_sin == "lin"
-	xs1,dxs1 = kuramoto2_lin(L,mm,dd,P,x0[1:n],x0[(n+1):(2*n)],true,max_iter,eps,h)
+	xs1,dxs1 = kuramoto2_lin(L,mm,dd,P,x0[1:n],x0[(n+1):(2*n)])
 end
 x1 = vec(xs1[:,end])
 
@@ -65,19 +64,17 @@ P2s = Array{Float64,1}()
 for l in line_list
 	@info(l)
 	global P1s,P2s
-	Ltemp = copy(L)
-	Ltemp[l,l] += [-1 1;1 -1]
-	ls = eigvals(Ltemp)
-	if sum(abs.(eigvals(Ltemp)) .< 1e-8) > 1
+	Ltemp = rm_line(L,l)
+	if !isconnected(Ltemp)
 		push!(P1s,Inf)
 		push!(P2s,Inf)
 	else
 		if lin_or_sin == "sin"
-			xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,floor(Int,tau/h),eps,h)
-			xs3,dxs3 = kuramoto2(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true,max_iter,eps,h)
+			xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,true,Int(ceil(tau/h)))
+			xs3,dxs3 = kuramoto2(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true)
 		elseif lin_or_sin == "lin"
-			xs2,dxs2 = kuramoto2_lin(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,floor(Int,tau/h),eps,h)
-			xs3,dxs3 = kuramoto2_lin(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true,max_iter,eps,h)
+			xs2,dxs2 = kuramoto2_lin(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,true,Int(ceil(tau/h)))
+			xs3,dxs3 = kuramoto2_lin(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true)
 		end
 		
 		ths = [xs2[1:n,:] xs3[1:n,:]]

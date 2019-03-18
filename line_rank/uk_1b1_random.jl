@@ -36,7 +36,7 @@ M = M0*ones(n)
 D = D0*ones(n)
 
 P = zeros(n)
-P[gen_idx] = .2*ones(length(gen_idx))
+P[gen_idx] = P0*ones(length(gen_idx))
 P .-= mean(P)
 
 x1 = vec(readdlm("uk_sync_$P0.csv",','))
@@ -104,9 +104,9 @@ while run3 && count < m - n + 1
 	
 end
 
-writedlm("data/ranks_random.csv",ranks3,',')
-writedlm("data/rmvd_random.csv",rmvd3,',')
-writedlm("data/cuts_random.csv",cuts3,',')
+writedlm("data/ranks_random_$P0.csv",ranks3,',')
+writedlm("data/rmvd_random_$P0.csv",rmvd3,',')
+writedlm("data/cuts_random_$P0.csv",cuts3,',')
  
 
 

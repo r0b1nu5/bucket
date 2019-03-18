@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra,SparseArrays
 
 function res_dist(L::Union{Array{Float64,2},SparseMatrixCSC{Float64,Int64}})
 	n = size(L)[1]
