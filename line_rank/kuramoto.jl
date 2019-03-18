@@ -133,7 +133,7 @@ end
 # omeg0: initial velocities
 # store_history: if "true", then returns all angles' time evolution
 # verb: displays info along the simulation
-function kuramoto2(L::SparseMatrixCSC{Float64,Int64},m::Array{Float64,1},d::Array{Float64,1},P::Array{Float64,1},th0::Array{Float64,1},omeg0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=100000,eps::Float64=1e-6,h::Float64=0.025)
+function kuramoto2(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1},d::Array{Float64,1},P::Array{Float64,1},th0::Array{Float64,1},omeg0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=100000,eps::Float64=1e-6,h::Float64=0.025)
 	n = size(L)[1]
 	
 	B,w = L2B(L)

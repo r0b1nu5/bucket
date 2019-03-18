@@ -20,7 +20,7 @@ function L2B(L::Array{Float64,2})
 	return B,w
 end
 
-function L2B(L::SparseMatrixCSC{Float64,Int64})
+function L2B(L::SparseMatrixCSC{Float64,Int})
 	n = size(L)[1]
 	
 	B = Array{Float64,2}(undef,n,0)
