@@ -68,7 +68,7 @@ L3 = copy(L)
 
 count = 0
 
-while run3 || length(rmvd1[end]) < m - n + 1
+while run3 && count < m - n + 1
 	global count,L3
 	count += 1
 	@info("round $count")

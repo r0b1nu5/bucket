@@ -79,7 +79,8 @@ function kuramoto2(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,1},P
 	
 	x1 = [th1;omeg1]
 	x2 = [th2;omeg2]
-	
+	dx = zeros(2*n)
+
 	error = 1000.
 	
 	iter = 0
@@ -142,6 +143,7 @@ function kuramoto2(L::SparseMatrixCSC{Float64,Int64},m::Array{Float64,1},d::Arra
 	
 	x1 = [th1;omeg1]
 	x2 = [th2;omeg2]
+	dx = zeros(2*n)
 	
 	error = 1000.
 	
@@ -194,6 +196,7 @@ function kuramoto2_lin(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,
 	
 	x1 = [th1;omeg1]
 	x2 = [th2;omeg2]
+	dx = zeros(2*n)
 	
 	error = 1000.
 	
