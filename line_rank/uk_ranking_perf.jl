@@ -5,6 +5,7 @@ include("L2B.jl")
 include("uk_gen_idx.jl")
 include("isconnected.jl")
 include("rm_line.jl")
+include("res_dist.jl")
 
 lin_or_sin = "sin"
 ntw = "uk"

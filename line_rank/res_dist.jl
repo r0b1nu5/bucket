@@ -1,6 +1,6 @@
 using LinearAlgebra,SparseArrays
 
-function res_dist(L::Union{Array{Float64,2},SparseMatrixCSC{Float64,Int64}})
+function res_dist(L::Union{Array{Float64,2},SparseMatrixCSC{Float64,Int}})
 	n = size(L)[1]
 	
 	Gai = pinv(Array(L))
