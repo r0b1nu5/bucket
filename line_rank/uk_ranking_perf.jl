@@ -11,7 +11,7 @@ lin_or_sin = "sin"
 ntw = "uk"
 
 tau = 0.25 # duration of the line contingency
-P0 = .2
+P0 = 2.
 
 eps = 1e-6
 max_iter = 100000
@@ -60,15 +60,17 @@ x1 = vec(xs1[:,end])
 
 P1s = Array{Float64,1}()
 P2s = Array{Float64,1}()
+losses = Array{Float64,1}()
 
 # Simulate line contingency for each line and compute performance measures
 for l in line_list
 	@info(l)
-	global P1s,P2s
+	global P1s,P2s,losses
 	Ltemp = rm_line(L,l)
 	if !isconnected(Ltemp)
 		push!(P1s,Inf)
 		push!(P2s,Inf)
+		push!(losses,0.)
 	else
 		if lin_or_sin == "sin"
 			xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,true,Int(ceil(tau/h)))
@@ -83,10 +85,12 @@ for l in line_list
 		
 		if lin_or_sin == "sin"		
 			push!(P1s,h*sum((ths-repeat(x1[1:n],outer=(1,size(ths)[2]))).^2)/abs(1-cos(x1[l[1]]-x1[l[2]])))
-			push!(P2s,h*sum(omegs.^2)/abs(1-cos(x1[l[1]]-x1[l[2]])))
+			push!(P2s,h*sum(omegs.^2))
+			push!(losses,abs(1-cos(x1[l[1]]-x1[l[2]])))
 		elseif lin_or_sin == "lin"
 			push!(P1s,h*sum((ths-repeat(x1[1:n],outer=(1,size(ths)[2]))).^2)/(x1[l[1]]-x1[l[2]])^2)
-			push!(P2s,h*sum(omegs.^2)/(x1[l[1]]-x1[l[2]])^2)
+			push!(P2s,h*sum(omegs.^2))
+			push!(losses,(x1[l[1]]-x1[l[2]])^2)
 		end
 			
 	end
@@ -121,56 +125,77 @@ ranked_lines = line_list[ranked_line_idx]
 
 
 # Dealing with tree-like parts
-idx = Array{Int64,1}()
+idx1 = Array{Int64,1}()
+idx2 = Array{Int64,1}()
+idx0 = Array{Int64,1}()
 for i in 1:m
-	if !(isinf(dKf1[i]) || isinf(P1s[i]) || isinf(P2s[i]))
-		push!(idx,i)
+	if dKf1[i] < 1e8
+		push!(idx0,i)
+	end
+	if P1s[i] < 1e8
+		push!(idx1,i)
+	end
+	if P2s[i]/losses[i] < 1e8
+		push!(idx2,i)
 	end
 end
+idx01 = intersect(idx0,idx1)
+idx02 = intersect(idx0,idx2)
+idx12 = intersect(idx1,idx2)
+idx = intersect(idx0,idx1,idx2)
 
 # Compute correlations
-x = dKf1[idx]
-y = P1s[idx]
-z = P2s[idx]
-t = dist[idx]
+x = dKf1[idx0]
+y = P1s[idx1]
+z = P2s[idx2]./losses[idx2]
+t = dist
 
-r1 = sum((x .- mean(x)).*(y .- mean(y)))/(sqrt(sum((x .- mean(x)).^2))*sqrt(sum((y .- mean(y)).^2)))
-r2 = sum((x .- mean(x)).*(z .- mean(z)))/(sqrt(sum((x .- mean(x)).^2))*sqrt(sum((z .- mean(z)).^2)))
-r3 = sum((z .- mean(z)).*(y .- mean(y)))/(sqrt(sum((z .- mean(z)).^2))*sqrt(sum((y .- mean(y)).^2)))
-r4 = sum((t .- mean(t)).*(y .- mean(y)))/(sqrt(sum((t .- mean(t)).^2))*sqrt(sum((y .- mean(y)).^2)))
-r5 = sum((t .- mean(t)).*(z .- mean(z)))/(sqrt(sum((t .- mean(t)).^2))*sqrt(sum((z .- mean(z)).^2)))
+x01 = dKf1[idx01]
+y01 = P1s[idx01]
+x02 = dKf1[idx02]
+z02 = P2s[idx02]
+y12 = P1s[idx12]
+z12 = P2s[idx12]
+t1 = dist[idx1]
+t2 = dist[idx2]
+
+r1 = sum((x01 .- mean(x01)).*(y01 .- mean(y01)))/(sqrt(sum((x01 .- mean(x01)).^2))*sqrt(sum((y01 .- mean(y01)).^2)))
+r2 = sum((x02 .- mean(x02)).*(z02 .- mean(z02)))/(sqrt(sum((x02 .- mean(x02)).^2))*sqrt(sum((z02 .- mean(z02)).^2)))
+r3 = sum((z12 .- mean(z12)).*(y12 .- mean(y12)))/(sqrt(sum((z12 .- mean(z12)).^2))*sqrt(sum((y12 .- mean(y12)).^2)))
+r4 = sum((t1 .- mean(t1)).*(y .- mean(y)))/(sqrt(sum((t1 .- mean(t1)).^2))*sqrt(sum((y .- mean(y)).^2)))
+r5 = sum((t2 .- mean(t2)).*(z .- mean(z)))/(sqrt(sum((t2 .- mean(t2)).^2))*sqrt(sum((z .- mean(z)).^2)))
 
 # Plot
 figure(ntw*"_"*lin_or_sin*"_contingency_$P0",(15,8))
 
 PyPlot.subplot(1,5,1)
-PyPlot.plot(dKf1,P1s,"ob")
+PyPlot.plot(dKf1[idx01],P1s[idx01],"ob")
 xlabel("δKf1")
 ylabel("P1")
 title("r = $(round(r1,digits=4))")
 
 PyPlot.subplot(1,5,2)
-PyPlot.plot(dKf1,P2s,"or")
+PyPlot.plot(dKf1[idx02],P2s[idx02]./losses[idx02],"or")
 xlabel("δKf1")
-ylabel("P2")
+ylabel("P2/losses")
 title("r = $(round(r2,digits=4))")
 
 PyPlot.subplot(1,5,3)
-PyPlot.plot(P1s,P2s,"og")
+PyPlot.plot(P1s[idx12],P2s[idx12]./losses[idx12],"og")
 xlabel("P1")
-ylabel("P2")
+ylabel("P2/losses")
 title("r = $(round(r3,digits=4))")
 
 PyPlot.subplot(1,5,4)
-PyPlot.plot(dist,P1s,"oy")
+PyPlot.plot(dist[idx1],P1s[idx1],"oy")
 xlabel("Ω")
 ylabel("P1")
 title("r = $(round(r4,digits=4))")
 
 PyPlot.subplot(1,5,5)
-PyPlot.plot(dist,P2s,"om")
+PyPlot.plot(dist[idx2],P2s[idx2]./losses[idx2],"om")
 xlabel("Ω")
-ylabel("P2")
+ylabel("P2/losses")
 title("r = $(round(r5,digits=4))")
 
 
