@@ -10,13 +10,13 @@ journals_short = ["bmj",
 	"nature",
 	"neng_j_med","neg_j_med_letters",
 	"pnas",
-	"prl","prl_58-77","prl_78-97",",prl_98-17",
+	"prl","prl_58-77","prl_78-97","prl_98-17",
 	"prd",
 	"pre",
 	"science",
 	"scientometrics"]
 
-used_journals = ["chaos","ieee_trans_autom_control","lancet","nature","neng_j_med","pnas","pre","prl","science","bmj","medical_ped_onc","scientometrics"]
+used_journals = ["chaos","ieee_trans_autom_control","lancet","nature","neng_j_med","pnas","prd","pre","prl","science","bmj","medical_ped_onc","scientometrics"]
 
 journals_full = Dict{String,String}()
 

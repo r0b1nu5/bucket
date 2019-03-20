@@ -5,37 +5,47 @@ include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
 
+number_sample = 5
+
 zipf_plot = false
 tail_plot = false
-pl = false
+plots = false
+pl = true
+	s = 0.
 pl_co = true
+	a = 0.
+	l = 0.
 expo = false # useless, tail is too weak
-yule = false
+yule = true
+	al = 0.
 poisson = false # useless, tail is too weak
 stretch_expo = false # not done, tail is too weak
-# TODO log-normal...
+lognormal = false # not done, is exactly a parabola when plotted in loglog scales
 
-js = ["chaos",]
-#js = journals_short
+#js = ["chaos",]
+js = [used_journals[parse(Int,ARGS[1])],]
 
+ps = Array{Float64,1}()
 p_gof = Dict{String,Array{Float64,1}}
 
 for j in js
+	global s,a,l,al,p_gof,ps
 # Plot histogram
 	@info("Collecting data: $j")
 	num = Array{Float64,1}(vec(readdlm("./data/"*j*".txt",'\t')[2:end-2,2]))
 	mi = minimum(num)
 	ma = maximum(num)
 	nbins = Int(ma)
-	ps = Array{Float64,1}()
 	distributions = Array{String,1}()
 	max_k = 0.
-
-	for i in mi:ma
-		figure(j)
-		PyPlot.plot([i,i],[1e-8,sum(num.==i)/length(num)],"-b",linewidth=2,color=journals_colors[j][1])
-	end
 	
+	if plots
+		for i in mi:ma
+			figure(j)
+			PyPlot.plot([i,i],[1e-8,sum(num.==i)/length(num)],"-b",linewidth=2,color=journals_colors[j][1])
+		end
+	end
+		
 # Power law
 	if pl
 		@info("$j: Power law...")	
@@ -43,16 +53,18 @@ for j in js
 		s = mle_pl(num)
 		C = 1/zeta(s,mi)
 ## Goodness-of-fit
-		p_pl = gof_pl(num,s,C,mi,25)
+		p_pl = gof_pl(j,num,s,C,mi,number_sample)
 		push!(ps,p_pl)
 		push!(distributions,"Power law")
 		@info(j*", power law: p-value = $p_pl")
 ## Plot
-		Hs = sum(1.0./((mi:ma).^s))
-		z = C * ((mi:ma).^(-s))
-		PyPlot.plot(mi:ma,z,"--k",label="Zipf's law fit, s = $(round(s; digits=3))",linewidth=2)
-		max_k = ceil(Int64,(length(num)/Hs)^(1/s))
-		PyPlot.plot([max_k,max_k],[.5/length(num),maximum(z)*length(num)*2],":k",linewidth=2)
+		if plots
+			Hs = sum(1.0./((mi:ma).^s))
+			z = C * ((mi:ma).^(-s))
+			PyPlot.plot(mi:ma,z,"--k",label="Zipf's law fit, s = $(round(s; digits=3))",linewidth=2)
+			max_k = ceil(Int64,(length(num)/Hs)^(1/s))
+			PyPlot.plot([max_k,max_k],[.5/length(num),maximum(z)*length(num)*2],":k",linewidth=2)
+		end
 	end	
 # Power law with cutoff
 	if pl_co
@@ -61,49 +73,70 @@ for j in js
 		a,l = mle_plc(num)
 		C = 1/real(polylog(a,Complex(exp(-l))))
 ## Goodness-of-fit
-		p_plc = gof_plc(num,a,l,C,mi,5)
+		p_plc = gof_plc(j,num,a,l,C,mi,number_sample)
 		push!(ps,p_plc)
 		push!(distributions,"Power law with cutoff")
 		@info(j*", power law with cutoff: p-value = $p_plc")
 ## Plot
-		zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
-		PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
+		if plots
+			zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
+			PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
+		end
 	end
 
 # MLE of exponential distribution
 	if expo
 		@info("Exponential distribution...")
-		l = mle_exp(num,mi)
-		C = (1-exp(-l))*exp(l*mi)
-		zzz = C .* exp.(-l.*(mi:ma))
+		la = mle_exp(num,mi)
+		C = (1-exp(-la))*exp(la*mi)
+		zzz = C .* exp.(-la.*(mi:ma))
 		PyPlot.plot(mi:ma,zzz,":k",label="Exp distribution",linewidth=3)
 	end
 
-# MLE of Yule distribution
+# Yule distribution
 	if yule
 		@info("Yule distribution...")
-		a = mle_yule(num,mi)
-#		C = (a-1)*gamma(mi+a-1)/gamma(mi)
-#		zzzz = C .* gamma.((mi:ma))./gamma.((mi:ma).+a)
-		zzzz = (a-1)*beta.(mi:ma,a)
-		PyPlot.plot(mi:ma,zzzz,"--b",label="Yule distribution",linewidth=3)
+## MLE
+		al = mle_yule(num,mi)
+		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
+## Goodness-of-fit
+		p_yule = gof_yule(j,num,al,C,mi,number_sample)
+		push!(ps,p_yule)
+		push!(distributions,"Yule-Simon distribution")
+		@info(j*", Yule-Simon distribution: p-value = $p_yule")
+## Plot
+		if plots
+			zzzz = C*(al-1)*beta.(mi:ma,al)
+			PyPlot.plot(mi:ma,zzzz,"--b",label="Yule distribution",linewidth=3)
+		end
 	end
 
-# MLE of Poisson distribution
+# Poisson distribution
 	if poisson
 		@info("Poisson distribution...")
+## MLE
 		mu = mle_poisson(num,mi)
 		C = exp(mu) - sum(mu.^(0:mi-1)./(factorial.(0:mi-1)))
-		z5 = C .* mu.^(mi:ma)./(factorial.(mi:ma))
-		PyPlot.plot(mi:ma,z5,"--g",label="Poisson distribution",linewidth=3)
+## Goodness-of-fit
+		p_poisson = gof_poisson(j,num,mu,C,mi,number_sample)
+		push!(ps,p_poisson)
+		push!(distributions,"Poisson distribution")
+		@info(j*", Poisson distribution: p-value = $p_poisson")
+## Plot
+		if plots
+			z5 = C .* mu.^(mi:ma)./(factorial.(mi:ma))
+			PyPlot.plot(mi:ma,z5,"--g",label="Poisson distribution",linewidth=3)
+		end
 	end
 
-	title(journals_code[j]*", max. # articles predicted: $(ceil(Int,max_k))")
-	xlabel("Number of articles")
-	ylabel("Number of authors")
-	axis([.9,max(ma*2,2*max_k),.5/length(num),2.])
-	loglog()
-	legend()
+	if plots
+		title(journals_code[j]*", max. # articles predicted: $(ceil(Int,max_k))")
+		xlabel("Number of articles")
+		ylabel("Number of authors")
+		axis([.9,max(ma*2,2*max_k),.5/length(num),2.])
+		loglog()
+		legend()
+	end
 
 # if linbins
 
@@ -129,8 +162,8 @@ for j in js
 
 end
 
+j = js[1]
 
-
-
-
+writedlm("./analysis/"*j*"_params.csv",[s,a,l,al],',')
+writedlm("./analysis/"*j*"_p-gof.csv",ps,',')
 

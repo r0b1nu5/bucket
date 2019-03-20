@@ -1,17 +1,20 @@
+# Our goodness-of-fit test follows the recommandation of Clauset09. Namely, using the fitted paramters for each law, we generate some synthetic data and then compare the real data to the synthetic data. Our p-value is the proportion of synthetic data whose Kolmogorov-Smirnov statistic is larger than the one of our real data. If p > 0.1, we assume that the distribution if good.
+
+
 include("mle.jl")
 using SpecialFunctions 
 
 ## ======================= Goodness-of-fit estimates ================================
 
-function gof_pl(x::Array{Float64,1},s0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
+function gof_pl(j::String,x::Array{Float64,1},s0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
 	KS0 = KS_pl(x,s0,C0)
 	n_data = length(x)
 
 	KSs = Array{Float64,1}()
 	for i in 1:n_sample
-#		if (i%100 == 0)
-			@info("GoF power law: $i/$n_sample")
-#		end
+		if (i%100 == 0) || i == n_sample
+			@info(j*", GoF power law: $i/$n_sample")
+		end
 		z = rand_pl(rand(n_data),s0,C0,mi)
 		s = mle_pl(z)
 		C = 1/zeta(s,mi)
@@ -20,18 +23,21 @@ function gof_pl(x::Array{Float64,1},s0::Float64,C0::Float64,mi::Float64,n_sample
 	end
 
 	p = sum(KSs .> KS0)/n_sample
-
+	
+	writedlm("./analysis/"*j*"_KS0_pl.csv",KS0,',')
+	writedlm("./analysis/"*j*"_KSs_pl.csv",KSs,',')
+	
 	return p
 end
 
-function gof_plc(x::Array{Float64,1},a0::Float64,l0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
+function gof_plc(j::String,x::Array{Float64,1},a0::Float64,l0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
 	KS0 = KS_plc(x,a0,l0,C0)
 	n_data = length(x)
 	
 	KSs = Array{Float64,1}()
 	for i in 1:n_sample
 		if (i%100 == 0) || i == n_sample
-			@info("GoF power law with cutoff: $i/$n_sample")
+			@info(j*", GoF power law with cutoff: $i/$n_sample")
 		end
 		z = rand_plc(rand(n_data),a0,l0,C0,mi)
 		a,l = mle_plc(z)
@@ -42,9 +48,59 @@ function gof_plc(x::Array{Float64,1},a0::Float64,l0::Float64,C0::Float64,mi::Flo
 
 	p = sum(KSs .> KS0)/n_sample
 
+	writedlm("./analysis/"*j*"_KS0_plc.csv",KS0,',')
+	writedlm("./analysis/"*j*"_KSs_plc.csv",KSs,',')
+	
 	return p
 end
 
+function gof_yule(j::String,x::Array{Float64,1},a0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
+	KS0 = KS_yule(x,a0,C0)
+	n_data = length(x)
+	
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+		if (i%100 == 0) || i == n_sample
+			@info(j*", GoF Yule law: $i/$n_sample")
+		end
+		z = rand_yule(rand(n_data),a0,C0,mi)
+		a = mle_yule(z,mi)
+		C = 1/(1-(a-1)*sum(beta.(1:(mi-1),a)))
+		KS = KS_yule(z,a,C)
+		push!(KSs,KS)
+	end
+	
+	p = sum(KSs .> KS0)/n_sample
+	
+	writedlm("./analysis/"*j*"_KS0_yule.csv",KS0,',')
+	writedlm("./analysis/"*j*"_KSs_yule.csv",KSs,',')
+	
+	return p
+end
+
+function gof_poisson(j::String,x::Array{Float64,1},mu0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500) 
+	KS0 = KS_poisson(x,mu0,C0)
+	n_data = length(x)
+	
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+		if (i%100 == 0) || i == n_sample
+			@info(j*", GoF Poisson distri: $i/$n_sample")
+		end
+		z = rand_poisson(rand(n_data),mu0,C0,mi)
+		mu = mle_poisson(z,mi)
+		C = exp(mu) - sum(mu.^(0:mi-1)./(factorial.(0:mi-1)))
+		KS = KS_poisson(z,mu,C)
+		push!(KSs,KS)
+	end
+	
+	p = sum(KSs .> KS0)/n_sample
+	
+	writedlm("./analysis/"*j*"_KS0_poisson.csv",KS0,',')
+	writedlm("./analysis/"*j*"_KSs_poisson.csv",KSs,',')
+	
+	return p
+end
 
 ## ============================ Kolmogorov-Smirnov measures ==================================
 
@@ -60,8 +116,9 @@ function KS_pl(x::Array{Float64,1},s::Float64,C::Float64)
 		push!(ecdf,sum(x .<= i)/n)
 	end
 	
-	KS = maximum(abs.(cdf[Array{Int,1}(mi:ma)] - ecdf[Array{Int,1}(mi:ma)]))
-
+#	KS = maximum(abs.(cdf[Array{Int,1}(mi:ma)] - ecdf[Array{Int,1}(mi:ma)]))
+	KS = maximum(abs.(cdf - ecdf))
+	
 	return KS
 end
 
@@ -77,11 +134,46 @@ function KS_plc(x::Array{Float64,1},a::Float64,l::Float64,C::Float64)
 		push!(ecdf,sum(x .<= i)/n)
 	end
 
-	KS = maximum(abs.(cdf[Array{Int,1}(mi:ma)] - ecdf[Array{Int,1}(mi:ma)]))
+	KS = maximum(abs.(cdf - ecdf))
 
 	return KS
 end
 
+function KS_yule(x::Array{Float64,1},a::Float64,C::Float64)
+	mi = minimum(x)
+	ma = maximum(x)
+	n = length(x)
+	
+	cdf = [C*(a-1)*beta(mi,a),]
+	ecdf = [sum(x .<= mi)/n,]
+	for i in (mi+1):ma
+		push!(cdf,cdf[end]+C*(a-1)*beta(i,a))
+		push!(ecdf,sum(x .<= i)/n)
+	end
+	
+	KS = maximum(abs.(cdf - ecdf))
+	
+	return KS
+end
+
+function KS_poisson(x::Array{Float64,1},mu::Float64,C::Float64)
+	mi = minimum(x)
+	ma = maximum(x)
+	n = length(x)
+	
+	last_term = C*mu^mi/factorial(mi)
+	cdf = [last_term,]
+	ecdf = [sum(x .<= mi)/n,]
+	for i in (mi+1):ma
+		last_term *= mu/i
+		push!(cdf,cdf[end] + last_term)
+		push!(ecdf,sum(x .<= i)/n)
+	end
+	
+	KS = maximum(abs.(cdf - ecdf))
+	
+	return KS
+end
 
 ## ================================== Synthetic variables generation ================================
 
@@ -115,7 +207,41 @@ function rand_plc(y::Array{Float64,1},a::Float64,l::Float64,C::Float64,mi::Float
 	return ns
 end
 
-## Old functions
+function rand_yule(y::Array{Float64,1},a::Float64,C::Float64,mi::Float64=1.)
+	x = 0.
+	n = mi - 1
+	todo = trues(length(y))
+	ns = n*ones(length(y))
+	while x < maximum(y)
+		ns += todo .* ones(length(y))
+		n += 1
+		x += C*(a-1)*beta(n,a)
+		todo = [y[i] > x for i in 1:length(y)]
+	end
+	
+	return ns
+end
+
+function rand_poisson(y::Array{Float64,1},mu::Float64,C::Float64,mi::Float64=1.)
+	x = 0.
+	n = mi - 1
+	todo = trues(length(y))
+	ns = n*ones(length(y))
+	last_term = mu^n/factorial(n)
+	while x < maximum(y)
+		ns += todo .* ones(length(y))
+		n += 1
+		last_term *= mu/n
+		x += last_term
+		todo = [y[i] > x for i in 1:length(y)]
+	end
+	
+	return ns
+end
+
+
+## Old functions ====================================================================
+# ===================================================================================
 
 function my_gof(x::Array{Float64,1}, n_bins::Int64, n_sample::Int64=2500)
 	mi = minimum(x)

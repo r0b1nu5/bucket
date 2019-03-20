@@ -1,3 +1,5 @@
+# We fit the data with a Maximum-Likelihood Estimator (MLE)
+
 function mle_pl(x::Array{Float64,1})
 	mi = minimum(x)
 	ma = maximum(x)
@@ -82,7 +84,7 @@ function mle_yule(x::Array{Float64,1},xmin::Float64)
 
 		for i in 1:100
 #			L[i] = n*log(as[i]-1) + n*log(gamma(xmin+as[i]-1)) + sum(log.(gamma.(x))) - sum(log.(gamma.(x.+as[i])))
-			L[i] = n*log(as[i]-1) + sum(log.(beta.(x,as[i])))
+			L[i] = -n*log(1-(as[i]-1)*sum(beta.(1:(xmin-1),as[i]))) + n*log(as[i]-1) + sum(log.(beta.(x,as[i])))
 		end
 
 		atemp = as[findmax(L)[2]]
