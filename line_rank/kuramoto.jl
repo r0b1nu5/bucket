@@ -246,7 +246,7 @@ function kuramoto2_lin(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,
 end
 
 
-function kuramoto2_lin(L::SparseMatrixCSC{Float64,Int64},m::Array{Float64,1},d::Array{Float64,1},P::Array{Float64,1},th0::Array{Float64,1},omeg0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=100000,eps::Float64=1e-6,h::Float64=0.025)
+function kuramoto2_lin(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1},d::Array{Float64,1},P::Array{Float64,1},th0::Array{Float64,1},omeg0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=100000,eps::Float64=1e-6,h::Float64=0.025)
 	n = size(L)[1]
 	
 	M = spdiagm(0 => m)

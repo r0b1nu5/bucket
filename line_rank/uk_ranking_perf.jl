@@ -7,11 +7,11 @@ include("isconnected.jl")
 include("rm_line.jl")
 include("res_dist.jl")
 
-lin_or_sin = "sin"
+lin_or_sin = "lin"
 ntw = "uk"
 
-tau = 0.25 # duration of the line contingency
-P0 = 2.
+tau = 0.65 # duration of the line contingency
+P0 = 7.
 
 eps = 1e-6
 max_iter = 100000
@@ -84,11 +84,11 @@ for l in line_list
 		omegs = [xs2[(n+1):(2*n),:] xs3[(n+1):(2*n),:]]
 		
 		if lin_or_sin == "sin"		
-			push!(P1s,h*sum((ths-repeat(x1[1:n],outer=(1,size(ths)[2]))).^2)/abs(1-cos(x1[l[1]]-x1[l[2]])))
+			push!(P1s,h*sum((ths-repeat(x1[1:n],outer=(1,size(ths)[2]))).^2))
 			push!(P2s,h*sum(omegs.^2))
 			push!(losses,abs(1-cos(x1[l[1]]-x1[l[2]])))
 		elseif lin_or_sin == "lin"
-			push!(P1s,h*sum((ths-repeat(x1[1:n],outer=(1,size(ths)[2]))).^2)/(x1[l[1]]-x1[l[2]])^2)
+			push!(P1s,h*sum((ths-repeat(x1[1:n],outer=(1,size(ths)[2]))).^2))
 			push!(P2s,h*sum(omegs.^2))
 			push!(losses,(x1[l[1]]-x1[l[2]])^2)
 		end
@@ -132,7 +132,7 @@ for i in 1:m
 	if dKf1[i] < 1e8
 		push!(idx0,i)
 	end
-	if P1s[i] < 1e8
+	if P1s[i]/losses[i] < 1e8
 		push!(idx1,i)
 	end
 	if P2s[i]/losses[i] < 1e8
@@ -146,7 +146,7 @@ idx = intersect(idx0,idx1,idx2)
 
 # Compute correlations
 x = dKf1[idx0]
-y = P1s[idx1]
+y = P1s[idx1]./losses[idx1]
 z = P2s[idx2]./losses[idx2]
 t = dist
 
@@ -169,9 +169,9 @@ r5 = sum((t2 .- mean(t2)).*(z .- mean(z)))/(sqrt(sum((t2 .- mean(t2)).^2))*sqrt(
 figure(ntw*"_"*lin_or_sin*"_contingency_$P0",(15,8))
 
 PyPlot.subplot(1,5,1)
-PyPlot.plot(dKf1[idx01],P1s[idx01],"ob")
+PyPlot.plot(dKf1[idx01],P1s[idx01]./losses[idx01],"ob")
 xlabel("δKf1")
-ylabel("P1")
+ylabel("P1/losses")
 title("r = $(round(r1,digits=4))")
 
 PyPlot.subplot(1,5,2)
@@ -181,15 +181,15 @@ ylabel("P2/losses")
 title("r = $(round(r2,digits=4))")
 
 PyPlot.subplot(1,5,3)
-PyPlot.plot(P1s[idx12],P2s[idx12]./losses[idx12],"og")
-xlabel("P1")
+PyPlot.plot(P1s[idx12]./losses[idx12],P2s[idx12]./losses[idx12],"og")
+xlabel("P1/losses")
 ylabel("P2/losses")
 title("r = $(round(r3,digits=4))")
 
 PyPlot.subplot(1,5,4)
-PyPlot.plot(dist[idx1],P1s[idx1],"oy")
+PyPlot.plot(dist[idx1],P1s[idx1]./losses[idx1],"oy")
 xlabel("Ω")
-ylabel("P1")
+ylabel("P1/losses")
 title("r = $(round(r4,digits=4))")
 
 PyPlot.subplot(1,5,5)
