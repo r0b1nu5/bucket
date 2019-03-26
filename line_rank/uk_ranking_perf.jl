@@ -10,12 +10,12 @@ include("res_dist.jl")
 lin_or_sin = "lin"
 ntw = "uk"
 
-tau = 0.65 # duration of the line contingency
-P0 = 7.
+tau = 0.025 # duration of the line contingency
+P0 = .11
 
 eps = 1e-6
 max_iter = 100000
-h = 0.025
+h = 0.001
 
 if tau < h
 	@warn("τ must be larger than h")
@@ -73,11 +73,11 @@ for l in line_list
 		push!(losses,0.)
 	else
 		if lin_or_sin == "sin"
-			xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,true,Int(ceil(tau/h)))
-			xs3,dxs3 = kuramoto2(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true)
+			xs2,dxs2 = kuramoto2(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,true,Int(ceil(tau/h)),eps,h)
+			xs3,dxs3 = kuramoto2(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true,true,max_iter,eps,h)
 		elseif lin_or_sin == "lin"
-			xs2,dxs2 = kuramoto2_lin(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,true,Int(ceil(tau/h)))
-			xs3,dxs3 = kuramoto2_lin(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true)
+			xs2,dxs2 = kuramoto2_lin(Ltemp,mm,dd,P,x1[1:n],x1[(n+1):(2*n)],true,true,Int(ceil(tau/h)),eps,h)
+			xs3,dxs3 = kuramoto2_lin(L,mm,dd,P,vec(xs2[1:n,end]),vec(xs2[(n+1):(2*n),end]),true,true,max_iter,eps,h)
 		end
 		
 		ths = [xs2[1:n,:] xs3[1:n,:]]

@@ -100,10 +100,10 @@ function kuramoto2(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,1},P
 		
 		x1 = copy(x2)
 		
-		k1 = [(x1[(n+1):(2*n)]);(P - Mi*B*W*sin.(transpose(B)*x1[1:n]) - Mi*D*x1[(n+1):(2*n)])]
-		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+(h/2)*k1[1:n])) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
-		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+(h/2)*k2[1:n])) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
-		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+h*k3[1:n])) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
+		k1 = [(x1[(n+1):(2*n)]);(Mi*P - Mi*B*W*sin.(transpose(B)*x1[1:n]) - Mi*D*x1[(n+1):(2*n)])]
+		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(Mi*P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+(h/2)*k1[1:n])) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
+		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(Mi*P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+(h/2)*k2[1:n])) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
+		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(Mi*P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+h*k3[1:n])) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
 		
 		dx = (k1+2*k2+2*k3+k4)/6
 		
@@ -166,10 +166,10 @@ function kuramoto2(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1},d::Array{
 		
 		x1 = copy(x2)
 		
-		k1 = [(x1[(n+1):(2*n)]);(P - Mi*B*W*sin.(transpose(B)*x1[1:n]) - Mi*D*x1[(n+1):(2*n)])]
-		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+(h/2)*k1[1:n])) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
-		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+(h/2)*k2[1:n])) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
-		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+h*k3[1:n])) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
+		k1 = [(x1[(n+1):(2*n)]);(Mi*P - Mi*B*W*sin.(transpose(B)*x1[1:n]) - Mi*D*x1[(n+1):(2*n)])]
+		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(Mi*P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+(h/2)*k1[1:n])) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
+		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(Mi*P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+(h/2)*k2[1:n])) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
+		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(Mi*P - Mi*B*W*sin.(transpose(B)*(x1[1:n]+h*k3[1:n])) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
 		
 		dx = (k1+2*k2+2*k3+k4)/6
 		
@@ -221,10 +221,10 @@ function kuramoto2_lin(L::Array{Float64,2},m::Array{Float64,1},d::Array{Float64,
 		
 		x1 = copy(x2)
 		
-		k1 = [(x1[(n+1):(2*n)]);(P - Mi*L*x1[1:n] - Mi*D*x1[(n+1):(2*n)])]
-		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(P - Mi*L*(x1[1:n]+(h/2)*k1[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
-		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(P - Mi*L*(x1[1:n]+(h/2)*k2[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
-		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(P - Mi*L*(x1[1:n]+h*k3[1:n]) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
+		k1 = [(x1[(n+1):(2*n)]);(Mi*P - Mi*L*x1[1:n] - Mi*D*x1[(n+1):(2*n)])]
+		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+(h/2)*k1[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
+		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+(h/2)*k2[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
+		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+h*k3[1:n]) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
 		
 		dx = (k1+2*k2+2*k3+k4)/6
 		
@@ -277,10 +277,10 @@ function kuramoto2_lin(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1},d::Ar
 		
 		x1 = copy(x2)
 		
-		k1 = [(x1[(n+1):(2*n)]);(P - Mi*L*x1[1:n] - Mi*D*x1[(n+1):(2*n)])]
-		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(P - Mi*L*(x1[1:n]+(h/2)*k1[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
-		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(P - Mi*L*(x1[1:n]+(h/2)*k2[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
-		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(P - Mi*L*(x1[1:n]+h*k3[1:n]) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
+		k1 = [(x1[(n+1):(2*n)]);(Mi*P - Mi*L*x1[1:n] - Mi*D*x1[(n+1):(2*n)])]
+		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+(h/2)*k1[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
+		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+(h/2)*k2[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
+		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+h*k3[1:n]) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
 		
 		dx = (k1+2*k2+2*k3+k4)/6
 		
