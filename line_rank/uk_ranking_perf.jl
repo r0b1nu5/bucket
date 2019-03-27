@@ -12,7 +12,7 @@ ntw = "uk"
 plots = true
 
 taus = [0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475] # duration of the line contingency
-taus = [0.025,]
+#taus = [0.025,]
 P0 = .11
 
 eps = 1e-6
@@ -68,6 +68,7 @@ Om = res_dist(L)
 
 dKf1 = Array{Float64,1}()
 
+dist = Array{Float64,1}()
 for l in line_list
 	b = -L[l[1],l[2]]
 	Ome = Om[l[1],l[2]]
@@ -76,6 +77,7 @@ for l in line_list
 	else
 		push!(dKf1,b*Ome/(1-b*Ome))
 	end
+	push!(dist,Ome)
 end
 
 ranked_line_idx = Array{Int,1}(vec(sortslices([dKf1 1:m],dims=1)[:,2]))
