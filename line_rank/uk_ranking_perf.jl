@@ -8,11 +8,11 @@ include("rm_line.jl")
 include("res_dist.jl")
 
 lin_or_sin = "sin"
-ntw = "uk"
+ntw = "ieee57"
 plots = true
 
 taus = [0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475] # duration of the line contingency
-#taus = [0.025,]
+taus = [0.25,]
 P0 = .11
 
 eps = 1e-6
@@ -28,6 +28,8 @@ end
 # Choose network
 if ntw == "uk"
 	Asp = readdlm("uk_adj_mat.csv",',') .+ 1
+elseif ntw == "ieee57"
+	Asp = readdlm("ieee57_adj_mat.csv",',')
 end
 
 # Initialize parameters
@@ -46,7 +48,11 @@ mm = .2*ones(n)
 dd = .1*ones(n)
 
 P = zeros(n)
-P[gen_idx] = P0*ones(length(gen_idx))
+if ntw == "uk"
+	P[gen_idx] = P0*ones(length(gen_idx))
+elseif ntw == "ieee57"
+	P = .001*vec(readdlm("P_57",','))
+end
 P .-= mean(P)
 
 th0 = zeros(n)
@@ -69,15 +75,20 @@ Om = res_dist(L)
 dKf1 = Array{Float64,1}()
 
 dist = Array{Float64,1}()
+dist2 = Array{Float64,1}()
+L2 = L^2
+Om2 = res_dist(L2)
 for l in line_list
 	b = -L[l[1],l[2]]
 	Ome = Om[l[1],l[2]]
+	Ome2 = Om2[l[1],l[2]]
 	if abs(b-Ome) < 1e-10
 		push!(dKf1,Inf)
 	else
 		push!(dKf1,b*Ome/(1-b*Ome))
 	end
 	push!(dist,Ome)
+	push!(dist2,Ome2)
 end
 
 ranked_line_idx = Array{Int,1}(vec(sortslices([dKf1 1:m],dims=1)[:,2]))
@@ -87,6 +98,8 @@ for tau in taus
 	P1s = Array{Float64,1}()
 	P2s = Array{Float64,1}()
 	losses = Array{Float64,1}()
+	P21s = Array{Float64,1}()
+	P22s = Array{Float64,1}()
 	
 # Simulate line contingency for each line and compute performance measures
 	for l in line_list
@@ -96,6 +109,8 @@ for tau in taus
 		if !isconnected(Ltemp)
 			push!(P1s,Inf)
 			push!(P2s,Inf)
+			push!(P21s,Inf)
+			push!(P22s,Inf)
 			push!(losses,0.)
 		else
 			if lin_or_sin == "sin"
@@ -108,6 +123,8 @@ for tau in taus
 			
 			push!(P1s,P1+P11)
 			push!(P2s,P2+P22)
+			push!(P21s,P2)
+			push!(P22s,P22)
 			if lin_or_sin == "sin"
 				push!(losses,abs(1-cos(x1[l[1]]-x1[l[2]])))
 			elseif lin_or_sin == "lin"
@@ -190,6 +207,20 @@ for tau in taus
 		xlabel("Ω")
 		ylabel("P2/losses")
 		title("r = $(round(r5,digits=4))")
+		
+		figure()
+		PyPlot.subplot(1,4,1)
+		PyPlot.plot(P21s[idx2]./losses[idx2],"ok")
+		title("P2 during cut")
+		PyPlot.subplot(1,4,2)
+		PyPlot.plot(P22s[idx2]./losses[idx2],"ok")
+		title("P2 after recovery")
+		PyPlot.subplot(1,4,3)
+		PyPlot.plot(dist2[idx1],P1s[idx1]./losses[idx1],"oy")
+		title("P1 vs. Ω2")
+		PyPlot.subplot(1,4,4)
+		PyPlot.plot(dist2[idx2],P2s[idx2]./losses[idx2],"om")
+		title("P2 vs. Ω2")
 	end
 
 	writedlm("data/P2s_$(P0)_$(tau).csv",P2s,',')
