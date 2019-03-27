@@ -191,4 +191,5 @@ for tau in taus
 	end
 
 	writedlm("data/P2s_$(P0)_$(tau).csv",P2s,',')
+	writedlm("data/losses_$(P0)_$(tau).csv",losses,',')
 end
