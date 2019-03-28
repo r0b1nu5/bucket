@@ -1,6 +1,6 @@
 using DelimitedFiles
 
-P0 = 2.0
+P0 = 1.7
 
 x = readdlm("./data/ranks_init_rank_$P0.csv",',')
 ranks1 = Array{Array{Int64,1},1}()
