@@ -36,7 +36,7 @@ M = M0*ones(n)
 D = D0*ones(n)
 
 P = zeros(n)
-P[gen_idx] = .2*ones(length(gen_idx))
+P[gen_idx] = P0*ones(length(gen_idx))
 P .-= mean(P)
 
 x1 = vec(readdlm("uk_sync_$P0.csv",','))
@@ -69,7 +69,7 @@ L1 = copy(L)
 count = 0
 
 while run1 && count < m - n + 1
-	global count,L1
+	global count,L1,run1
 	count += 1
 	@info("round $count")
 	
@@ -100,6 +100,7 @@ while run1 && count < m - n + 1
 	xs,dxs,n_iter = kuramoto2(L1,M,D,P,x1[1:n],x1[(n+1):(2*n)])
 	if n_iter >= max_iter
 		run1 = false
+		@info("No sync anymore.")
 	end
 	
 end

@@ -69,7 +69,7 @@ L3 = copy(L)
 count = 0
 
 while run3 && count < m - n + 1
-	global count,L3
+	global count,L3,run3
 	count += 1
 	@info("round $count")
 	
@@ -100,6 +100,7 @@ while run3 && count < m - n + 1
 	xs,dxs,n_iter = kuramoto2(L3,M,D,P,x1[1:n],x1[(n+1):(2*n)])
 	if n_iter >= max_iter
 		run1 = false
+		@info("No sync anymore.")
 	end
 	
 end
