@@ -69,7 +69,7 @@ L2 = copy(L)
 count = 1
 
 while run2 && count < m - n + 1
-	global count,L2,rank2,run2
+	global count,L2,rank2,run2,cuts2,ranks2,rmvd2
 	count += 1
 	@info("round $count")
 	
