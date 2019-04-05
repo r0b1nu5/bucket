@@ -77,21 +77,20 @@
   \BibitemOpen
   \href {http://apps.webofknowledge.com} {\bibinfo  {journal}
   {http://apps.webofknowledge.com}\ }\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Broido}\ and\ \citenamefont {Clauset}(2018)}]{Bro18}%
+  \BibitemOpen
+\bibfield  {journal} {  }\bibfield  {author} {\bibinfo {author} {\bibfnamefont
+  {A.~D.}\ \bibnamefont {Broido}}\ and\ \bibinfo {author} {\bibfnamefont
+  {A.}~\bibnamefont {Clauset}},\ }\href {www.arxiv.org/abs/1801.03400}
+  {\bibfield  {journal} {\bibinfo  {journal} {arXiv preprint: 1801.03400}\ }
+  (\bibinfo {year} {2018})}\BibitemShut {NoStop}%
 \bibitem [{\citenamefont {Clauset}\ \emph {et~al.}(2009)\citenamefont
   {Clauset}, \citenamefont {Shalizi},\ and\ \citenamefont {Newman}}]{Cla09}%
   \BibitemOpen
-\bibfield  {journal} {  }\bibfield  {author} {\bibinfo {author} {\bibfnamefont
-  {A.}~\bibnamefont {Clauset}}, \bibinfo {author} {\bibfnamefont {C.~R.}\
-  \bibnamefont {Shalizi}}, \ and\ \bibinfo {author} {\bibfnamefont {M.~E.~J.}\
-  \bibnamefont {Newman}},\ }\href {\doibase 10.1137/070710111} {\bibfield
-  {journal} {\bibinfo  {journal} {SIAM Review}\ }\textbf {\bibinfo {volume}
-  {51}},\ \bibinfo {pages} {661} (\bibinfo {year} {2009})}\BibitemShut
-  {NoStop}%
-\bibitem [{\citenamefont {Broido}\ and\ \citenamefont {Clauset}(2018)}]{Bro18}%
-  \BibitemOpen
-  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {A.~D.}\ \bibnamefont
-  {Broido}}\ and\ \bibinfo {author} {\bibfnamefont {A.}~\bibnamefont
-  {Clauset}},\ }\href {www.arxiv.org/abs/1801.03400} {\bibfield  {journal}
-  {\bibinfo  {journal} {arXiv preprint: 1801.03400}\ } (\bibinfo {year}
-  {2018})}\BibitemShut {NoStop}%
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {A.}~\bibnamefont
+  {Clauset}}, \bibinfo {author} {\bibfnamefont {C.~R.}\ \bibnamefont
+  {Shalizi}}, \ and\ \bibinfo {author} {\bibfnamefont {M.~E.~J.}\ \bibnamefont
+  {Newman}},\ }\href {\doibase 10.1137/070710111} {\bibfield  {journal}
+  {\bibinfo  {journal} {SIAM Review}\ }\textbf {\bibinfo {volume} {51}},\
+  \bibinfo {pages} {661} (\bibinfo {year} {2009})}\BibitemShut {NoStop}%
 \end{thebibliography}%

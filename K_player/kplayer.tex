@@ -46,7 +46,7 @@
 \maketitle
 
 \section{Introduction} 
-As pointed out by Sekara et al.~\cite{Sek18}, publishing in a peer-reviewed journal is more likely if one author of the paper already published in the same journal.
+As pointed out by Sekara et al.~\cite{Sek18}, publishing in a peer-reviewed journal is more likely if one author of the manuscript already published in the same journal.
 An outcome that could be expected of such an observation is a high representation of a few authors in a given journal. 
 
 In line with this, a scientist whose research topic is well-aligned with a journal topic is likely to publish a large proportion of their work in this journal.
@@ -67,46 +67,93 @@ It has been shown that such a mechanism of network construction leads to a degre
 \end{figure*}
 
 \section{Methodology}
-We consider an arbitrary selection of 12 journals, labelled by capital letters, ${\cal J}=\{A,B,...,L\}$, available on the Web of Science database (WoS)~\cite{WoS}. 
-Each element of ${\cal J}$ corresponds to a peer-reviewed journal with a significant number of publications within the last decades. 
-We do not explicitly give the journals' names for privacy reasons.
+We consider an arbitrary selection of 12 peer-reviewed journals (see Table~\ref{tab:journals}), whose data are available on the Web of Science database (WoS)~\cite{WoS}. 
+Each journal considered is sufficiently old (at least \textcolor{red}{20 years???}) and is still publishing articles nowadays. 
+We denote by ${\cal J}\coloneqq\{{\rm CHA},{\rm ENE},...,{\rm SCI}\}$ the set of journals considered.
 
-Within each journal $j\in {\cal J}$, we count the number $n^j_i$ of articles published by author $i$, which gives the set of data $\{n^j_i\}$. 
-We restricted our investigation to publications labelled as ``Article'' in the WoS database.
+\begin{table}
+ \begin{tabular}{l|l}
+  Label & Journal name \\
+  \hline
+  \hline BMJ & British Medical Journal \\
+  \hline CHA & Chaos \\
+  \hline ENE & Energy \\
+  \hline LAN & The Lancet$^*$ \\
+  \hline NAT & Nature$^*$ \\
+  \hline NEG & New England Journal of Medicin$^*$ \\
+  \hline PNA & Proceedings of the Natural Academy of Sciences$^{**}$ \\
+  \hline PRD & Physical Review D \\
+  \hline PRL & Physical Review Letters$^*$ \\
+  \hline SCI & Science$^*$ \\
+  \hline SCM & Scientometrics \\
+  \hline TAC & IEEE Transactions on Automatic Control 
+ \end{tabular}
+ \caption{Labels and names of the journals considered. 
+ Journals where the authors with one (resp. two) articles published were discarded are indicated by $^*$ (resp. $^{**}$).}
+ \label{tab:journals}
+\end{table}
+
+Within each journal $j\in {\cal J}$ and for each author $i$ who published in $j$, we count the number $n^j_i$ of articles published $i$, which gives the set of data $N_j=\{n^j_i\}$. 
+We restricted our investigation to publications labelled as ``Article'' in the WoS database, to focus on peer-reviewed articles and to discard editorial material. 
 For some journals, the number of authors was too large to be downloaded from the Web of Science database. 
-As a consequence, some authors having published only one or two articles in these journals had to be removed from the data. 
-As this might influence our results, we indicate when this was the case in the captions. 
-Note also that we did not take into account articles published anonymously. 
+As a consequence, some authors having published only one or two articles in these journals had to be removed from the data (e.g., ${\rm PRL}$). 
+When this happens, it is indicated by asteriscs in Table~\ref{tab:journals}.
+Note also that we did not take into account articles published anonymously, which represent a large number of articles in medicine journals in particular. 
 \textcolor{red}{Do the same for the time-splitted data !!!}
-
-From these data, we can the compute 
+From these data, within each journal $j\in{\cal J}$, we can the compute for each number of articles published $n$, the number of authors who published $n$ articles 
 \begin{align}
  a_j(n)\coloneqq\#\{i\colon n^j_i = n\}\, ,
 \end{align}
-which are represented in logarithmic scales in Fig.~\ref{fig:1}, for each journal. 
-We then fit a power law (black dashed lines in Fig.~\ref{fig:1}) to the data of each journal $j\in{\cal J}$. 
-The exponent $s_j$ of the power law 
-\begin{align}
- z_j(n) &= C_jn^{-s_j}
+The distributions of this value are represented in logarithmic scales in Fig.~\ref{fig:1}, each panel corresonding to a different journal. 
+
+To the eye, these distributions have a heavy tail and it is tempting to fit a power law to it, 
+\begin{align}\label{eq:pl}
+ \mathbb{P}(a = n) &= C_1\cdot n^{-\alpha}\, .
 \end{align}
-is obtained by a maximum likelihood estimator, following~\cite{Cla09}, and $C_j$ is the constant normalizing the distribution. 
-Finally, we compute the theoretical maximum number of articles, $m_j$, which is the value satisfying $N_jz_j(m_j)\approx1$, where $N_j$ is the total number of articles published in journal $j$. 
+However, as pointed out by Broido and Clauset~\cite{Bro18}, caution is needed when fitting a power law to heavy tailed data. 
+Thus we also tried to fit other heavy tailed distributions, the \emph{power law with cutoff}~\cite{Bro18} being one of them, 
+\begin{align}\label{eq:plco}
+ \mathbb{P}(a = n) &= C_2\cdot n^{-\beta}e^{-\gamma n}\, .
+\end{align} 
+We performed the distribution fitting by optimizing the parameters $\alpha$, $\beta$, and $\gamma$ with a Maximum Likelihood Estimator (MLE)~\cite{Cla09}. 
 
-\textcolor{red}{
-Following the warnings of Broido and Clauset~\cite{Bro18}, about the over-representation of power-laws data analysis, we have carefully considered other possible distributions, namely BLAH, BLAH, AND BLAH. 
-The best estimate of the distributions observed were the power-law with exponents given in Fig.~\ref{fig:1}. 
-}
-
-
+To evaluate the goodness of our fitting, we proceeded as follows. 
+We generated $2500$ sets of synthetic data $D_i$, $i=1,...,2500$, following the distribution obtained. 
+Comparing our data $D_0=\{a_j(n)\}$ to the sets of synthetic data, we can compute $p$, the proportion of synthetic data that are further than $D_0$ 
+(in the Kolmogorov-Smirnov sense~\textcolor{red}{REF}) from the theoretical distribution. 
+The fit is considered as \emph{good} if $p>0.05$. 
 
 
 \section{Results}
-To the eye, the histograms for all journals considered follow a power law, also called a Zipf's law for discrete-valued variables. 
-Performing a Kolmogorov-Smirnov test on the data set, we observe that this fit does not perform very good. 
-\textcolor{red}{However, trying to fit other standard (and less standard) distributions, we were unable to find a better fit, mostly because the distribution tails of other distributions are too thin. 
-Thus even if the data does not follow precisely a power-law, they are close to one, with a thinner tail. 
-}
-These discrepancies might be due to the size of the data sets, which are rather small compared to what would be needed to accurately give a power-law~\textcolor{red}{[REF]}.
+The results of each fit and goodness-of-fit tests are presented in Table~\ref{tab:fit_gof}. 
+Clearly, the power law distribution is a poor fit for all data, its $p$-value being (almost) zero for all journals. 
+This can be seen in Fig.~\ref{fig:1} as for most of the journals, the tail of the data set is lighter that the tail of its power law fit (black dashed line). 
+However, for some journals \textcolor{red}{(namely BLI, BLA, BLO)}, the $p$-value of the power law with cutoff is high and it seems to be a rather good fit (black dotted line in Fig.~\ref{fig:1}). 
+
+\begin{table}
+ \begin{tabular}{l||c|c||c|c|c}
+  & \multicolumn{2}{c||}{PL} & \multicolumn{3}{c}{PL with cutoff} \\
+  & $\alpha$ & $p$ & $\beta$ & $\gamma$ & $p$ \\
+  \hline
+  \hline BMJ & &&&& \\
+  \hline CHA & &&&& \\
+  \hline ENE & &&&& \\
+  \hline LAN & &&&& \\
+  \hline NAT & &&&& \\
+  \hline NEG & &&&& \\
+  \hline PNA & &&&& \\
+  \hline PRD & &&&& \\
+  \hline PRL & &&&& \\
+  \hline SCI & &&&& \\
+  \hline SCM & &&&& \\
+  \hline TAC & &&&&
+ \end{tabular}
+ \caption{Fitted parameters and $p$-value of the goodness-of-fit for power law and power law with cutoff distributions.}
+ \label{tab:fit_gof}
+\end{table}
+
+We tried to fit other heavy tailed distributions \textcolor{red}{(such as BLI, BLA, BLO)}, but none of them performed better than the power law with cutoff under our goodness-of-fit test. 
+
 
 \paragraph{}
 {\bf General explanation. }
@@ -139,8 +186,11 @@ The probability that a new paper is signed by an author with $k$ publications is
 The dynamics of the number of authors with $k$ articles is then described by Eq.~(1) in~\cite{Kra00}, with exponent $\gamma\approx 1$. 
 According to~\cite{Kra00}, after a long enough time, the distribution of $N_k$ follows a power law, which agrees with our observations.
 
-\paragraph{}
-{\bf Exceptions. }
+
+\section{Observations}
+We note two surprizing observations in the data. 
+
+\subsection{Exceptions }
 The general distribution of the number of authors with respect to the number of paper per author is quite clear in our analysis. 
 However, in some journals, we observe anomalies (\textcolor{red}{see Figs...}). 
 It appears that sometimes, some authors publish more articles in a journal than what our Zipf's law distribution would predict. 
@@ -152,7 +202,7 @@ We emphasize that we checked that these K-players are not artifacts due to multi
 In all cases presented here, there is a unique person appearing in the authors' list of a very large number of papers. 
 }
 
-\section{Peaks in Phys. Rev. Lett. and Phys. Rev. D}
+\subsection{Peaks in PRL and PRD}
 We observe two peaks in the distribution of Phys. Rev. Lett. (at 70 and 96) and Phys. Rev. D (at 77 and 104). 
 Crossing the lists of authors for each number of articles between 63 and 102 (resp. 72 and 111) for Phys. Rev. Lett. (resp. Phys. Rev. D), we get Fig.~\ref{fig:prl_prd}. 
 The fact that the authors composing a peak in Phys. Rev. Lett. are the same composing one of the peaks in Phys. Rev. D indicates that these authors are all part of a large group publishing together. 

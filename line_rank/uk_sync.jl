@@ -3,9 +3,9 @@ using DelimitedFiles,Statistics
 include("kuramoto.jl")
 include("uk_gen_idx.jl")
 
-P0 = 1.7
+P0 = 1.721
 
-Asp = readdlm("uk_adj_mat.csv",',') .+ 1
+Asp = readdlm("uk_adj_mat.csv",',') 
 
 n = Int(maximum(Asp))
 m = Int(size(Asp)[1]/2)

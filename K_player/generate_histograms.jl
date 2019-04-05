@@ -12,7 +12,7 @@ tail_plot = false
 plots = true
 pl = true
 	s = 0.
-pl_co = false
+pl_co = true
 	a = 0.
 	l = 0.
 expo = false # useless, tail is too weak
@@ -22,7 +22,7 @@ poisson = false # useless, tail is too weak
 stretch_expo = false # not done, tail is too weak
 lognormal = false # not done, is exactly a parabola when plotted in loglog scales
 
-js = ["pre",]
+js = ["energy",]
 #js = [used_journals[parse(Int,ARGS[1])],]
 
 ps = Array{Float64,1}()

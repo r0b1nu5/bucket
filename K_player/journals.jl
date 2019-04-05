@@ -3,6 +3,7 @@
 
 journals_short = ["bmj",
 	"chaos","chaos_91-99","chaos_00-08","chaos_09-17",
+	"energy",
 	"food_chem_tox",
 	"ieee_trans_autom_control",
 	"lancet","lancet_letters",
@@ -27,6 +28,7 @@ journals_full["chaos_95-03"] = "Chaos (1995-2003)"
 journals_full["chaos_00-08"] = "Chaos (2000-08)"
 journals_full["chaos_04-12"] = "Chaos (2004-12)"
 journals_full["chaos_09-17"] = "Chaos (2009-17)"
+journals_full["energy"] = "Energy"
 journals_full["food_chem_tox"] = "Food and Chemical Toxicology"
 journals_full["ieee_trans_autom_control"] = "IEEE Transactions on Automatic Control"
 journals_full["lancet"] = "Lancet"
@@ -50,6 +52,7 @@ journals_full["scientometrics"] = "Scientometrics"
 journals_code = Dict{String,String}()
 
 journals_code["chaos"] = "A"
+journals_code["energy"] = "E-bis"
 journals_code["ieee_trans_autom_control"] = "B"
 journals_code["lancet"] = "C"
 journals_code["nature"] = "D"
@@ -68,6 +71,7 @@ journals_code["food_chem_tox"] = "M"
 journals_colors = Dict{String,Tuple{Array{Float64,1},Array{Float64,1}}}()
 
 journals_colors["chaos"] = ([1.,0.,0.],[1.,0.,1.])
+journals_colors["energy"] = ([1.,0.,0.],[1.,0.,1.])
 journals_colors["ieee_trans_autom_control"] = ([0.,1.,0.],[0.,.8,0.])
 journals_colors["lancet"] = ([0.,0.,1.],[0.,1.,1.])
 journals_colors["nature"] = ([.9,.9,0.],[1.,.5,0.])
