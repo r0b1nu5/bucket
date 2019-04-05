@@ -14,7 +14,7 @@ eps = 1e-6
 max_iter = 100000
 h = .1
 
-Asp = readdlm("uk_adj_mat.csv",',') .+ 1
+Asp = readdlm("uk_adj_mat.csv",',')
 
 n = Int(maximum(Asp))
 m = Int(size(Asp)[1]/2)
