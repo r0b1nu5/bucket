@@ -9,14 +9,14 @@ include("res_dist.jl")
 
 lin_or_sin = "lin"
 ntw = "uk"
-plots = true
-th_perf = true
+plots = false
+th_perf = false
 if th_perf
 	@warn "Theoretical P only works for constant ratio m/d"
 end
 
-taus = [0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475] # duration of the line contingency
-taus = [0.6,]
+taus = [0.025,0.035,0.045,0.055,0.065,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.5,0.6,0.7,1.0,1.5,2.0,3.0,4.0,5.0] # duration of the line contingency
+#taus = [0.6,]
 P0 = .11
 
 eps = 1e-6
@@ -53,7 +53,7 @@ end
 
 mm = .2*(ones(n) + .6*rand(n) .- .3)
 mm = .2*ones(n)
-mm = zeros(n)
+#mm = zeros(n)
 dd = .1*(ones(n) + .6*rand(n) .- .3)
 dd = .1*ones(n)
 M = spdiagm(0 => mm)
@@ -111,8 +111,9 @@ ranked_lines = line_list[ranked_line_idx]
 Mi = 1
 lM = 1
 TM = 1
-# for tau in taus
-tau = taus[1]
+for tau in taus
+#tau = taus[1]
+	@info("τ = $tau")
 	global L,M,D,Mi,lM,TM
 	P1s = Array{Float64,1}()
 	P2s = Array{Float64,1}()
@@ -123,7 +124,7 @@ tau = taus[1]
 	co = 0
 # Simulate line contingency for each line and compute performance measures
 	for l in line_list
-		global co
+#		global co
 		co += 1
 		@info("($(l[1]),$(l[2])), $co/$m")
 #		global P1s,P2s,losses
@@ -273,7 +274,7 @@ tau = taus[1]
 
 	writedlm("data/P2s_$(P0)_$(tau).csv",P2s,',')
 	writedlm("data/losses_$(P0)_$(tau).csv",losses,',')
-#end
+end
 
 
 
