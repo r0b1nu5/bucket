@@ -99,7 +99,7 @@ while run3 && count < m - n + 1
 	
 	xs,dxs,n_iter = kuramoto2(L3,M,D,P,x1[1:n],x1[(n+1):(2*n)])
 	if n_iter >= max_iter
-		run1 = false
+		run3 = false
 		@info("No sync anymore.")
 	end
 	

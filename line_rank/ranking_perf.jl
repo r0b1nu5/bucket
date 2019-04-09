@@ -53,8 +53,9 @@ end
 
 mm = .2*(ones(n) + .6*rand(n) .- .3)
 mm = .2*ones(n)
+mm = zeros(n)
 dd = .1*(ones(n) + .6*rand(n) .- .3)
-dd = mm/2
+dd = .1*ones(n)
 M = spdiagm(0 => mm)
 D = spdiagm(0 => dd)
 
