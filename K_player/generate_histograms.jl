@@ -1,29 +1,29 @@
-using PyPlot, DelimitedFiles, SpecialFunctions, Logging
+using PyPlot, DelimitedFiles, SpecialFunctions, Logging, Dates
 
 include("journals.jl")
 include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
 
-number_sample = 5
+number_sample = 2500
 
 zipf_plot = false
 tail_plot = false
-plots = true
+plots = false
 pl = true
 	s = 0.
 pl_co = true
 	a = 0.
 	l = 0.
 expo = false # useless, tail is too weak
-yule = false
+yule = true
 	al = 0.
 poisson = false # useless, tail is too weak
 stretch_expo = false # not done, tail is too weak
 lognormal = false # not done, is exactly a parabola when plotted in loglog scales
 
-js = ["energy",]
-#js = [used_journals[parse(Int,ARGS[1])],]
+#js = ["energy",]
+js = [used_journals[parse(Int,ARGS[1])],]
 
 ps = Array{Float64,1}()
 p_gof = Dict{String,Array{Float64,1}}
@@ -31,7 +31,7 @@ p_gof = Dict{String,Array{Float64,1}}
 for j in js
 	global s,a,l,al,p_gof,ps
 # Plot histogram
-	@info("Collecting data: $j")
+	@info("$(now()) -- Collecting data: $j")
 	num = Array{Float64,1}(vec(readdlm("./data/"*j*".txt",'\t')[2:end-2,2]))
 	mi = minimum(num)
 	ma = maximum(num)
