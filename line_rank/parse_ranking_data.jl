@@ -85,7 +85,7 @@ function plot_data(Ps,n_rand)
 	
 	figure()
 	PyPlot.plot(Ps,m1,"-o",label="Inital ranking")
-	PyPlot.plot(Ps,m2,"--o",label="Updated ranking")
+	PyPlot.plot(Ps,m2,"--",label="Updated ranking")
 	PyPlot.plot(Ps,p3[3,:],"-o",label="Random ranking (median)")
 	PyPlot.plot(Ps,p3[2,:],"--k",label="Quartiles")
 	PyPlot.plot(Ps,p3[4,:],"--k")
