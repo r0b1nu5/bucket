@@ -2,33 +2,33 @@ using DelimitedFiles
 
 P0 = 1.7
 
-x = readdlm("./data/ranks_init_rank_$P0.csv",',')
+x = readdlm("./data/ranks_init_rank_$(P0)_rev.csv",',')
 ranks1 = Array{Array{Int64,1},1}()
 for i in 1:size(x)[1]
 	push!(ranks1,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 end
 
-x = readdlm("./data/cuts_init_rank_$P0.csv",',')
+x = readdlm("./data/cuts_init_rank_$(P0)_rev.csv",',')
 cuts1 = Array{Array{Int64,1},1}()
 for i in 1:size(x)[1]
 	push!(cuts1,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 end
 
-rmvd1 = Array{Int64,1}(vec(readdlm("./data/rmvd_init_rank_$P0.csv",',')))
+rmvd1 = Array{Int64,1}(vec(readdlm("./data/rmvd_init_rank_$(P0)_rev.csv",',')))
 
-x = readdlm("./data/ranks_updated_rank_$P0.csv",',')
+x = readdlm("./data/ranks_updated_rank_$(P0)_rev.csv",',')
 ranks2 = Array{Array{Int64,1},1}()
 for i in 1:size(x)[1]
 	push!(ranks2,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 end
 
-x = readdlm("./data/cuts_updated_rank_$P0.csv",',')
+x = readdlm("./data/cuts_updated_rank_$(P0)_rev.csv",',')
 cuts2 = Array{Array{Int64,1},1}()
 for i in 1:size(x)[1]
 	push!(cuts2,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 end
 
-rmvd2 = Array{Int64,1}(vec(readdlm("./data/rmvd_updated_rank_$P0.csv",',')))
+rmvd2 = Array{Int64,1}(vec(readdlm("./data/rmvd_updated_rank_$(P0)_rev.csv",',')))
 
 ranks3 = Array{Array{Array{Int64,1},1},1}()
 cuts3 = Array{Array{Array{Int64,1},1},1}()
