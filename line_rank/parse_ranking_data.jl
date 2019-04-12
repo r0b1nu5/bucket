@@ -33,7 +33,7 @@ rmvd2 = Array{Int64,1}(vec(readdlm("./data/rmvd_updated_rank_$P0.csv",',')))
 ranks3 = Array{Array{Array{Int64,1},1},1}()
 cuts3 = Array{Array{Array{Int64,1},1},1}()
 rmvds3 = Array{Array{Int64,1},1}()
-for k in 1:100
+for k in 1:20
 	x = readdlm("./data/ranks_random_$(P0)_$k.csv",',')
 	ranks = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]

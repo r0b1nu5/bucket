@@ -50,7 +50,7 @@ xs1,dxs1 = kuramoto2(L,M,D,P,x0[1:n],x0[(n+1):(2*n)])
 x1 = vec(xs1[:,end])
 =#
 
-rank1 = Array{Int64,1}(sortslices([dist 1:m],dims=1)[:,2])
+rank1 = Array{Int64,1}(sortslices([dist 1:m],dims=1,rev=true)[:,2])
 ranks1 = Array{Array{Int64,1},1}([rank1,])
 run1 = true
 rmvd1 = Array{Int64,1}()
@@ -94,7 +94,7 @@ while run1 && count < m - n + 1
 		l = ll[i]
 		push!(dist,Om[l[1],l[2]])
 	end
-	rank = Array{Int64,1}(sortslices([dist setdiff(1:m,rmvd1)],dims=1)[:,2])
+	rank = Array{Int64,1}(sortslices([dist setdiff(1:m,rmvd1)],dims=1,rev=true)[:,2])
 	push!(ranks1,rank)
 	
 	xs,dxs,n_iter = kuramoto2(L1,M,D,P,x1[1:n],x1[(n+1):(2*n)])
@@ -105,9 +105,9 @@ while run1 && count < m - n + 1
 	
 end
 
-writedlm("data/ranks_init_rank_$P0.csv",ranks1,',')
-writedlm("data/rmvd_init_rank_$P0.csv",rmvd1,',')
-writedlm("data/cuts_init_rank_$P0.csv",cuts1,',')
+writedlm("data/ranks_init_rank_$(P0)_rev.csv",ranks1,',')
+writedlm("data/rmvd_init_rank_$(P0)_rev.csv",rmvd1,',')
+writedlm("data/cuts_init_rank_$(P0)_rev.csv",cuts1,',')
 
 
 
