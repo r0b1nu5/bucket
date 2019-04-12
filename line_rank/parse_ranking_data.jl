@@ -92,6 +92,7 @@ function plot_data(Ps,n_rand)
 	xlabel("P0")
 	ylabel("Number of lines")
 	title("Number of lines to cut before no sync state")
+	legend()
 end
 
 
