@@ -68,6 +68,14 @@ L1 = copy(L)
 
 count = 0
 
+if x1[1] == "nope"
+	global cuts1,ranks1,rmvd1,run1
+	@info "No sync possible!"
+	cuts1 = Array{Array{Int64,1},1}()
+	ranks1 = Array{Array{Int64,1},1}()
+	run1 = false
+end
+
 while run1 && count < m - n + 1
 	global count,L1,run1,cuts1,rmvd1,rank1,ranks1
 	count += 1
