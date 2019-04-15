@@ -39,7 +39,7 @@ P = zeros(n)
 P[gen_idx] = P0*ones(length(gen_idx))
 P .-= mean(P)
 
-x1 = vec(readdlm("uk_sync_$P0.csv",','))
+x1 = vec(readdlm("sync_states/uk_sync_$P0.csv",','))
 
  #=
 th0 = zeros(n)
