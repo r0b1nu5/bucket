@@ -25,7 +25,7 @@ x0 = zeros(2*n)
 
 x1,dx1 = kuramoto2(L,mm,dd,P,x0[1:n],x0[(n+1):(2*n)])
 
-writedlm("uk_sync_$P0.csv",x1,',')
+writedlm("sync_states/uk_sync_$P0.csv",x1,',')
 
 
 

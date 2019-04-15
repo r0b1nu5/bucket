@@ -1,4 +1,4 @@
-using DelimitedFiles,Statistics
+using DelimitedFiles,Statistics,PyPlot
 
 function parse_rank_data(P0::Float64,n_rand::Int)
 # =================== INITIAL RANKING ====================
@@ -67,7 +67,41 @@ function parse_rank_data(P0::Float64,n_rand::Int)
 	p75_3 = quantile(ms,.75)
 	max_3 = maximum(ms)
 	
-	return m1,m2,m3,[min_3,p25_3,p50_3,p75_3,max_3],ranks1,ranks2,ranks3,cuts1,cuts2,cuts3,rmvd1,rmvd2,rmvds3
+# =================== REVERSED INITIAL RANKING ====================
+	x = readdlm("./data/ranks_tini_rank_$(P0)_rev.csv",',')
+	ranks4 = Array{Array{Int64,1},1}()
+	for i in 1:size(x)[1]
+		push!(ranks4,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
+	end
+	
+	x = readdlm("./data/cuts_tini_rank_$(P0)_rev.csv",',')
+	cuts4 = Array{Array{Int64,1},1}()
+	for i in 1:size(x)[1]
+		push!(cuts4,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
+	end
+	
+	rmvd4 = Array{Int64,1}(vec(readdlm("./data/rmvd_tini_rank_$(P0)_rev.csv",',')))
+	
+	m4 = length(ranks4)
+	
+# =================== REVERSED UPDATED RANKING ========================
+	x = readdlm("./data/ranks_detadpu_rank_$(P0)_rev.csv",',')
+	ranks5 = Array{Array{Int64,1},1}()
+	for i in 1:size(x)[1]
+		push!(ranks5,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
+	end
+	
+	x = readdlm("./data/cuts_detadpu_rank_$(P0)_rev.csv",',')
+	cuts5 = Array{Array{Int64,1},1}()
+	for i in 1:size(x)[1]
+		push!(cuts5,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
+	end
+	
+	rmvd5 = Array{Int64,1}(vec(readdlm("./data/rmvd_detadpu_rank_$(P0)_rev.csv",',')))
+	
+	m5 = length(ranks5)
+
+	return m1,m2,m3,[min_3,p25_3,p50_3,p75_3,max_3],m4,m5,ranks1,ranks2,ranks3,cuts1,cuts2,cuts3,rmvd1,rmvd2,rmvds3
 end
 
 function plot_data(Ps,n_rand)
@@ -75,12 +109,16 @@ function plot_data(Ps,n_rand)
 	m2 = Array{Float64,1}()
 	m3 = Array{Float64,1}()
 	p3 = Array{Float64,2}(undef,5,0)
+	m4 = Array{Float64,1}()
+	m5 = Array{Float64,1}()
 	for P0 in Ps
 		X = parse_rank_data(P0,n_rand)
 		push!(m1,X[1])
 		push!(m2,X[2])
 		push!(m3,X[3])
 		p3 = [p3 X[4]]
+		push!(m4,X[5])
+		push!(m5,X[6])
 	end
 	
 	figure()
@@ -89,6 +127,8 @@ function plot_data(Ps,n_rand)
 	PyPlot.plot(Ps,p3[3,:],"-o",label="Random ranking (median)")
 	PyPlot.plot(Ps,p3[2,:],"--k",label="Quartiles")
 	PyPlot.plot(Ps,p3[4,:],"--k")
+	PyPlot.plot(Ps,m4,"-o",label="Latini ranking")
+	PyPlot.plot(Ps,m5,"--",label="Detadpu ranking")
 	xlabel("P0")
 	ylabel("Number of lines")
 	title("Number of lines to cut before no sync state")
