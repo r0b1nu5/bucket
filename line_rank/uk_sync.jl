@@ -3,7 +3,7 @@ using DelimitedFiles,Statistics
 include("kuramoto.jl")
 include("uk_gen_idx.jl")
 
-P0 = 1.4
+P0 = .26
 @info P0
 
 Asp = readdlm("uk_adj_mat.csv",',') 

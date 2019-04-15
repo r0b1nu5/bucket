@@ -6,7 +6,7 @@ include("kuramoto.jl")
 include("uk_gen_idx.jl")
 include("res_dist.jl")
 
-#P0 = 5.0
+P0 = 0.26
 M0 = .2
 D0 = .1
 
@@ -66,7 +66,7 @@ end
 cuts2 = Array{Array{Int64,1},1}([cut2,])
 L2 = copy(L)
 
-count = 1
+count = 0
 
 if x1[1] == "nope"
 	global cuts2,ranks2,rmvd2,run2

@@ -66,7 +66,7 @@ end
 cuts2 = Array{Array{Int64,1},1}([cut2,])
 L2 = copy(L)
 
-count = 1
+count = 0
 
 if x1[1] == "nope"
 	global cuts2,ranks2,rmvd2,run2
