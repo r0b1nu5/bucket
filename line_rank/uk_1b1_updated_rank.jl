@@ -6,7 +6,7 @@ include("kuramoto.jl")
 include("uk_gen_idx.jl")
 include("res_dist.jl")
 
-P0 = 0.26
+#P0 = 0.26
 M0 = .2
 D0 = .1
 
