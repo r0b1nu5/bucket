@@ -36,7 +36,7 @@ D = D0*ones(n)
 
 P = zeros(n)
 P = P0*vec(readdlm("P_57",','))
-P -.= mean(P)
+P .-= mean(P)
 
 x1 = vec(readdlm("sync_states/ieee57_sync_$P0.csv",','))
 
