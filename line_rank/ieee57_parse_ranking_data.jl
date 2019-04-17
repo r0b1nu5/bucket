@@ -127,7 +127,7 @@ function ieee57_plot_data(Ps,n_rand)
 	PyPlot.plot(Ps,p3[3,:],"-o",label="Random ranking (median)")
 	PyPlot.plot(Ps,p3[2,:],"--k",label="Quartiles")
 	PyPlot.plot(Ps,p3[4,:],"--k")
-	PyPlot.plot(Ps,m4,"-o",label="Latini ranking")
+	PyPlot.plot(Ps,m4,"-o",label="Laitini ranking")
 	PyPlot.plot(Ps,m5,"--",label="Detadpu ranking")
 	xlabel("P0")
 	ylabel("Number of lines")
@@ -135,7 +135,7 @@ function ieee57_plot_data(Ps,n_rand)
 	legend()
 end
 
-Ps = [.001,.002,.003,.004,.005,.006,.007,.0072,.00725]
+Ps = [.002,.003,.004,.005,.006,.007,.0072,.00725]
 
 
 
