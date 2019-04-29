@@ -5,7 +5,7 @@ include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
 
-number_sample = 2500
+number_sample = 25
 
 zipf_plot = false
 tail_plot = false
@@ -24,6 +24,7 @@ lognormal = false # not done, is exactly a parabola when plotted in loglog scale
 
 #js = ["energy",]
 js = [used_journals[parse(Int,ARGS[1])],]
+#js = [used_journals[jn],]
 
 ps = Array{Float64,1}()
 p_gof = Dict{String,Array{Float64,1}}
@@ -48,7 +49,7 @@ for j in js
 		
 # Power law
 	if pl
-		@info("$j: Power law...")	
+		@info("$(now()) -- $j: Power law...")	
 ## MLE
 		s = mle_pl(num)
 		C = 1/zeta(s,mi)
@@ -56,7 +57,7 @@ for j in js
 		p_pl = gof_pl(j,num,s,C,mi,number_sample)
 		push!(ps,p_pl)
 		push!(distributions,"Power law")
-		@info(j*", power law: p-value = $p_pl")
+		@info("$(now()) -- "*j*", power law: p-value = $p_pl")
 ## Plot
 		if plots
 			Hs = sum(1.0./((mi:ma).^s))
@@ -68,7 +69,7 @@ for j in js
 	end	
 # Power law with cutoff
 	if pl_co
-		@info("Power law with cutoff...")
+		@info("$(now()) -- Power law with cutoff...")
 ## MLE
 		a,l = mle_plc(num)
 		C = 1/real(polylog(a,Complex(exp(-l))))
@@ -76,7 +77,7 @@ for j in js
 		p_plc = gof_plc(j,num,a,l,C,mi,number_sample)
 		push!(ps,p_plc)
 		push!(distributions,"Power law with cutoff")
-		@info(j*", power law with cutoff: p-value = $p_plc")
+		@info("$(now()) -- "*j*", power law with cutoff: p-value = $p_plc")
 ## Plot
 		if plots
 			zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
@@ -86,7 +87,7 @@ for j in js
 
 # MLE of exponential distribution
 	if expo
-		@info("Exponential distribution...")
+		@info("$(now()) -- Exponential distribution...")
 		la = mle_exp(num,mi)
 		C = (1-exp(-la))*exp(la*mi)
 		zzz = C .* exp.(-la.*(mi:ma))
@@ -95,7 +96,7 @@ for j in js
 
 # Yule distribution
 	if yule
-		@info("Yule distribution...")
+		@info("$(now()) -- Yule distribution...")
 ## MLE
 		al = mle_yule(num,mi)
 		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
@@ -103,7 +104,7 @@ for j in js
 		p_yule = gof_yule(j,num,al,C,mi,number_sample)
 		push!(ps,p_yule)
 		push!(distributions,"Yule-Simon distribution")
-		@info(j*", Yule-Simon distribution: p-value = $p_yule")
+		@info("$(now()) -- "*j*", Yule-Simon distribution: p-value = $p_yule")
 ## Plot
 		if plots
 			zzzz = C*(al-1)*beta.(mi:ma,al)
@@ -113,7 +114,7 @@ for j in js
 
 # Poisson distribution
 	if poisson
-		@info("Poisson distribution...")
+		@info("$(now()) -- Poisson distribution...")
 ## MLE
 		mu = mle_poisson(num,mi)
 		C = exp(mu) - sum(mu.^(0:mi-1)./(factorial.(0:mi-1)))
@@ -121,7 +122,7 @@ for j in js
 		p_poisson = gof_poisson(j,num,mu,C,mi,number_sample)
 		push!(ps,p_poisson)
 		push!(distributions,"Poisson distribution")
-		@info(j*", Poisson distribution: p-value = $p_poisson")
+		@info("$(now()) -- "*j*", Poisson distribution: p-value = $p_poisson")
 ## Plot
 		if plots
 			z5 = C .* mu.^(mi:ma)./(factorial.(mi:ma))
@@ -164,6 +165,6 @@ end
 
 j = js[1]
 
-writedlm("./analysis/"*j*"_params.csv",[s,a,l,al],',')
-writedlm("./analysis/"*j*"_p-gof.csv",ps,',')
+writedlm("./analysis/"*j*"_params_$(number_sample).csv",[s,a,l,al],',')
+writedlm("./analysis/"*j*"_p-gof_$(number_sample).csv",ps,',')
 
