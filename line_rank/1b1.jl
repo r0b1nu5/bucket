@@ -1,27 +1,40 @@
-using DelimitedFiles,Statistics,LinearAlgebra,SparseArrays
+using DelimitedFiles,Statistics,LinearAlgebra,SparseArrays,Dates
 
 include("rm_line.jl")
 include("isconnected.jl")
 include("kuramoto.jl")
 include("res_dist.jl")
+include("sync.jl")
+
+# Removes the lines of a network one by one until there is no fixed point anymore. Lines are removed such that the network is not splitted.
+
+## INPUT
+# ntw: network considered ("uk", "ieee57", "ieee118", or "ieee300". "pegase" does not converge.)
+# ranking_type: ranking used to remove the lines ("init": at each step, removes the most central line according to the measure in the initial network. "updaed": same but updates the ranking after removing each line. "random": removes lines randomly. "tini": same as "init" but removes the least central line. "detadpu": same as "updated" but removes the least central line.)
+# ranking_measure: measure used to make the ranking ("Omega": resistance distance, "load": uses the load on the line, "Omega+load": uses the resistance distance rescaled by the load on the line.)
 
 function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Float64,M::Array{Float64,1},D::Array{Float64,1},eps::Float64=1e-6,max_iter::Int64=100000,h::Float64=.1)
 	
 	Asp = readdlm(ntw*"_adj_mat.csv",',')
 	
-	n = Int(maximum(Asp))
+	n = round(Int,maximum(Asp[:,1]))
 	m = Int(size(Asp)[1]/2)
 	
-	A = sparse(vec(Asp[:,1]),vec(Asp[:,2]),vec(Asp[:,3]))
+	A = sparse(Array{Int,1}(Asp[:,1]),Array{Int,1}(Asp[:,2]),vec(Asp[:,3]))
 	L = spdiagm(0 => vec(sum(A,dims=2))) - A
 	
 	Om = res_dist(L)
 	
-	P = P0*vec(readdlm("P_"*ntw*".csv"))
+	P = P0*vec(readdlm("P_"*ntw*".csv",','))
 	P .-= mean(P)
 	
-	x1 = vec(readdlm("sync_states/"*ntw*"_sync_$P0.csv",','))
-	dx1 = x[1:n]*ones(1,n) - ones(n)*transpose(x1[1:n])
+	list_sync = readdir("sync_states")
+	if length(intersect(list_sync,[ntw*"sync_$P0.csv",])) == 0
+		x1,dx1 = sync(ntw,P0,M,D)
+	else
+		x1 = vec(readdlm("sync_states/"*ntw*"_sync_$P0.csv",','))
+	end
+	dx1 = x1[1:n]*ones(1,n) - ones(n)*transpose(x1[1:n])
 	load = L.*dx1
 	load_rate = abs.(dx1./(pi/2))
 	
@@ -41,7 +54,8 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 		end
 	end
 	
-	rank = Array{Int64,1}(sortslices([mes 1:m],dims=1,rev=true)[:,2])
+	rank0 = Array{Int64,1}(sortslices([mes 1:m],dims=1,rev=true)[:,2])
+	rank = copy(rank0)
 	ranks = Array{Array{Int64,1},1}([rank,])
 	run = true
 	rmvd = Array{Int64,1}()
@@ -68,22 +82,30 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 	end
 	
 	while run && count < m-n+1
-		global count,Lr,run,cuts,rmvd,rank,ranks
+#		global count,run,cuts,rmvd,ranks,Lr,rank0,ranks
 		count += 1
 		@info "$(now()) -- "*ntw*": round $count"
 		
 		used_rank = Array{Int64,1}()
-		if
-#		TODO: define used ranking...
+		if ranking_type == "init"
+			used_rank = rank0
+		elseif ranking_type == "updated"
+			used_rank = rank
+		elseif ranking_type == "random"
+			used_rank = rand(1:m,10000)
+		elseif ranking_type == "tini"
+			used_rank = rank0[end:-1:1]
+		elseif ranking_type == "detadpu"
+			used_rank = rank[end:-1:1]
 		end
 		k = 1
-		i = setdiff(rank,cuts[end],rmvd)[k]
+		i = setdiff(used_rank,cuts[end],rmvd)[k]
 		Lt = rm_line(Lr,ll[i])
 		cut = cuts[end]
 		while !isconnected(Lt)
 			push!(cut,i)
 			k += 1
-			i = setdiff(rank,cuts[end],rmvd)[k]
+			i = setdiff(used_rank,cuts[end],rmvd)[k]
 			Lt = rm_line(Lr,ll[i])
 		end
 		Lr = copy(Lt)
