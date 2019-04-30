@@ -143,9 +143,9 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 		end
 	end
 	
-	writedlm("data/ranks_1b1_$(P0)_"*ranking_type*"_"*ranking_measure*".csv",ranks,',')
-	writedlm("data/rmvd_1b1_$(P0)_"*ranking_type*"_"*ranking_measure*".csv",rmvd,',')
-	writedlm("data/cuts_1b1_$(P0)_"*ranking_type*"_"*ranking_measure*".csv",cuts,',')
+	writedlm("data/ranks_1b1_"*ntw*"_$(P0)_"*ranking_type*"_"*ranking_measure*".csv",ranks,',')
+	writedlm("data/rmvd_1b1_"*ntw*"_$(P0)_"*ranking_type*"_"*ranking_measure*".csv",rmvd,',')
+	writedlm("data/cuts_1b1_"*ntw*"_$(P0)_"*ranking_type*"_"*ranking_measure*".csv",cuts,',')
 	
 	return ranks,rmvd,cuts
 end
