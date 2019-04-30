@@ -1,61 +1,61 @@
 using DelimitedFiles,Statistics,PyPlot
 
-function ieee57_parse_rank_data(P0::Float64,n_rand::Int)
-# =================== INITIAL RANKING ====================
-	x = readdlm("./data/ieee57_ranks_init_rank_$(P0)_rev.csv",',')
+function parse_ranking_data(ntw::String,ranking_measure::String,P0::Float64,n_rand::Int)
+# ========================== INITIAL RANKING ==========================
+	x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_init_"*ranking_measure*".csv",',')
 	ranks1 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
 		push!(ranks1,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	end
 	
-	x = readdlm("./data/ieee57_cuts_init_rank_$(P0)_rev.csv",',')
+	x = readdlm("data/cuts_1b1_"*ntw*"_$(P0)_init_"*ranking_measure*".csv",',')
 	cuts1 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
 		push!(cuts1,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	end
 	
-	rmvd1 = Array{Int64,1}(vec(readdlm("./data/ieee57_rmvd_init_rank_$(P0)_rev.csv",',')))
+	rmvd1 = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_init_"*ranking_measure*".csv",',')))
 	
 	m1 = length(ranks1)
-	
-# =================== UPDATED RANKING ========================
-	x = readdlm("./data/ieee57_ranks_updated_rank_$(P0)_rev.csv",',')
+
+# ========================== UPDATED RANKING ==========================
+	x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_updated_"*ranking_measure*".csv",',')
 	ranks2 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
 		push!(ranks2,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	end
 	
-	x = readdlm("./data/ieee57_cuts_updated_rank_$(P0)_rev.csv",',')
+	x = readdlm("data/cuts_1b1_"*ntw*"_$(P0)_updated_"*ranking_measure*".csv",',')
 	cuts2 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
 		push!(cuts2,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	end
 	
-	rmvd2 = Array{Int64,1}(vec(readdlm("./data/ieee57_rmvd_updated_rank_$(P0)_rev.csv",',')))
+	rmvd2 = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_updated_"*ranking_measure*".csv",',')))
 	
 	m2 = length(ranks2)
-
-# ================= RANDOM RANKING ============================
+	
+# ========================== RANDOM RANKING ===========================
 	ranks3 = Array{Array{Array{Int64,1},1},1}()
 	cuts3 = Array{Array{Array{Int64,1},1},1}()
 	rmvds3 = Array{Array{Int64,1},1}()
 	ms = Array{Float64,1}()
 	for k in 1:n_rand
-		x = readdlm("./data/ieee57_ranks_random_$(P0)_$k.csv",',')
+		x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_random_$k.csv",',')
 		ranks = Array{Array{Int64,1},1}()
 		for i in 1:size(x)[1]
 			push!(ranks,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 		end
 		push!(ranks3,ranks)
 		
-		x = readdlm("./data/ieee57_cuts_random_$(P0)_$k.csv",',')
+		x = readdlm("data/cuts_1b1_"*ntw*"_$(P0)_random_$k.csv",',')
 		cuts = Array{Array{Int64,1},1}()
 		for i in 1:size(x)[1]
 			push!(cuts,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 		end
 		push!(cuts3,cuts)
 		
-		push!(rmvds3,Array{Int64,1}(vec(readdlm("./data/ieee57_rmvd_random_$(P0)_$k.csv",','))))
+		push!(rmvds3,Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_random_$k.csv",','))))
 		
 		push!(ms,length(ranks))
 	end
@@ -67,44 +67,43 @@ function ieee57_parse_rank_data(P0::Float64,n_rand::Int)
 	p75_3 = quantile(ms,.75)
 	max_3 = maximum(ms)
 	
-# =================== REVERSED INITIAL RANKING ====================
-	x = readdlm("./data/ieee57_ranks_tini_rank_$(P0)_rev.csv",',')
+# ========================== LAITINI RANKING ==========================
+	x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_tini_"*ranking_measure*".csv",',')
 	ranks4 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
 		push!(ranks4,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	end
 	
-	x = readdlm("./data/ieee57_cuts_tini_rank_$(P0)_rev.csv",',')
+	x = readdlm("data/cuts_1b1_"*ntw*"_$(P0)_tini_"*ranking_measure*".csv",',')
 	cuts4 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
 		push!(cuts4,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	end
 	
-	rmvd4 = Array{Int64,1}(vec(readdlm("./data/ieee57_rmvd_tini_rank_$(P0)_rev.csv",',')))
+	rmvd4 = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_tini_"*ranking_measure*".csv",',')))
 	
 	m4 = length(ranks4)
 	
-# =================== REVERSED UPDATED RANKING ========================
-	x = readdlm("./data/ieee57_ranks_detadpu_rank_$(P0)_rev.csv",',')
+# ========================== DETADPU RANKING ==========================
+	x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_detadpu_"*ranking_measure*".csv",',')
 	ranks5 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
 		push!(ranks5,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	end
 	
-	x = readdlm("./data/ieee57_cuts_detadpu_rank_$(P0)_rev.csv",',')
-	cuts5 = Array{Array{Int64,1},1}()
+	x = readdlm("data/cuts_1b1_"*ntw*"_$(P0)_detadpu_"*ranking_measure*".csv",',')
 	for i in 1:size(x)[1]
 		push!(cuts5,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	end
 	
-	rmvd5 = Array{Int64,1}(vec(readdlm("./data/ieee57_rmvd_detadpu_rank_$(P0)_rev.csv",',')))
+	rmvd5 = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_detadpu_"*ranking_measure*".csv",',')))
 	
 	m5 = length(ranks5)
-
-	return m1,m2,m3,[min_3,p25_3,p50_3,p75_3,max_3],m4,m5,ranks1,ranks2,ranks3,cuts1,cuts2,cuts3,rmvd1,rmvd2,rmvds3
+	
+	return m1,m2,m3,[min_3,p25_3,p50_5,p75_3,max_3],m4,m5
 end
 
-function ieee57_plot_data(Ps,n_rand)
+function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64,1},n_rand::Int64)
 	m1 = Array{Float64,1}()
 	m2 = Array{Float64,1}()
 	m3 = Array{Float64,1}()
@@ -112,7 +111,7 @@ function ieee57_plot_data(Ps,n_rand)
 	m4 = Array{Float64,1}()
 	m5 = Array{Float64,1}()
 	for P0 in Ps
-		X = ieee57_parse_rank_data(P0,n_rand)
+		X = parse_ranking_data(ntw,ranking_measure,P0,n_rand)
 		push!(m1,X[1])
 		push!(m2,X[2])
 		push!(m3,X[3])
@@ -122,7 +121,7 @@ function ieee57_plot_data(Ps,n_rand)
 	end
 	
 	figure()
-	PyPlot.plot(Ps,m1,"-o",label="Inital ranking")
+	PyPlot.plot(Ps,m1,"-o",label="Initial ranking")
 	PyPlot.plot(Ps,m2,"--",label="Updated ranking")
 	PyPlot.plot(Ps,p3[3,:],"-o",label="Random ranking (median)")
 	PyPlot.plot(Ps,p3[2,:],"--k",label="Quartiles")
@@ -131,11 +130,10 @@ function ieee57_plot_data(Ps,n_rand)
 	PyPlot.plot(Ps,m5,"--",label="Detadpu ranking")
 	xlabel("P0")
 	ylabel("Number of lines")
-	title("IEEE57: Number of lines to cut before no sync state")
+	title(ntw*": Number of lines to cut before no sync state")
 	legend()
 end
 
-Ps = [.002,.003,.004,.005,.006,.007,.0072,.00725]
 
 
 

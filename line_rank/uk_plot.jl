@@ -5,8 +5,8 @@ include("../get_rgb.jl")
 function uk_plot()
 	@info("Plotting UK network...")
 	
-	coord = readdlm("uk_grid_coord.csv",',')
-	bord = readdlm("uk_border_coord.csv",',')
+	coord = readdlm("uk_data/uk_grid_coord.csv",',')
+	bord = readdlm("uk_data/uk_border_coord.csv",',')
 	adj = Array{Int,2}(readdlm("uk_adj_mat.csv",',')[:,1:2] .+ 1)
 	
 	figure("UK",(8,10))
@@ -25,8 +25,8 @@ end
 function uk_plot(dot_col::Array{Float64,1},line_col::Array{Float64,1}=[0.,0.,0.],bord_col::Array{Float64,1}=[0.,0.,0.])
 	@info("Plotting UK network...")
 	
-	coord = readdlm("uk_grid_coord.csv",',')
-	bord = readdlm("uk_border_coord.csv",',')
+	coord = readdlm("uk_data/uk_grid_coord.csv",',')
+	bord = readdlm("uk_data/uk_border_coord.csv",',')
 	adj = Array{Int,2}(readdlm("uk_adj_mat.csv",',')[:,1:2] .+ 1)
 	
 	figure("UK",(8,10))
@@ -46,8 +46,8 @@ end
 function uk_plot(iscolored::Array{Bool,1},dot_range::Array{Float64,1},line_range::Array{Float64,1})
 	@info("Plotting UK network...")
 	
-	coord = readdlm("uk_grid_coord.csv",',')
-	bord = readdlm("uk_border_coord.csv",',')
+	coord = readdlm("uk_data/uk_grid_coord.csv",',')
+	bord = readdlm("uk_data/uk_border_coord.csv",',')
 	adj = Array{Int,2}(readdlm("uk_adj_mat.csv",',')[:,1:2] .+ 1)
 	
 	figure("UK",(8,10))
