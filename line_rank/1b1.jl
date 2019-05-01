@@ -99,47 +99,54 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 			used_rank = rank[end:-1:1]
 		end
 		k = 1
+		kmax = length(setdiff(used_rank,cuts[end],rmvd))
 		i = setdiff(used_rank,cuts[end],rmvd)[k]
 		Lt = rm_line(Lr,ll[i])
 		cut = cuts[end]
-		while !isconnected(Lt)
+		while !isconnected(Lt) && k < kmax
 			push!(cut,i)
 			k += 1
 			i = setdiff(used_rank,cuts[end],rmvd)[k]
 			Lt = rm_line(Lr,ll[i])
 		end
-		Lr = copy(Lt)
-		push!(rmvd,i)
-		push!(cuts,cut)
-		l = ll[i]
-		Om = res_dist(Lr)
 		
-		xs,dxs,n_iter = kuramoto2(Lr,M,D,P,x1[1:n],x1[(n+1):(2*n)])
-		
-		ddx = xs[1:n]*ones(1,n) - ones(n)*transpose(xs[1:n])
-		
-		load = Lr.*ddx
-		load_rate = abs.(ddx./(pi/2))
-		
-		mes = Array{Float64,1}()
-		for i in setdiff(1:m,rmvd)
-			l = ll[i]
-			if ranking_measure == "Omega"
-				push!(mes,Om[l[1],l[2]])
-			elseif ranking_measure == "load"
-				push!(mes,load_rate[l[1],l[2]])
-			elseif ranking_measure == "Omega+load"
-				push!(mes,Om[l[1],l[2]]*load[l[1],l[2]]^2)
-			else 
-				@info "$(now()) -- "*ntw*": No clear ranking strategy..."
-			end
-		end
-		rank = Array{Int64,1}(sortslices([mes setdiff(1:m,rmvd)],dims=1,rev=true)[:,2])
-		push!(ranks,rank)
-		
-		if n_iter >= max_iter
+		if k >= kmax
+			@info "$(now()) -- "*ntw*": Network splits => EXIT"
 			run = false
-			@info "$(now()) -- "*ntw*": No sync anymore."
+		else
+			Lr = copy(Lt)
+			push!(rmvd,i)
+			push!(cuts,cut)
+			l = ll[i]
+			Om = res_dist(Lr)
+			
+			xs,dxs,n_iter = kuramoto2(Lr,M,D,P,x1[1:n],x1[(n+1):(2*n)])
+			
+			ddx = xs[1:n]*ones(1,n) - ones(n)*transpose(xs[1:n])
+			
+			load = Lr.*ddx
+			load_rate = abs.(ddx./(pi/2))
+			
+			mes = Array{Float64,1}()
+			for i in setdiff(1:m,rmvd)
+				l = ll[i]
+				if ranking_measure == "Omega"
+					push!(mes,Om[l[1],l[2]])
+				elseif ranking_measure == "load"
+					push!(mes,load_rate[l[1],l[2]])
+				elseif ranking_measure == "Omega+load"
+					push!(mes,Om[l[1],l[2]]*load[l[1],l[2]]^2)
+				else 
+					@info "$(now()) -- "*ntw*": No clear ranking strategy..."
+				end
+			end
+			rank = Array{Int64,1}(sortslices([mes setdiff(1:m,rmvd)],dims=1,rev=true)[:,2])
+			push!(ranks,rank)
+			
+			if n_iter >= max_iter
+				run = false
+				@info "$(now()) -- "*ntw*": No sync anymore => EXIT"
+			end
 		end
 	end
 	
