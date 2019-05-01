@@ -41,7 +41,7 @@ function gof_plc(j::String,x::Array{Float64,1},a0::Float64,l0::Float64,C0::Float
 		end
 		z = rand_plc(rand(n_data),a0,l0,C0,mi)
 		a,l = mle_plc(z)
-		C = 1/real(polylog(a,Complex(exp(-l))))
+		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
 		KS = KS_plc(z,a,l,C)
 		push!(KSs,KS)
 	end
@@ -182,7 +182,7 @@ function rand_pl(y::Array{Float64,1},s::Float64,C::Float64,mi::Float64=1.)
 	n = mi - 1
 	todo = trues(length(y))
 	ns = n*ones(length(y))
-	while x < maximum(y)
+	while x < maximum(y) #&& x < 1 - 1/(2500*100)
 		ns += todo .* ones(length(y))
 		n += 1
 		x += C*n^(-s)
@@ -197,8 +197,8 @@ function rand_plc(y::Array{Float64,1},a::Float64,l::Float64,C::Float64,mi::Float
 	n = mi - 1
 	todo = trues(length(y))
 	ns = n*ones(length(y))
-	while x < maximum(y)
-		ns += todo .* ones(length(y))
+	while x < maximum(y) #&& x < 1 - 1/(2500*100)
+		ns += todo .* ones(length(y)) 	
 		n += 1
 		x += C*n^(-a)*exp(-l*n)
 		todo = [y[i] > x for i in 1:length(y)]
@@ -212,7 +212,7 @@ function rand_yule(y::Array{Float64,1},a::Float64,C::Float64,mi::Float64=1.)
 	n = mi - 1
 	todo = trues(length(y))
 	ns = n*ones(length(y))
-	while x < maximum(y)
+	while x < maximum(y) #&& x < 1 - 1/(2500*100)
 		ns += todo .* ones(length(y))
 		n += 1
 		x += C*(a-1)*beta(n,a)
@@ -228,7 +228,7 @@ function rand_poisson(y::Array{Float64,1},mu::Float64,C::Float64,mi::Float64=1.)
 	todo = trues(length(y))
 	ns = n*ones(length(y))
 	last_term = mu^n/factorial(n)
-	while x < maximum(y)
+	while x < maximum(y) && 1 - 1/(2500*100)
 		ns += todo .* ones(length(y))
 		n += 1
 		last_term *= mu/n

@@ -29,7 +29,7 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 	P .-= mean(P)
 	
 	list_sync = readdir("sync_states")
-	if length(intersect(list_sync,[ntw*"sync_$P0.csv",])) == 0
+	if length(intersect(list_sync,[ntw*"_sync_$P0.csv",])) == 0
 		x1,dx1 = sync(ntw,P0,M,D)
 	else
 		x1 = vec(readdlm("sync_states/"*ntw*"_sync_$P0.csv",','))
@@ -102,8 +102,8 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 		kmax = length(setdiff(used_rank,cuts[end],rmvd))
 		i = setdiff(used_rank,cuts[end],rmvd)[k]
 		Lt = rm_line(Lr,ll[i])
-		cut = cuts[end]
-		while !isconnected(Lt) && k < kmax
+		cut = copy(cuts[end])
+		while (!isconnected(Lt)) && (k < kmax)
 			push!(cut,i)
 			k += 1
 			i = setdiff(used_rank,cuts[end],rmvd)[k]

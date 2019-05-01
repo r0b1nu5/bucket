@@ -5,7 +5,7 @@ include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
 
-number_sample = 25
+number_sample = 500
 
 zipf_plot = false
 tail_plot = false
@@ -72,7 +72,7 @@ for j in js
 		@info("$(now()) -- Power law with cutoff...")
 ## MLE
 		a,l = mle_plc(num)
-		C = 1/real(polylog(a,Complex(exp(-l))))
+		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
 ## Goodness-of-fit
 		p_plc = gof_plc(j,num,a,l,C,mi,number_sample)
 		push!(ps,p_plc)
@@ -165,6 +165,6 @@ end
 
 j = js[1]
 
-writedlm("./analysis/"*j*"_params_$(number_sample).csv",[s,a,l,al],',')
-writedlm("./analysis/"*j*"_p-gof_$(number_sample).csv",ps,',')
+writedlm("./analysis/"*j*"_params_$(number_sample)_$iter.csv",[s,a,l,al],',')
+writedlm("./analysis/"*j*"_p-gof_$(number_sample)_$iter.csv",ps,',')
 
