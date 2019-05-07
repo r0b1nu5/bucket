@@ -49,11 +49,11 @@ if n_rand > 0
 		end
 		push!(ranks3,ranks)
 		
-		x = readdlm("data/cuts_1b1_"*ntw*"_$(P0)_random_$k.csv",',')
+		#x = readdlm("data/cuts_1b1"*ntw*"_$(P0)_random_$k.csv",',')
 		cuts = Array{Array{Int64,1},1}()
-		for i in 1:size(x)[1]
-			push!(cuts,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
-		end
+		#for i in 1:size(x)[1]
+		#	push!(cuts,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
+		#end
 		push!(cuts3,cuts)
 		
 		push!(rmvds3,Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_random_$k.csv",','))))
