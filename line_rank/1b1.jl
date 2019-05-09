@@ -5,6 +5,7 @@ include("isconnected.jl")
 include("kuramoto.jl")
 include("res_dist.jl")
 include("sync.jl")
+include("NR.jl")
 
 # Removes the lines of a network one by one until there is no fixed point anymore. Lines are removed such that the network is not splitted.
 
@@ -142,7 +143,7 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 			
 			xs,n_iter = NR_kuramoto(Br,wr,P)
 #			xs,dxs,n_iter = kuramoto2(Lr,M,D,P,x1[1:n],x1[(n+1):(2*n)])
-			stable = isstable(Lr,th)
+			stable = isstable(Lr,xs)
 			
 			
 			mes = Array{Float64,1}()
