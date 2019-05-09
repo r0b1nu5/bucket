@@ -52,7 +52,7 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 			for i in 1:m
 				l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
 				push!(ll,l)
-				push!(mes,L[l[1],l[2]]*Om[l[1],l[2]])
+				push!(mes,-L[l[1],l[2]]*Om[l[1],l[2]])
 			end
 		elseif ranking_measure == "load"
 			dx1 = x1[1:n]*ones(1,n) - ones(n)*transpose(x1[1:n])
@@ -151,7 +151,7 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 				Om = res_dist(Lr)
 				for i in setdiff(1:m,rmvd)
 					l = ll[i]
-					push!(mes,Lr[l[1],l[2]]*Om[l[1],l[2]])
+					push!(mes,-Lr[l[1],l[2]]*Om[l[1],l[2]])
 				end
 			elseif ranking_measure == "load"
 				ddx = xs[1:n]*ones(1,n) - ones(n)*transpose(xs[1:n])	
