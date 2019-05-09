@@ -32,7 +32,7 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 	
 	list_sync = readdir("sync_states")
 	if length(intersect(list_sync,[ntw*"_sync_$P0.csv",])) == 0
-		x1,dx1 = sync(ntw,P0,M,D)
+		x1 = sync(ntw,P0,M,D)
 	else
 		x1 = vec(readdlm("sync_states/"*ntw*"_sync_$P0.csv",','))
 	end

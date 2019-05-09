@@ -42,21 +42,21 @@ if n_rand > 0
 	rmvds3 = Array{Array{Int64,1},1}()
 	ms = Array{Float64,1}()
 	for k in 1:n_rand
-		x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_random_$k.csv",',')
+		x = readdlm("data/random/ranks_1b1_"*ntw*"_$(P0)_random_$k.csv",',')
 		ranks = Array{Array{Int64,1},1}()
 		for i in 1:size(x)[1]
 			push!(ranks,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 		end
 		push!(ranks3,ranks)
 		
-		#x = readdlm("data/cuts_1b1"*ntw*"_$(P0)_random_$k.csv",',')
+		#x = readdlm("data/random/cuts_1b1"*ntw*"_$(P0)_random_$k.csv",',')
 		cuts = Array{Array{Int64,1},1}()
 		#for i in 1:size(x)[1]
 		#	push!(cuts,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 		#end
 		push!(cuts3,cuts)
 		
-		push!(rmvds3,Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_random_$k.csv",','))))
+		push!(rmvds3,Array{Int64,1}(vec(readdlm("data/random/rmvd_1b1_"*ntw*"_$(P0)_random_$k.csv",','))))
 		
 		push!(ms,length(ranks))
 	end
@@ -121,6 +121,8 @@ function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64
 	m4 = Array{Float64,1}()
 	m5 = Array{Float64,1}()
 	for P0 in Ps
+		@info "P0 = $P0"
+		
 		X = parse_ranking_data(ntw,ranking_measure,P0,n_rand)
 		push!(m1,X[1])
 		push!(m2,X[2])
