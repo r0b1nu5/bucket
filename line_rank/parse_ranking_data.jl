@@ -149,6 +149,15 @@ function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64
 		m = 0
 	end
 	
+	rm_legend = ranking_measure
+	if ranking_measure == "Omega"
+		rm_legend = "b*Ω"
+	elseif ranking_measure == "load"
+		rm_legend = "Relative load [%]"
+	elseif ranking_measure == "Omega+load"
+		rm_legend = "b*Ω*Δθ*Δθ"
+	end
+	
 	figure()
 	PyPlot.plot([minimum(Ps),maximum(Ps)],[m-n+1,m-n+1],":k",linewidth=1.5)
 	PyPlot.plot(Ps,m1,"-o",label="Initial ranking")
@@ -160,7 +169,7 @@ function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64
 	PyPlot.plot(Ps,m5,"--",label="Detadpu ranking")
 	xlabel("P0")
 	ylabel("Number of lines")
-	title(ntw*"_"*ranking_measure*": Number of lines to cut before no sync state")
+	title(ntw*", "*rm_legend*": Number of lines to cut before no sync state")
 	legend()
 end
 
