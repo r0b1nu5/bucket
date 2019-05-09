@@ -24,7 +24,7 @@ d = .1*ones(118)
 # #=
 ntw = "ieee300"
 #Ps = [.005,.01,.015,.02,.025,.05,.75,.1,.125,.15,.175,.2,.209]
-Ps = [.05,.75,.1,.125,.15,.175,.2,.209]
+Ps = [.002,.004,.005,.006,.008,.01,.012,.014,.015,.016,.018,.02,.022,.024,.025]
 m = 2*ones(300)
 d = 1*ones(300)
 # =#
@@ -32,11 +32,11 @@ d = 1*ones(300)
 meas = "Omega"
 
 for P0 in Ps
-	for i in 1:100
+	for i in 1:20
 		ranks,rmvd,cuts = rmv_1b1(ntw,"random",meas,P0,m,d,)
-		writedlm("data/ranks_1b1_"*ntw*"_$(P0)_random_$i.csv",ranks,',')
-		writedlm("data/rmvd_1b1_"*ntw*"_$(P0)_random_$i.csv",rmvd,',')
-		writedlm("data/cuts_1b1_"*ntw*"_$(P0)_random_$i.csv",cuts,',')
+		writedlm("data/random/ranks_1b1_"*ntw*"_$(P0)_random_$i.csv",ranks,',')
+		writedlm("data/random/rmvd_1b1_"*ntw*"_$(P0)_random_$i.csv",rmvd,',')
+		writedlm("data/random/cuts_1b1_"*ntw*"_$(P0)_random_$i.csv",cuts,',')
 	end
 end
 
