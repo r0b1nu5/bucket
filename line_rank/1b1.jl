@@ -36,71 +36,71 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 		x1 = vec(readdlm("sync_states/"*ntw*"_sync_$P0.csv",','))
 	end
 	
-	ll = Array{Tuple{Int64,Int64},1}()
-	mes = Array{Float64,1}()
-	
-	if ranking_measure == "Omega"
-		Om = res_dist(L)
-		for i in 1:m
-			l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
-			push!(ll,l)
-			push!(mes,L[l[1],l[2]]*Om[l[1],l[2]])
-		end
-	elseif ranking_measure == "load"
-		dx1 = x1[1:n]*ones(1,n) - ones(n)*transpose(x1[1:n])
-		load = L.*dx1
-		load_rate = abs.(dx1./(pi/2))
-		for i in 1:m
-			l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
-			push!(ll,l)
-			push!(mes,load_rate[l[1],l[2]])
-		end
-	elseif ranking_measure == "Omega+load"
-		Om = res_dist(L)
-		dx1 = x1[1:n]*ones(1,n) - ones(n)*transpose(x1[1:n])
-		load = L.*dx1
-		for i in 1:m
-			l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
-			push!(ll,l)
-			push!(mes,Om[l[1],l[2]]*load[l[1],l[2]]^2)
-		end
-	else
-		for i in 1:m
-			l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
-			push!(ll,l)
-			@info "$(now()) -- "*ntw*": No clear ranking strategy..."
-		end
-	end
-	
-	rank0 = Array{Int64,1}(sortslices([mes 1:m],dims=1,rev=true)[:,2])
-	rank = copy(rank0)
-	ranks = Array{Array{Int64,1},1}([rank,])
-	run = true
-	rmvd = Array{Int64,1}()
-	cut = Array{Int64,1}()
-	for i in 1:m
-		Lt = copy(L)
-		l = ll[i]
-		Lt = rm_line(L,ll[i])
-		if !isconnected(Lt)
-			push!(cut,i)
-		end
-	end
-	cuts = Array{Array{Int64,1},1}([cut,])
-	Lr = copy(L)
-	Br = copy(B)
-	wr = copy(w)
-	
-	count = 0
-	
 	if x1[1] == "nope"
 		global cuts,ranks,rmvd,run
 		@info "$(now()) -- "*ntw*": No sync possible!"
 		cuts = Array{Array{Int64,1},1}()
 		ranks = Array{Array{Int64,1},1}()
 		run = false
+	else
+		ll = Array{Tuple{Int64,Int64},1}()
+		mes = Array{Float64,1}()
+		
+		if ranking_measure == "Omega"
+			Om = res_dist(L)
+			for i in 1:m
+				l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
+				push!(ll,l)
+				push!(mes,L[l[1],l[2]]*Om[l[1],l[2]])
+			end
+		elseif ranking_measure == "load"
+			dx1 = x1[1:n]*ones(1,n) - ones(n)*transpose(x1[1:n])
+			load = L.*dx1
+			load_rate = abs.(dx1./(pi/2))
+			for i in 1:m
+				l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
+				push!(ll,l)
+				push!(mes,load_rate[l[1],l[2]])
+			end
+		elseif ranking_measure == "Omega+load"
+			Om = res_dist(L)
+			dx1 = x1[1:n]*ones(1,n) - ones(n)*transpose(x1[1:n])
+			load = L.*dx1
+			for i in 1:m
+				l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
+				push!(ll,l)
+				push!(mes,Om[l[1],l[2]]*load[l[1],l[2]]^2)
+			end
+		else
+			for i in 1:m
+				l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
+				push!(ll,l)
+				@info "$(now()) -- "*ntw*": No clear ranking strategy..."
+			end
+		end
+		
+		rank0 = Array{Int64,1}(sortslices([mes 1:m],dims=1,rev=true)[:,2])
+		rank = copy(rank0)
+		ranks = Array{Array{Int64,1},1}([rank,])
+		run = true
+		rmvd = Array{Int64,1}()
+		cut = Array{Int64,1}()
+		for i in 1:m
+			Lt = copy(L)
+			l = ll[i]
+			Lt = rm_line(L,ll[i])
+			if !isconnected(Lt)
+				push!(cut,i)
+			end
+		end
+		cuts = Array{Array{Int64,1},1}([cut,])
+		Lr = copy(L)
+		Br = copy(B)
+		wr = copy(w)
 	end
-	
+		
+	count = 0
+		
 	while run && count < m-n+1
 #		global count,run,cuts,rmvd,ranks,Lr,rank0,ranks
 		count += 1

@@ -2,28 +2,29 @@ using DelimitedFiles,Statistics,SparseArrays,Dates
 
 include("kuramoto.jl")
 
-function sync(ntw::String,P0::Float64,M::Array{Float64,1},D::Array{Float64,1})
+function sync(ntw::String,P0::Float64,M::Array{Float64,1},D::Array{Float64,1},max_iter::Int64=50)
 	@info "$(now()) -- Computing sync for P0 = $P0"
 	
-	Asp = readdlm(ntw*"_adj_mat.csv",',')
+	Bsp = readdlm(ntw*"_data/"*ntw*"_inc_mat.csv",',')
 	
-	n = round(Int,maximum(Asp[:,1]))
-	m = Int(size(Asp)[1]/2)
+	B = sparse(Bsp[:,1],Bsp[:,2],Bsp[:,3])
+	n,m = size(B)
 	
-	A = sparse(vec(Asp[:,1]),vec(Asp[:,2]),vec(Asp[:,3]))
-	L = spdiagm(0 => vec(sum(A,dims=2))) - A
-	B,w = L2B(L)
-		
-	P = P0*vec(readdlm("P_"*ntw*".csv",','))
+	w = Bsp[2*(1:m),4]
+	
+	P = P0*vec(readdlm(ntw*"_data/P_"*ntw*".csv",','))
 	P .-= mean(P)
 	
-	x0 = zeros(2*n)
+	x1,iter = NR_kuramoto(B,w,P)
 	
-	x1,dx1 = kuramoto2_incidence(B,w,M,D,P,x0[1:n],x0[(n+1):(2*n)])
+	if iter >= max_iter
+		@info "No sync state found..."
+		writedlm("sync_states/"*ntw*"_sync_$P0.csv",["nope",],',')
+	else
+		writedlm("sync_states/"*ntw*"_sync_$P0.csv",x1,',')
+	end
 	
-	writedlm("sync_states/"*ntw*"_sync_$P0.csv",x1,',')
-	
-	return x1,dx1
+	return x1
 end
 
 
