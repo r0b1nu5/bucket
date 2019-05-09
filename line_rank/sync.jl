@@ -3,7 +3,7 @@ using DelimitedFiles,Statistics,SparseArrays,Dates
 include("kuramoto.jl")
 
 function sync(ntw::String,P0::Float64,M::Array{Float64,1},D::Array{Float64,1},max_iter::Int64=50)
-	@info "$(now()) -- Computing sync for P0 = $P0"
+	@info "$(now()) -- "*ntw*": Computing sync for P0 = $P0"
 	
 	Bsp = readdlm(ntw*"_data/"*ntw*"_inc_mat.csv",',')
 	
