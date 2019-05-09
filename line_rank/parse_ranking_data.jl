@@ -157,7 +157,7 @@ function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64
 	elseif ranking_measure == "load"
 		rm_legend = "Relative load [%]"
 	elseif ranking_measure == "Omega+load"
-		rm_legend = "b*Ω*Δθ*Δθ"
+		rm_legend = "Ω*(b*Δθ)^2"
 	end
 	
 	figure()
