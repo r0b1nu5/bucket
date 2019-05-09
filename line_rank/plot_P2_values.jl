@@ -1,6 +1,6 @@
 using DelimitedFiles
 
-Asp = readdlm("uk_adj_mat.csv",',') .+ 1
+Asp = readdlm("uk_data/uk_adj_mat.csv",',') .+ 1
 
 n = Int(maximum(Asp))
 m = Int(size(Asp)[1]/2)
@@ -10,8 +10,8 @@ for i in 1:m
 	push!(line_list,(Int64(Asp[2*i-1,1]),Int64(Asp[2*i-1,2])))
 end
 
-coord = readdlm("uk_grid_coord.csv",',')
-bord = readdlm("uk_border_coord.csv",',')
+coord = readdlm("uk_data/uk_grid_coord.csv",',')
+bord = readdlm("uk_data/uk_border_coord.csv",',')
 
 figure()
 PyPlot.plot(vec(bord[:,1]),vec(bord[:,2]),"-k",linewidth=1)

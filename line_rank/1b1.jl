@@ -15,9 +15,9 @@ include("sync.jl")
 
 function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Float64,M::Array{Float64,1},D::Array{Float64,1},max_iter::Int64=50,eps::Float64=1e-6,h::Float64=.1)
 	
-	Asp = readdlm(ntw*"_adj_mat.csv",',')
-	Lsp = readdlm(ntw*"_lap_mat.csv",',')
-	Bsp = readdlm(ntw*"_inc_mat.csv",',')
+	Asp = readdlm(ntw*"_data/"*ntw*"_adj_mat.csv",',')
+	Lsp = readdlm(ntw*"_data/"*ntw*"_lap_mat.csv",',')
+	Bsp = readdlm(ntw*"_data/"*ntw*"_inc_mat.csv",',')
 	
 	A = sparse(Array{Int,1}(Asp[:,1]),Array{Int,1}(Asp[:,2]),vec(Asp[:,3]))
 	L = sparse(Array{Int,1}(Lsp[:,1]),Array{Int,1}(Lsp[:,2]),vec(Lsp[:,3]))
@@ -26,7 +26,7 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 
 	n,m = size(B)
 		
-	P = P0*vec(readdlm("P_"*ntw*".csv",','))
+	P = P0*vec(readdlm(ntw*"_data/P_"*ntw*".csv",','))
 	P .-= mean(P)
 	
 	list_sync = readdir("sync_states")

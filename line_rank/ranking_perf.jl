@@ -2,7 +2,7 @@ using DelimitedFiles,Statistics,LinearAlgebra,PyPlot,SparseArrays
 
 include("kuramoto.jl")
 include("L2B.jl")
-include("uk_gen_idx.jl")
+include("uk_data/uk_gen_idx.jl")
 include("isconnected.jl")
 include("rm_line.jl")
 include("res_dist.jl")
@@ -31,11 +31,11 @@ end
 
 # Choose network
 if ntw == "uk"
-	Asp = readdlm("uk_adj_mat.csv",',') 
+	Asp = readdlm("uk_data/uk_adj_mat.csv",',') 
 elseif ntw == "ieee57"
-	Asp = readdlm("ieee57_adj_mat.csv",',')
+	Asp = readdlm("ieee57_data/ieee57_adj_mat.csv",',')
 elseif ntw == "ieee57_unif"
-	Asp = readdlm("ieee57_adj_mat.csv",',')
+	Asp = readdlm("ieee57/ieee57_adj_mat.csv",',')
 	Asp[:,3] = ones(size(Asp)[1])
 end
 
@@ -63,9 +63,9 @@ P = zeros(n)
 if ntw == "uk"
 	P[gen_idx] = P0*ones(length(gen_idx))
 elseif ntw == "ieee57"
-	P = .002*vec(readdlm("P_57",','))
+	P = .002*vec(readdlm("ieee57_data/P_ieee57.csv",','))
 elseif ntw == "ieee57_unif"
-	P = .002*vec(readdlm("P_57",','))
+	P = .002*vec(readdlm("ieee57_data/P_ieee57.csv",','))
 end
 P .-= mean(P)
 

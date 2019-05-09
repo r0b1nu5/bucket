@@ -2,7 +2,7 @@ using DelimitedFiles,Statistics,LinearAlgebra,PyPlot
 
 include("kuramoto.jl")
 include("L2B.jl")
-include("uk_gen_idx.jl")
+include("uk_data/uk_gen_idx.jl")
 include("res_dist.jl")
 
 lin_or_sin = "sin"
@@ -16,7 +16,7 @@ h = 0.025
 
 # Choose network
 if ntw == "uk"
-	Asp = readdlm("uk_adj_mat.csv",',') .+ 1
+	Asp = readdlm("uk_data/uk_adj_mat.csv",',') .+ 1
 end
 
 # Initialize parameters

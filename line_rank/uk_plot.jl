@@ -7,7 +7,7 @@ function uk_plot()
 	
 	coord = readdlm("uk_data/uk_grid_coord.csv",',')
 	bord = readdlm("uk_data/uk_border_coord.csv",',')
-	adj = Array{Int,2}(readdlm("uk_adj_mat.csv",',')[:,1:2] .+ 1)
+	adj = Array{Int,2}(readdlm("uk_data/uk_adj_mat.csv",',')[:,1:2] .+ 1)
 	
 	figure("UK",(8,10))
 	PyPlot.plot(vec(bord[:,1]),vec(bord[:,2]),"k",linewidth=1)
@@ -27,7 +27,7 @@ function uk_plot(dot_col::Array{Float64,1},line_col::Array{Float64,1}=[0.,0.,0.]
 	
 	coord = readdlm("uk_data/uk_grid_coord.csv",',')
 	bord = readdlm("uk_data/uk_border_coord.csv",',')
-	adj = Array{Int,2}(readdlm("uk_adj_mat.csv",',')[:,1:2] .+ 1)
+	adj = Array{Int,2}(readdlm("uk_data/uk_adj_mat.csv",',')[:,1:2] .+ 1)
 	
 	figure("UK",(8,10))
 	PyPlot.plot(vec(bord[:,1]),vec(bord[:,2]),color=bord_col,linewidth=1)
@@ -48,7 +48,7 @@ function uk_plot(iscolored::Array{Bool,1},dot_range::Array{Float64,1},line_range
 	
 	coord = readdlm("uk_data/uk_grid_coord.csv",',')
 	bord = readdlm("uk_data/uk_border_coord.csv",',')
-	adj = Array{Int,2}(readdlm("uk_adj_mat.csv",',')[:,1:2] .+ 1)
+	adj = Array{Int,2}(readdlm("uk_data/uk_adj_mat.csv",',')[:,1:2] .+ 1)
 	
 	figure("UK",(8,10))
 	PyPlot.plot(vec(bord[:,1]),vec(bord[:,2]),"k",linewidth=1)

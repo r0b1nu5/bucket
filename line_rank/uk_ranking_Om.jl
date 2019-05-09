@@ -2,7 +2,7 @@ using DelimitedFiles,LinearAlgebra,PyPlot
 
 include("res_dist.jl")
 
-Asp = readdlm("uk_adj_mat.csv",',') .+ 1.0
+Asp = readdlm("uk_data/uk_adj_mat.csv",',') .+ 1.0
 n = Int(maximum(Asp))
 m = Int(size(Asp)[1]/2)
 mm = copy(m)
