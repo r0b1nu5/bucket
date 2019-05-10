@@ -1,8 +1,8 @@
 using Statistics,PyPlot
 
-function kuramoto_q(q::Int64,om::Array{Float64,1},K::Float64,th0::Array{Float64,1})
+function kuramoto_q(q::Int64,om::Array{Float64,1},K::Float64,th0::Array{Float64,1},history::Bool=true)
 	n = length(th0)
-	h = .001
+	h = .01
 		
 	B = Array{Float64,2}(undef,n,0)
 	for i in 1:n-1
@@ -18,15 +18,19 @@ function kuramoto_q(q::Int64,om::Array{Float64,1},K::Float64,th0::Array{Float64,
 		
 	th1 = copy(th0)
 	th2 = copy(th0)
-	ths = Array{Float64,2}(undef,n,0)
-	ths = [ths th0]
+	if history
+		ths = Array{Float64,2}(undef,n,0)
+		ths = [ths th0]
+	else
+		ths = Array{Float64,1}
+	end
 	err = 1000.
 	c = 0
 
 	while err > 1e-6 && c < 1e6
-		if c%1000 == 0
-			@info "c = $c, err = $err"
-		end
+#		if c%1000 == 0
+#			@info "c = $c, err = $err"
+#		end
 		c += 1
 		
 		th1 = copy(th2)
@@ -39,8 +43,11 @@ function kuramoto_q(q::Int64,om::Array{Float64,1},K::Float64,th0::Array{Float64,
 		dth = (k1+2*k2+2*k3+k4)/6
 		
 		th2 = th1 + h*dth
-		ths = [ths th2]
-		
+		if history
+			ths = [ths th2]
+		else
+			ths = copy(th2)
+		end
 		err = maximum(abs.(dth))
 	end
 	
