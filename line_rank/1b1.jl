@@ -10,9 +10,9 @@ include("NR.jl")
 # Removes the lines of a network one by one until there is no fixed point anymore. Lines are removed such that the network is not splitted.
 
 ## INPUT
-# ntw: network considered ("uk", "ieee57", "ieee118", or "ieee300". "pegase" does not converge.)
+# ntw: network considered ("uk", "ieee57", "ieee118", "ieee300", or "pegase" (long to converge).)
 # ranking_type: ranking used to remove the lines ("init": at each step, removes the most central line according to the measure in the initial network. "updaed": same but updates the ranking after removing each line. "random": removes lines randomly. "tini": same as "init" but removes the least central line. "detadpu": same as "updated" but removes the least central line.)
-# ranking_measure: measure used to make the ranking ("Omega": resistance distance, "load": uses the load on the line, "Omega+load": uses the resistance distance rescaled by the load on the line.)
+# ranking_measure: measure used to make the ranking ("Omega": resistance distance, "dKf1": based on the variation of Kf1, "load": uses the load on the line, "Omega+load": uses the resistance distance rescaled by the load on the line.)
 
 function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Float64,M::Array{Float64,1},D::Array{Float64,1},max_iter::Int64=50,eps::Float64=1e-6,h::Float64=.1)
 	
@@ -53,6 +53,15 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 				l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
 				push!(ll,l)
 				push!(mes,-L[l[1],l[2]]*Om[l[1],l[2]])
+			end
+		elseif ranking_measure == "dKf1"
+			Om = res_dist(L)
+			Om2 = res_dist(L,2)
+			for i in 1:m
+				l = (Int(Bsp[2*i-1,1]),Int(Bsp[2*i,1]))
+				push!(ll,l)
+				b = -L[l[1],l[2]]
+				push!(mes,(b*Om2[l[1],l[2]])/(1-b*Om[l[1],l[2]]))
 			end
 		elseif ranking_measure == "load"
 			dx1 = x1[1:n]*ones(1,n) - ones(n)*transpose(x1[1:n])
@@ -152,6 +161,14 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 				for i in setdiff(1:m,rmvd)
 					l = ll[i]
 					push!(mes,-Lr[l[1],l[2]]*Om[l[1],l[2]])
+				end
+			elseif ranking_measure == "dKf1"
+				Om = res_dist(Lr)
+				Om2 = res_dist(Lr,2)
+				for i in setdiff(1:m,rmvd)
+					l = ll[i]
+					b = -Lr[l[1],l[2]]
+					push!(mes,(b*Om2[l[1],l[2]])/(1-b*Om[l[1],l[2]]))
 				end
 			elseif ranking_measure == "load"
 				ddx = xs[1:n]*ones(1,n) - ones(n)*transpose(xs[1:n])	
