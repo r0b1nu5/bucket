@@ -2,6 +2,7 @@ using DelimitedFiles,Statistics,PyPlot
 
 function parse_ranking_data(ntw::String,ranking_measure::String,P0::Float64,n_rand::Int=0)
 # ========================== INITIAL RANKING ==========================
+#=
 	x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_init_"*ranking_measure*".csv",',')
 	ranks1 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
@@ -13,12 +14,13 @@ function parse_ranking_data(ntw::String,ranking_measure::String,P0::Float64,n_ra
 	#for i in 1:size(x)[1]
 		#push!(cuts1,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	#end
-	
+=#	
 	rmvd1 = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_init_"*ranking_measure*".csv",',')))
 	
-	m1 = length(ranks1)
+	m1 = length(rmvd1)
 
 # ========================== UPDATED RANKING ==========================
+#=
 	x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_updated_"*ranking_measure*".csv",',')
 	ranks2 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
@@ -30,18 +32,21 @@ function parse_ranking_data(ntw::String,ranking_measure::String,P0::Float64,n_ra
 	#for i in 1:size(x)[1]
 		#push!(cuts2,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	#end
-	
+=#	
 	rmvd2 = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_updated_"*ranking_measure*".csv",',')))
 	
-	m2 = length(ranks2)
+	m2 = length(rmvd2)
 	
 # ========================== RANDOM RANKING ===========================
 if n_rand > 0
+#=
 	ranks3 = Array{Array{Array{Int64,1},1},1}()
 	cuts3 = Array{Array{Array{Int64,1},1},1}()
+=#
 	rmvds3 = Array{Array{Int64,1},1}()
 	ms = Array{Float64,1}()
 	for k in 1:n_rand
+#=
 		x = readdlm("data/random/ranks_1b1_"*ntw*"_$(P0)_random_$k.csv",',')
 		ranks = Array{Array{Int64,1},1}()
 		for i in 1:size(x)[1]
@@ -55,10 +60,10 @@ if n_rand > 0
 		#	push!(cuts,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 		#end
 		push!(cuts3,cuts)
-		
+=#		
 		push!(rmvds3,Array{Int64,1}(vec(readdlm("data/random/rmvd_1b1_"*ntw*"_$(P0)_random_$k.csv",','))))
 		
-		push!(ms,length(ranks))
+		push!(ms,length(rmvds3[end]))
 	end
 	
 	m3 = mean(ms)
@@ -77,6 +82,7 @@ else
 end
 
 # ========================== LAITINI RANKING ==========================
+#=
 	x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_tini_"*ranking_measure*".csv",',')
 	ranks4 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
@@ -88,12 +94,13 @@ end
 	#for i in 1:size(x)[1]
 	#	push!(cuts4,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	#end
-	
+=#	
 	rmvd4 = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_tini_"*ranking_measure*".csv",',')))
 	
-	m4 = length(ranks4)
+	m4 = length(rmvd4)
 	
 # ========================== DETADPU RANKING ==========================
+#=
 	x = readdlm("data/ranks_1b1_"*ntw*"_$(P0)_detadpu_"*ranking_measure*".csv",',')
 	ranks5 = Array{Array{Int64,1},1}()
 	for i in 1:size(x)[1]
@@ -105,10 +112,10 @@ end
 	#for i in 1:size(x)[1]
 	#	push!(cuts5,Array{Int64,1}(vec(x[i,1:size(x)[2]-i+1])))
 	#end
-	
+=#	
 	rmvd5 = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_detadpu_"*ranking_measure*".csv",',')))
 	
-	m5 = length(ranks5)
+	m5 = length(rmvd5)
 	
 	return m1,m2,m3,[min_3,p25_3,p50_3,p75_3,max_3],m4,m5
 end
@@ -154,6 +161,8 @@ function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64
 	rm_legend = ranking_measure
 	if ranking_measure == "Omega"
 		rm_legend = "b*Ω"
+	elseif ranking_measure == "dKf1"
+		rm_legend = "δKf_1"
 	elseif ranking_measure == "load"
 		rm_legend = "Relative load [%]"
 	elseif ranking_measure == "Omega+load"
