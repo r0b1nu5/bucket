@@ -1,5 +1,49 @@
 using DelimitedFiles,Statistics,PyPlot
 
+include("ranking_measure_legend.jl")
+include("../default_color_cycle.jl")
+
+function parse_ranking_data(ntw::String,ranking_type::String,ranking_measure::String,P0::Float64)
+	rmvd = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_"*ranking_type*"_"*ranking_measure*".csv",',')))
+	m = length(rmvd)
+	
+	return m
+end
+
+function parse_ranking_data(ntw::String,ranking_type::String,ranking_measure::String,Ps::Array{Float64,1})
+	m = Array{Float64,1}()
+	for P0 in Ps
+		rmvd = Array{Int64,1}(vec(readdlm("data/rmvd_1b1_"*ntw*"_$(P0)_"*ranking_type*"_"*ranking_measure*".csv",',')))
+		push!(m,length(rmvd))
+	end
+	
+	return m
+end
+
+function parse_ranking_data_random(ntw::String,P0::Float64,n_rand::Int)
+	m = Array{Int,1}()
+	for i in 1:n_rand
+		push!(m,length(Array{Int64,1}(vec(readdlm("data/random/rmvd_1b1_"*ntw*"_$(P0)_random_$i.csv",',')))))
+	end
+	
+	p = [minimum(m),quantile(m,.25),quantile(m,.5),quantile(m,.75),maximum(m)]
+	
+	return p
+end
+
+function parse_ranking_data_random(ntw::String,Ps::Array{Float64,1},n_rand::Int)
+	p = Array{Float64,2}(undef,5,0)
+	for P0 in Ps
+		m = Array{Int64,1}()
+		for i in 1:n_rand
+			push!(m,length(Array{Int64,1}(vec(readdlm("data/random/rmvd_1b1_"*ntw*"_$(P0)_random_$i.csv",',')))))
+		end
+		p = [p [minimum(m),quantile(m,.25),quantile(m,.5),quantile(m,.75),maximum(m)]]
+	end
+	
+	return p
+end
+
 function parse_ranking_data(ntw::String,ranking_measure::String,P0::Float64,n_rand::Int=0)
 # ========================== INITIAL RANKING ==========================
 #=
@@ -120,6 +164,69 @@ end
 	return m1,m2,m3,[min_3,p25_3,p50_3,p75_3,max_3],m4,m5
 end
 
+function plot_ranking_data(ntw::String,Ps::Array{Float64,1},n_rand::Int64=0)
+	nums = get_fignums()
+	if length(nums) == 0
+		num = 1
+	else
+		num = maximum(nums)+1
+	end
+	
+	n = 0
+	m = 0
+	if ntw == "uk"
+		n = 120
+		m = 165
+	elseif ntw == "ieee57"
+		n = 57
+		m = 78
+	elseif ntw == "ieee118"
+		n = 118
+		m = 179
+	elseif ntw == "ieee300"
+		n = 300
+		m = 408
+	elseif ntw == "pegase"
+		n = 2869
+		m = 3968
+	else
+		n = 1
+		m = 0
+	end
+	
+	figure(num)
+	PyPlot.plot([minimum(Ps),maximum(Ps)],[m-n+1,m-n+1],":k",linewidth=1.5)
+
+	c = 0
+	
+	for rm in ["Omega","Womega","load","Omega+load","dKf1","dKf2"]
+		c += 1
+		
+		I = Array{Float64,1}()
+		U = Array{Float64,1}()
+		for P0 in Ps
+			push!(I,parse_ranking_data(ntw,"init",rm,P0))
+			push!(U,parse_ranking_data(ntw,"updated",rm,P0))
+		end
+		
+		figure(num)
+		PyPlot.plot(Ps,I,"-o",color=def_col[c],label=legs[rm]*", Initial ranking",linewidth=1)
+		PyPlot.plot(Ps,U,"--",color=def_col[c],label=legs[rm]*", Updated ranking",linewidth=2)
+	end	
+	
+	R = parse_ranking_data_random(ntw,Ps,n_rand)
+	
+	PyPlot.plot(Ps,R[3,:],":",color=def_col[c+1],label="Random ranking (median)")
+	PyPlot.plot(Ps,R[2,:],":k",label="Quartiles")
+	PyPlot.plot(Ps,R[4,:],":k")
+	
+	xlabel("P0")
+	ylabel("Number of lines")
+	title(ntw*": Number of lines to cut before no sync state")
+	legend()
+end
+
+			
 function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64,1},n_rand::Int64)
 	m1 = Array{Float64,1}()
 	m2 = Array{Float64,1}()
@@ -153,6 +260,9 @@ function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64
 	elseif ntw == "ieee300"
 		n = 300
 		m = 408
+	elseif ntw == "pegase"
+		n = 2869
+		m = 3968
 	else
 		n = 1
 		m = 0
@@ -183,7 +293,6 @@ function plot_ranking_data(ntw::String,ranking_measure::String,Ps::Array{Float64
 	title(ntw*", "*rm_legend*": Number of lines to cut before no sync state")
 	legend()
 end
-
 
 
 
