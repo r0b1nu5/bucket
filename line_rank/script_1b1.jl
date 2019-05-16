@@ -20,7 +20,7 @@ d = .1*ones(118)
 # =#
  #=
 ntw = "ieee300"
-Ps = [.002,.004,.006,.008,.012,.014,.016,.018,.022,.024,.05]
+Ps = [.002,.004,.006,.008,.01,.012,.014,.016,.018,.022,.024,.05]
 m = 2*ones(300)
 d = 1*ones(300)
 # =#
@@ -31,14 +31,19 @@ m = 2000*ones(2869)
 d = 1000*ones(2869)
 # =#
 
- meas = "Omega"
+ #meas = "Omega"
+ #meas = "Womega"
+ #meas = "dKf1"
+ #meas = "dKf2"
  #meas = "load"
  #meas = "Omega+load"
 
+for meas in ["Womega","dKf2"]
 for P0 in Ps
-	rmv_1b1(ntw,"init",meas,P0,m,d)
-	rmv_1b1(ntw,"updated",meas,P0,m,d)
-	rmv_1b1(ntw,"tini",meas,P0,m,d)
-	rmv_1b1(ntw,"detadpu",meas,P0,m,d)
+	rmv_1b1_2(ntw,"init",meas,P0,m,d)
+	rmv_1b1_2(ntw,"updated",meas,P0,m,d)
+#	rmv_1b1(ntw,"tini",meas,P0,m,d)
+#	rmv_1b1(ntw,"detadpu",meas,P0,m,d)
+end
 end
 

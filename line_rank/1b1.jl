@@ -425,7 +425,7 @@ function rmv_1b1_2(ntw::String,ranking_type::String,ranking_measure::String,P0::
 				Lw = Lr.*cdx
 				Lw = diagm(0 => vec(sum(Lw,dims=2)))
 				Om = res_dist(Lw)
-				for i in 1:m
+				for i in setdiff(1:m,rmvd)
 					l = ll[i]
 					push!(mes,-Lw[l[1],l[2]]*Om[l[1],l[2]])
 				end
@@ -441,7 +441,7 @@ function rmv_1b1_2(ntw::String,ranking_type::String,ranking_measure::String,P0::
 				Om1 = res_dist(Lr)
 				Om2 = res_dist(Lr,2)
 				Om3 = res_dist(Lr,3)
-				for i in 1:m
+				for i in setdiff(1:m,rmvd)
 					l = ll[i]
 					b = -Lr[l[1],l[2]]
 					O1 = Om1[l[1],l[2]]

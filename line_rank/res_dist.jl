@@ -24,7 +24,7 @@ function res_dist(L::Union{Array{Float64,2},SparseMatrixCSC{Float64,Int}},m::Int
 	Omm = zeros(n,n)
 	for i in 1:n-1
 		for j in i+1:n
-			Omm[i,j] = Gaim[i,i] Gaim[j,j] - 2*Gaim[i,j]
+			Omm[i,j] = Gaim[i,i] + Gaim[j,j] - 2*Gaim[i,j]
 			Omm[j,i] = Omm[i,j]
 		end
 	end
