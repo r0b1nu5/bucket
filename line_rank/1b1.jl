@@ -186,7 +186,7 @@ function rmv_1b1(ntw::String,ranking_type::String,ranking_measure::String,P0::Fl
 					push!(mes,-Lr[l[1],l[2]]*Om[l[1],l[2]])
 				end
 			elseif ranking_measure == "Womega"
-				cdx = cos.(x1[1:n]*ones(1,n)-ones(n)*transpose(x1[1:n])).*(1 .- diagm(0 => ones(n)))
+				cdx = cos.(xs[1:n]*ones(1,n)-ones(n)*transpose(xs[1:n])).*(1 .- diagm(0 => ones(n)))
 				Lw = Lr.*cdx
 				Lw = diagm(0 => vec(sum(Lw,dims=2)))
 				Om = res_dist(Lw)

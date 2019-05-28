@@ -1,4 +1,7 @@
-using DelimitedFiles,Statistics,PyPlot
+using DelimitedFiles,Statistics,PyPlot,PyCall
+import PyPlot.plt
+#mpl = pyimport("matplotlib")
+@pyimport matplotlib as mpl
 
 include("ranking_measure_legend.jl")
 include("../default_color_cycle.jl")
@@ -194,6 +197,19 @@ function plot_ranking_data(ntw::String,Ps::Array{Float64,1},n_rand::Int64=0)
 		m = 0
 	end
 	
+	R = parse_ranking_data_random(ntw,Ps,n_rand)
+	RR = [Ps R[2,:];Ps[end:-1:1] R[4,end:-1:1]]
+	
+	patches = mpl.pymember("patches")
+	
+	fig = plt.figure(num)
+	ax = fig[:add_axes]([.1,.1,.8,.8])
+		
+	p = patches[:Polygon](RR,closed=true,edgecolor="none",facecolor="blue",alpha=.05,rasterized=true)
+	ax[:add_patch](p)
+	
+	PyPlot.plot(Ps,R[3,:],":k",label="Random ranking (median)")
+	
 	figure(num)
 	PyPlot.plot([minimum(Ps),maximum(Ps)],[m-n+1,m-n+1],":k",linewidth=1.5)
 
@@ -213,12 +229,6 @@ function plot_ranking_data(ntw::String,Ps::Array{Float64,1},n_rand::Int64=0)
 		PyPlot.plot(Ps,I,"-o",color=def_col[c],label=legs[rm]*", Initial ranking",linewidth=1)
 		PyPlot.plot(Ps,U,"--",color=def_col[c],label=legs[rm]*", Updated ranking",linewidth=2)
 	end	
-	
-	R = parse_ranking_data_random(ntw,Ps,n_rand)
-	
-	PyPlot.plot(Ps,R[3,:],":",color=def_col[c+1],label="Random ranking (median)")
-	PyPlot.plot(Ps,R[2,:],":k",label="Quartiles")
-	PyPlot.plot(Ps,R[4,:],":k")
 	
 	xlabel("P0")
 	ylabel("Number of lines")
