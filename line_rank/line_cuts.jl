@@ -51,45 +51,51 @@ for i in 1:n-1
 			eij[[i,j]] = [1,-1]
 			Lr -= L[i,j]*eij*transpose(eij)
 #			ls = eigvals(Array(Lr))
-			
+
+#=			
 			Xs,dXs = kuramoto2_lin(Lr,M,D,P,th0,om0,true,false,Int(1e5),1e-6,h)
 			xs = Xs[1:n,:]
 			dxs = Xs[(n+1):(2*n),:]
+			thf = xs[1:n,end]
 			
 			nadirs = [nadirs maximum(abs.(dxs),dims=2)]
 			rocofs = [rocofs maximum(abs.(dxs[:,2:end]-dxs[:,1:end-1])./h,dims=2)]
 			push!(lines,(i,j))
+=#
 			
 			LDr = diagm(0 => D)^(-1/2)*Lr*diagm(0 => D)^(-1/2)
 			E = eigen(Array(LDr))
 			lDs = E.values
 			TD = E.vectors
 			
-			d2 = g^2-4*lDs[2]*g
+			d2 = g^2-4*lDs[end]*g
 			S2 = sqrt(abs(d2))
+			c20 = transpose(th0-thf)*sqrt(diagm(0 => D))*TD[:,end]
 			if d2 >= 0
 				F2 = (g+S2)/(g-S2)
-				dc2 = (lDs[2]*g)/S2*F2^(-g/(2*S2))*(sqrt(F2)-sqrt(1/F2))
+				dc2 = (lDs[end]*g)/S2*F2^(-g/(2*S2))*(sqrt(F2)-sqrt(1/F2))*c20
 			else
-				dc2 = (lDs[2]*g)/(S2)*exp(-(g*pi)/(2*S2))
+				dc2 = (lDs[end]*g)/(S2)*exp(-(g*pi)/(2*S2))*c20
 			end
 			
-			d3 = g^2-4*lDs[3]*g
+			d3 = g^2-4*lDs[end-1]*g
 			S3 = sqrt(abs(d3))
+			c30 = transpose(th0-thf)*sqrt(diagm(0 => D))*TD[:,end-1]
 			if d3 >= 0
 				F3 = (g+S3)/(g-S3)
-				dc3 = (lDs[3]*g)/S3*F3^(-g/(2*S3))*(sqrt(F3)-sqrt(1/F3))
+				dc3 = (lDs[end-1]*g)/S3*F3^(-g/(2*S3))*(sqrt(F3)-sqrt(1/F3))*c30
 			else
-				dc3 = (lDs[3]*g)/(S3)*exp(-(g*pi)/(2*S3))
+				dc3 = (lDs[end-1]*g)/(S3)*exp(-(g*pi)/(2*S3))*c30
 			end
 			
-			d4 = g^2-4*lDs[4]*g
+			d4 = g^2-4*lDs[end-2]*g
 			S4 = sqrt(abs(d4))
+			c40 = transpose(th0-thf)*sqrt(diagm(0 => D))*TD[:,end-2]
 			if d4 >= 0
 				F4 = (g+S4)/(g-S4)
-				dc4 = (lDs[4]*g)/S4*F4^(-g/(2*S4))*(sqrt(F4)-sqrt(1/F4))
+				dc4 = (lDs[end-2]*g)/S4*F4^(-g/(2*S4))*(sqrt(F4)-sqrt(1/F4))*c40
 			else
-				dc4 = (lDs[4]*g)/(S4)*exp(-(g*pi)/(2*S4))
+				dc4 = (lDs[end-2]*g)/(S4)*exp(-(g*pi)/(2*S4))*c40
 			end
 			
 			dca = [dca [0.,dc2,dc3,dc4]]
@@ -117,11 +123,17 @@ PyPlot.plot(full_measure[2,:],"sb")
 PyPlot.plot(full_measure[3,:],"sr")
 PyPlot.plot(full_measure[4,:],"sg")
 
+figure("nadir 2")
+PyPlot.plot(vec(maximum(nadirs,dims=1)),dca[2,:],"xb")
+PyPlot.plot(vec(maximum(nadirs,dims=1)),dca[3,:],"xr")
+PyPlot.plot(vec(maximum(nadirs,dims=1)),dca[4,:],"xg")
+
 figure("rocof")
 PyPlot.plot(flow_m,"ob")
 PyPlot.plot(vec(maximum(rocofs,dims=1)),"xr")
 
-
+figure("rocof 2")
+PyPlot.plot(flow_m,vec(maximum(rocofs,dims=1)),"x")
 
 
 
