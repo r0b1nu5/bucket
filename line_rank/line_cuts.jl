@@ -13,11 +13,16 @@ n = size(L)[1]
 m = round(Int,size(Lsp)[1]/2)
 
 P0 = .001
-P = P0*vec(readdlm(ntw*"_data/P_"*ntw*".csv",','))
+ratedP = vec(readdlm(ntw*"_data/P_"*ntw*".csv",','))
+P = P0*ratedP
 P .-= mean(P)
 
 g = .5
-M = .2*ones(n)
+# For inertias, see Laurent's Plos One, Appendix 2, Eq. (S2)
+H = 2*pi .+ 3*rand(n) .- 1.5
+omega0 = 50*2*pi
+rP = 2*max.(abs.(ratedP),maximum(abs.(ratedP))/100*ones(n))
+M = 2*H.*rP./omega0
 D = g*M
 LD = diagm(0 => D)^(-1/2)*L*diagm(0 => D)^(-1/2)
 
@@ -29,7 +34,7 @@ lines = Array{Tuple{Int64,Int64},1}()
 nadirs = Array{Float64,2}(undef,n,0)
 rocofs = Array{Float64,2}(undef,n,0)
 
-dca = Array{Float64,2}(undef,4,0)
+dca = Array{Float64,2}(undef,n,0)
 
 dth = Array{Float64,1}()
 dua = Array{Float64,2}(undef,4,0)
@@ -39,20 +44,39 @@ full_measure = Array{Float64,2}(undef,4,0)
 
 flow_m = Array{Float64,1}()
 
+what = Array{Int64,1}()
+
+idx = Array{Int64,1}()
+scores = Array{Int64,2}(undef,n,0)
+
+q1 = Array{Float64,1}()
+q2 = Array{Float64,1}()
+q3 = Array{Float64,1}()
+
+c = 0
 h = .01
+
+ #=
+nadirs = readdlm("data/nadirs_"*ntw*"_$P0.csv",',')
+rocofs = readdlm("data/rocofs_"*ntw*"_$P0.csv",',')
+# =#
 
 for i in 1:n-1
 	for j in i+1:n
-		global L,n,M,D,P,th0,om0,h,nadirs,rocofs,lines,g,dca,dth,dua,rd,full_measure,flow_m
-		@info "Line: ($i,$j)"
+		global ntw,P0,L,n,M,D,P,th0,om0,h,nadirs,rocofs,lines,g,dca,dce,dth,dua,rd,full_measure,flow_m,c,what,idx,scores
 		if abs(L[i,j]) > 1e-6 && abs(1 + L[i,j]*Om[i,j]) > 1e-6
+			@info "Line: ($i,$j)"
+			c += 1
+			
 			Lr = copy(L)
 			eij = zeros(n)
 			eij[[i,j]] = [1,-1]
 			Lr -= L[i,j]*eij*transpose(eij)
 #			ls = eigvals(Array(Lr))
-
-#=			
+			OmDr = res_dist(Lr)
+			
+			thf = pinv(Array(Lr))*P
+ ##=			
 			Xs,dXs = kuramoto2_lin(Lr,M,D,P,th0,om0,true,false,Int(1e5),1e-6,h)
 			xs = Xs[1:n,:]
 			dxs = Xs[(n+1):(2*n),:]
@@ -61,45 +85,33 @@ for i in 1:n-1
 			nadirs = [nadirs maximum(abs.(dxs),dims=2)]
 			rocofs = [rocofs maximum(abs.(dxs[:,2:end]-dxs[:,1:end-1])./h,dims=2)]
 			push!(lines,(i,j))
-=#
+# =#
 			
 			LDr = diagm(0 => D)^(-1/2)*Lr*diagm(0 => D)^(-1/2)
 			E = eigen(Array(LDr))
-			lDs = E.values
-			TD = E.vectors
-			
-			d2 = g^2-4*lDs[end]*g
-			S2 = sqrt(abs(d2))
-			c20 = transpose(th0-thf)*sqrt(diagm(0 => D))*TD[:,end]
-			if d2 >= 0
-				F2 = (g+S2)/(g-S2)
-				dc2 = (lDs[end]*g)/S2*F2^(-g/(2*S2))*(sqrt(F2)-sqrt(1/F2))*c20
-			else
-				dc2 = (lDs[end]*g)/(S2)*exp(-(g*pi)/(2*S2))*c20
+			tem = sortslices([E.values 1:n],dims=1)
+			lDs = E.values[Int.(tem[:,2])]
+			TD = E.vectors[:,Int.(tem[:,2])]
+			Ss = Array{Float64,1}()
+				
+			temp = [0.,]
+			Ss = [0.,]
+			for k in 2:n
+				d = g^2-4*lDs[k]*g
+				S = sqrt(abs(d))
+				push!(Ss,S)
+				c0 = transpose(th0-thf)*sqrt(diagm(0 => D))*TD[:,k]
+				if d >= 0
+					F = (g+S)/(g-S)
+					dc = (lDs[k]*g)/S*F^(-g/(2*S))*(sqrt(F)-sqrt(1/F))*c0
+				else
+					dc = (lDs[k]*g)/(S)*exp(-(g*pi)/(2*S))*c0
+				end
+				push!(temp,dc)
 			end
 			
-			d3 = g^2-4*lDs[end-1]*g
-			S3 = sqrt(abs(d3))
-			c30 = transpose(th0-thf)*sqrt(diagm(0 => D))*TD[:,end-1]
-			if d3 >= 0
-				F3 = (g+S3)/(g-S3)
-				dc3 = (lDs[end-1]*g)/S3*F3^(-g/(2*S3))*(sqrt(F3)-sqrt(1/F3))*c30
-			else
-				dc3 = (lDs[end-1]*g)/(S3)*exp(-(g*pi)/(2*S3))*c30
-			end
-			
-			d4 = g^2-4*lDs[end-2]*g
-			S4 = sqrt(abs(d4))
-			c40 = transpose(th0-thf)*sqrt(diagm(0 => D))*TD[:,end-2]
-			if d4 >= 0
-				F4 = (g+S4)/(g-S4)
-				dc4 = (lDs[end-2]*g)/S4*F4^(-g/(2*S4))*(sqrt(F4)-sqrt(1/F4))*c40
-			else
-				dc4 = (lDs[end-2]*g)/(S4)*exp(-(g*pi)/(2*S4))*c40
-			end
-			
-			dca = [dca [0.,dc2,dc3,dc4]]
-			
+			dca = [dca abs.(temp)]
+	
 			push!(dth,abs(th0[i]-th0[j]))
 			dua = [dua vec(abs.(TD[i,1:4]-TD[j,1:4]))]
 			push!(rd,Om[i,j])
@@ -110,23 +122,22 @@ for i in 1:n-1
 			full_measure = [full_measure measure]
 			
 			push!(flow_m,abs(bij*dth[end])/min(M[i],M[j]))
+			
+			if maximum(dca[:,c]) > maximum(nadirs[:,c])
+				@info "$c, $(maximum(dca[:,c])), $(maximum(nadirs[:,c]))"
+				push!(what,c)
+			end
+			
+			push!(idx,findmax(abs.(temp))[2])
+			scores = [scores sortslices([(sortslices([abs.(temp) 1:n],dims=1))[:,2] 1:n],dims=1)]
+			
+			push!(q1,bij*abs(thf[i]-thf[j])/(1+bij*OmDr[i,j]))
+			push!(q2,abs(TD[i,idx[end]]/D[i] - TD[j,idx[end]]/D[j]))
+			push!(q3,Ss[idx[end]])
 		end
 	end
 end
 
-figure("nadir")
-PyPlot.plot(vec(maximum(nadirs,dims=1)),"xk")
-PyPlot.plot(dca[2,:],"ob")
-PyPlot.plot(dca[3,:],"or")
-PyPlot.plot(dca[4,:],"og")
-PyPlot.plot(full_measure[2,:],"sb")
-PyPlot.plot(full_measure[3,:],"sr")
-PyPlot.plot(full_measure[4,:],"sg")
-
-figure("nadir 2")
-PyPlot.plot(vec(maximum(nadirs,dims=1)),dca[2,:],"xb")
-PyPlot.plot(vec(maximum(nadirs,dims=1)),dca[3,:],"xr")
-PyPlot.plot(vec(maximum(nadirs,dims=1)),dca[4,:],"xg")
 
 figure("rocof")
 PyPlot.plot(flow_m,"ob")
@@ -136,7 +147,67 @@ figure("rocof 2")
 PyPlot.plot(flow_m,vec(maximum(rocofs,dims=1)),"x")
 
 
+#=
+figure("nadir")
+for c in what
+	PyPlot.plot([c-1,c-1],[0,dca[2,c]],"-r")
+	global dca
+end
+for k in 1:n
+	PyPlot.plot(dca[k,:],"o")
+end
+PyPlot.plot(vec(maximum(nadirs,dims=1)),"-xk",label="Max. measured nadir")
+PyPlot.plot(vec(maximum(dca,dims=1)),"-xr",label="Max. \\dot{c}_a")
+ #=
+PyPlot.plot(full_measure[2,:],"sb")
+PyPlot.plot(full_measure[3,:],"sr")
+PyPlot.plot(full_measure[4,:],"sg")
+=#
+legend()
+xlabel("Max. measured nadir")
+ylabel("Max. \\dot{c}_a")
 
+figure("nadir 2.1")
+PyPlot.plot(vec(maximum(nadirs,dims=1)),vec(maximum(dca,dims=1)),"x",label="First \\dot{c}_a")
+PyPlot.plot(vec(maximum(nadirs,dims=1)),[maximum(setdiff(dca[:,i],maximum(dca[:,i]))) for i in 1:size(dca)[2]],"x",label="Second \\dot{c}_a")
+PyPlot.plot(vec(maximum(nadirs,dims=1)),[maximum(setdiff(dca[:,i],[maximum(setdiff(dca[:,i],maximum(dca[:,i]))),maximum(dca[:,i])])) for i in 1:size(dca)[2]],"x",label="Third \\dot{c}_a")
+legend()
+xlabel("Max. measured nadir")
+ylabel("\\dot{c}_a")
 
+figure("nadir 2.2")
+PyPlot.loglog(vec(maximum(nadirs,dims=1)),vec(maximum(dca,dims=1)),"x",label="First \\dot{c}_a")
+PyPlot.loglog(vec(maximum(nadirs,dims=1)),[maximum(setdiff(dca[:,i],maximum(dca[:,i]))) for i in 1:size(dca)[2]],"x",label="Second \\dot{c}_a")
+PyPlot.loglog(vec(maximum(nadirs,dims=1)),[maximum(setdiff(dca[:,i],[maximum(setdiff(dca[:,i],maximum(dca[:,i]))),maximum(dca[:,i])])) for i in 1:size(dca)[2]],"x",label="Third \\dot{c}_a")
+legend()
+xlabel("Max. measured nadir")
+ylabel("\\dot{c}_a")
+
+figure("nadir 3")
+PyPlot.bar((1:n).-.1,[sum(idx.==i) for i in 1:n]./length(idx),.2,label="Index has max. \\dot{c}_a")
+PyPlot.bar((1:n).+.1,vec(sum(scores,dims=2))./sum(scores),.2,label="Score of each index")
+legend()
+xlabel("Eigenmode index")
+ylabel("Proportion")
+
+=#
+
+##=
+figure("nadir 4.1")
+PyPlot.plot(q1,vec(maximum(nadirs,dims=1)),"x")
+ylabel("Max. measured nadir")
+xlabel("bij(thi-thj)/(1+bij*Omij)")
+
+figure("nadir 4.2")
+PyPlot.plot(q2,vec(maximum(nadirs,dims=1)),"x")
+ylabel("Max. measured nadir")
+xlabel("vi-vj")
+
+figure("nadir 4.3")
+PyPlot.plot(q3,vec(maximum(nadirs,dims=1)),"x")
+ylabel("Max. measured nadir")
+xlabel("Sa")
+
+# =#
 
 
