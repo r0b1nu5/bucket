@@ -2,6 +2,10 @@ using PyPlot,DelimitedFiles,SparseArrays,Statistics,LinearAlgebra
 
 include("kuramoto.jl")
 include("res_dist.jl")
+include("../default_color_cycle.jl")
+
+h = .0001
+col_num = 5
 
 ntw = "ieee118"
 Lsp = readdlm(ntw*"_data/"*ntw*"_lap_mat.csv",',')
@@ -54,7 +58,6 @@ q2 = Array{Float64,1}()
 q3 = Array{Float64,1}()
 
 c = 0
-h = .01
 
  #=
 nadirs = readdlm("data/nadirs_"*ntw*"_$P0.csv",',')
@@ -77,7 +80,7 @@ for i in 1:n-1
 			
 			thf = pinv(Array(Lr))*P
  ##=			
-			Xs,dXs = kuramoto2_lin(Lr,M,D,P,th0,om0,true,false,Int(1e5),1e-6,h)
+			Xs,dXs = kuramoto2_lin(Lr,M,D,P,th0,om0,true,false,10,1e-6,h)
 			xs = Xs[1:n,:]
 			dxs = Xs[(n+1):(2*n),:]
 			thf = xs[1:n,end]
@@ -144,8 +147,18 @@ PyPlot.plot(flow_m,"ob")
 PyPlot.plot(vec(maximum(rocofs,dims=1)),"xr")
 
 figure("rocof 2")
-PyPlot.plot(flow_m,vec(maximum(rocofs,dims=1)),"x")
+PyPlot.plot(flow_m,vec(maximum(rocofs,dims=1)),"x",color=def_col[col_num])
+PyPlot.plot([1e-8,10],[1e-8,10],"--k")
+axis([0,maximum(flow_m),0,maximum(rocofs)])
+xlabel("Initial flow on the removed line, normalized by inertia")
+ylabel("Max. measured local RoCoF")
 
+figure("rocof 3")
+PyPlot.loglog(flow_m,vec(maximum(rocofs,dims=1)),"x",color=def_col[col_num])
+PyPlot.plot([1e-8,10],[1e-8,10],"--k")
+axis([minimum(flow_m),maximum(flow_m),minimum(flow_m),maximum(rocofs)])
+xlabel("Initial flow on the removed line, normalized by inertia")
+ylabel("Max. measured local RoCoF")
 
 #=
 figure("nadir")

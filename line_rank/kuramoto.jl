@@ -495,12 +495,15 @@ function kuramoto2_lin_P(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1},d::
 end
 
 # Extracts the max local RoCoF
-function rocof_kuramoto2_lin(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1},d::Array{Float64,1},P::Array{Float64,1},th0::Array{Float64,1},omeg0::Array{Float64,1},verb::Bool=true,max_iter::Int=100000,eps::Float64=1e-6,h::Float64=0.025)
+function rocof_kuramoto2_lin(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1},d::Array{Float64,1},P::Array{Float64,1},th0::Array{Float64,1},omeg0::Array{Float64,1},verb::Bool=true,max_iter::Int=10,eps::Float64=1e-6,h::Float64=0.025)
 	n = size(L)[1]
 	
 	M = spdiagm(0 => m)
 	D = spdiagm(0 => d)
 	Mi = spdiagm(0 => 1 ./ m)
+	
+	A = [spzeros(n,n) spdiagm(0 => ones(n));-Mi*L -Mi*D]
+	PP = [zeros(n);Mi*P]
 	
 	th1 = zeros(n)
 	th2 = copy(th0)
@@ -520,7 +523,8 @@ function rocof_kuramoto2_lin(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1}
 	dxs = Array{Float64,2}(undef,2*n,0)
 	
 	rcf = 0.
-	
+	idx = 0
+		
 	while iter < max_iter && error > eps
 		iter += 1
 		if verb && (iter%1000 == 0 || iter == max_iter)
@@ -529,21 +533,32 @@ function rocof_kuramoto2_lin(L::SparseMatrixCSC{Float64,Int},m::Array{Float64,1}
 		
 		x1 = copy(x2)
 		
+		k1 = PP + A*x1
+		k2 = PP + A*(x1 + h/2*k1)
+		k3 = PP + A*(x1 + h/2*k2)
+		k4 = PP + A*(x1 + h*k3)
+		
+#=
 		k1 = [(x1[(n+1):(2*n)]);(Mi*P - Mi*L*x1[1:n] - Mi*D*x1[(n+1):(2*n)])]
 		k2 = [(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+(h/2)*k1[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k1[(n+1):(2*n)]))]
 		k3 = [(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+(h/2)*k2[1:n]) - Mi*D*(x1[(n+1):(2*n)]+(h/2)*k2[(n+1):(2*n)]))]
 		k4 = [(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]);(Mi*P - Mi*L*(x1[1:n]+h*k3[1:n]) - Mi*D*(x1[(n+1):(2*n)]+h*k3[(n+1):(2*n)]))]
-		
+=#
+				
 		dx = (k1+2*k2+2*k3+k4)/6
 		
 		x2 = x1 + h*dx
 		
 		error = maximum(abs.(dx))
 		
-		rcf = max(rcf,maximum(abs.(dx[(n+1):(2*n)])))
+		ma,k = findmax(abs.(dx[(n+1):(2*n)])) 
+		if ma > abs(rcf)
+			rcf = dx[n+k]
+			idx = iter
+		end
 	end
 	
-	return rcf
+	return rcf,idx
 end
 
 

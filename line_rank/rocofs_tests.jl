@@ -65,7 +65,7 @@ th0 = Li*P
 
 
 sim = 0
-h = .01
+h = .0001
 
 rcfs1 = Array{Float64,2}(undef,length(lines2cut),0)
 rcfs3 = Array{Float64,2}(undef,length(lines2cut),0)
@@ -97,7 +97,7 @@ while sim < n_simu
 		Lr = rm_line(L,l)
 		@info "Simu $sim, Line $(l)"
 		
-		rcf = rocof_kuramoto2_lin(Lr,M,D,P+dP1,th1,zeros(n),false,Int(1e5),1e-4,h)
+		rcf,id = rocof_kuramoto2_lin(Lr,M,D,P+dP1,th1,zeros(n),false,10,1e-4,h)
 #=
 		xs = Xs[1:n,:]
 		dxs = Xs[(n+1):(2*n),:]
@@ -112,7 +112,7 @@ while sim < n_simu
 =#
 		push!(rcf1,rcf)
 		
-		rcf = rocof_kuramoto2_lin(Lr,M,D,P+dP2,th2,zeros(n),false,Int(1e5),1e-4,h)
+		rcf,id = rocof_kuramoto2_lin(Lr,M,D,P+dP2,th2,zeros(n),false,10,1e-4,h)
 #= 
 		xs = Xs[1:n,:]
 		dxs = Xs[(n+1):(2*n),:]
