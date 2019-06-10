@@ -1,4 +1,4 @@
-using PyPlot,SparseArrays,Statistics,DelimitedFiles,LinearAlgebra,Distributions
+using PyPlot,SparseArrays,Statistics,DelimitedFiles,LinearAlgebra,Distributions,Dates
 
 include("kuramoto.jl")
 include("res_dist.jl")
@@ -6,9 +6,8 @@ include("rm_line.jl")
 include("L2B.jl")
 include("isconnected.jl")
 
-thr = 2206
+thr = 6
 h = 1e-4
-
 
 n_simu = 1000
 
@@ -66,9 +65,13 @@ for i in 1:n
 	Ptemp = rand(Normal(P[i],varP[i]),1,n_simu)
 	Ps[i,:] = Ptemp
 end
+## Powers sum to zero, but introduces a bias...
+# #=
 for i in 1:n_simu
 	Ps[:,i] .-= mean(Ps[:,i])
 end
+# =#
+
 EP = sum(Ps,dims=2)./n_simu
 covP = cov(Ps,dims=2)
 #Ps = Array{Float64,2}(undef,n,0)
@@ -81,30 +84,18 @@ c = 0
 for l in cutable_lines
 	global c,L,Li,P,M,n,us,Ps,ls,varP,n_simu,h,Es,vars,covP
 	c += 1
-	@info "Line $c/$(length(cutable_lines))"
+	@info "$(now()) -- Line $c/$(length(cutable_lines))"
 	
 	i = l[1]
 	j = l[2]
 	eij = zeros(n)
 	eij[[i,j]] = [1,-1]
-#=
-	P2use = Array{Int64,1}()
-	for sim in 1:n_simu
-		if (transpose(eij)*Li*Ps[:,simu])[1] > 0
-			push!(P2use,sim)
-		end
-	end
 	
-	Px = Ps[:,P2use]
-	n2use = length(P2use)
-	EP = sum(Px,dims=2)./n2use
-=#
+## Theoretical expectation
+	th = Li*P
+## Effective expectation
+#	th = Li*EP
 	
-	th = Li*EP
-	
-#	Ei_p = -L[i,j]/M[i]*abs(th[i]-th[j])
-#	Ej_p = M[i]/M[j]*Ei_p
-
 	Ei_p = -L[i,j]/M[i]*(th[i]-th[j])
 	Ej_p = -M[i]/M[j]*Ei_p
 		
@@ -112,8 +103,10 @@ for l in cutable_lines
 	
 	for a in 2:n
 		for b in 2:n
-	#		vari_p += (L[i,j])^2/M[i]^2*(us[i,a]-us[j,a])*(us[i,b]-us[j,b])/(ls[a]*ls[b])*(transpose(us[:,a])*diagm(0 => varP)*us[:,b])[1]
-			vari_p += (L[i,j])^2/M[i]^2*(us[i,a]-us[j,a])*(us[i,b]-us[j,b])/(ls[a]*ls[b])*(transpose(us[:,a])*covP*us[:,b])[1]
+## Theoretical covariance matrix
+			vari_p += (L[i,j])^2/M[i]^2*(us[i,a]-us[j,a])*(us[i,b]-us[j,b])/(ls[a]*ls[b])*(transpose(us[:,a])*diagm(0 => varP.^2)*us[:,b])[1]
+## Effective covariance matrix
+#			vari_p += (L[i,j])^2/M[i]^2*(us[i,a]-us[j,a])*(us[i,b]-us[j,b])/(ls[a]*ls[b])*(transpose(us[:,a])*covP*us[:,b])[1]
 		end
 	end
 	

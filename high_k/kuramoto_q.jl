@@ -54,6 +54,57 @@ function kuramoto_q(q::Int64,om::Array{Float64,1},K::Float64,th0::Array{Float64,
 	return ths
 end
 	
+function noisy_kuramoto_q(q::Int64,om::Array{Float64,1},K::Float64,th0::Array{Float64,1},noise::Array{Float64,2},history::Bool=true,h::Float64=.01)
+	n = length(th0)
+		
+	B = Array{Float64,2}(undef,n,0)
+	for i in 1:n-1
+		for j in i+1:n
+			l = zeros(n)
+			l[[i,j]] = [1.,-1.]
+			B = [B l]
+		end
+	end
+	Bt = transpose(B)
+	
+	omega = om .-= mean(om)
+		
+	th1 = copy(th0)
+	th2 = copy(th0)
+	if history
+		ths = Array{Float64,2}(undef,n,0)
+		ths = [ths th0]
+	else
+		ths = Array{Float64,1}
+	end
+	
+	c = 0
+
+	while c < size(noise)[2]
+		if c%1000 == 0
+			@info "c = $c"
+		end
+		c += 1
+		
+		th1 = copy(th2)
+		
+		k1 = omega - K*B*sin.(q*Bt*th1)
+		k2 = omega - K*B*sin.(q*Bt*(th1+h/2*k1))
+		k3 = omega - K*B*sin.(q*Bt*(th1+h/2*k2))
+		k4 = omega - K*B*sin.(q*Bt*(th1+h*k3))
+		
+		dth = (k1+2*k2+2*k3+k4)/6 + noise[:,c]
+		
+		th2 = th1 + h*dth
+		if history
+			ths = [ths th2]
+		else
+			ths = copy(th2)
+		end
+	end
+	
+	return ths
+end
 
 function plot_q(n::Int64,q::Int64)
 	th0 = 2*pi/q*rand(n)
