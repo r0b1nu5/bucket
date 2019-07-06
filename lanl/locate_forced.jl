@@ -2,7 +2,7 @@ using JuMP, Ipopt, LinearAlgebra, DelimitedFiles, Dates
 
 
 function locate_forced(X::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, dt::Float64)
-	@info "Start time: $(now())"
+	@info "$(now()) -- Start..."
 	
 	nn,T = size(X)
 	n = Int(nn/2)
@@ -41,7 +41,7 @@ function locate_forced(X::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float6
 	
 	optimize!(system_id)
 	
-	@info "Stop time: $(now())"
+	@info "$(now()) -- Stop."
 	
 	return (
 		L = value.(L),

@@ -6,7 +6,8 @@ function generate_time_series(L::Array{Float64,2}, d::Array{Float64,1}, m::Array
 	Mi = diagm(0 => 1 ./ m)
 	D = diagm(0 => d)
 	
-	X = [2*pi*rand(n,1);zeros(n,1)]
+	X = zeros(2*n)
+#	X = [2*pi*rand(n,1);zeros(n,1)]
 	
 	t = 0
 	
