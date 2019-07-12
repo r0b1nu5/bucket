@@ -1,17 +1,17 @@
 using PyPlot, DelimitedFiles, FFTW
 
-#Xs = readdlm("data/uk45_forced_5.0_500000_0.0001.csv",',')
-#n = 120 
-#dt = 1e-4
-#T = 50000
-T2 = Int(T/2)
-fignum = 70
+T = 50000
+dt = .004
+f = 1.
+n = 120
+fignum = 1
 
+Xs = readdlm("data/uk45_forced_$(f)_$(T)_$(dt).csv",',')
 
 for i in 1:120
 	fX = real(fft(Xs[n+i,:]))
 	figure(fignum)
-	PyPlot.plot((0:200)./(dt*T),abs.(fX[1:201]))
+	PyPlot.plot((0:25000)./(dt*T),abs.(fX[1:25001]))
 end
 
  #=

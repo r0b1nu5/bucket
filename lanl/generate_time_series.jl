@@ -64,6 +64,9 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 	X = Array{Float64,2}(undef,2*n,0)
 	
 	t = 0
+
+	str = "data/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv"
+ ##=
 	surcount = 0
 	
 	while t < T
@@ -82,16 +85,35 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 		writedlm("data/temp_$(script_id)_$(surcount).csv",X,',')
 		X = Array{Float64,2}(undef,2*n,0)
 	end
-	
+
 	Xf = Array{Float64,2}(undef,2*n,0)
 	for i in 1:surcount
-		Xf = [Xf readdlm("data/temp_$(script_id)_$(i).csv",',')]
+		X = readdlm("data/temp_$(script_id)_$(i).csv",',')
+		Xf = [Xf X]
 		rm("data/temp_$(script_id)_$(i).csv")
 	end
-	
+
 	writedlm("data/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv",Xf,',')
-	
-	return Xf
+# =#
+		
+ #=	
+	while t < T
+		t += 1
+		
+		if t%1000 == 0
+			@info "t/T = $t/$T"
+		end
+		
+		xi = rand(Normal(0,1),n)
+		
+		X0 = A*X0 + [zeros(n);B*xi] + [zeros(n);c.*cos.(2*pi*dt*t*f .+ phi)]
+		
+		open(str, "a") do io
+			writedlm(io, X0', ',')
+		end
+	end
+# =#
+
 end
 
 
