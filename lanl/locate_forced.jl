@@ -1,35 +1,36 @@
-using JuMP, Ipopt, LinearAlgebra, DelimitedFiles, Dates
+using JuMP, AmplNLWriter, Ipopt, LinearAlgebra, DelimitedFiles, Dates, FFTW
 
 ## Identification of the network Laplacian, using the covariance matrix method, proposed in Lokhov18
 
-function system_identification_ipopt(X::Array{Float64,2}, dt::Float64)
+function system_identification_correl(X::Array{Float64,2}, dt::Float64, l::Float64=.01)
 	@info "$(now()) -- Start..."
 	
 	nn,T = size(X)
 	n = Int(nn/2)
-	
-	Mi = diagm(0 => 1 ./ m)
-	D = diagm(0 => d)
-	l = .01
 
-	S0 = zeros(2*n,2*n)
-	S1 = zeros(2*n,2*n)
-	
-	for i in 1:T-1
-		S0 += Xs[:,i]*Xs[:,i]' ./ (T-1)
-		S1 += Xs[:,i+1]*Xs[:,i]' ./ (T-1)
-	end
+	S0 = X[:,1:T-1]*X[:,1:T-1]' ./ (T-1)
+	S1 = X[:,2:T]*X[:,1:T-1]' ./ (T-1)
 	
 	Ah = S1*inv(S0)
 	Adh = (Ah - diagm(0 => ones(2*n)))./dt
 	
 	@info "$(now()) -- Stop."
 	
-	return Adh
+	return Ah,Adh
 end
 
 
-function locate_forcing(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, nf::Int64 = 1)
+function find_forcing_freq(X::Array{Float64,2}, dt::Float64)
+	n,T = size(X)
+	
+	for i in 1:n
+	end
+end
+	
+		
+
+
+function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, nf::Int64 = 1, l::Float64=.1)
 	@info "$(now())"," -- Start..."
 	
 	nn,T = size(X)
@@ -37,20 +38,22 @@ function locate_forcing(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, n
 	
 	AX = [zeros(n,T); A[n+1:2*n,:]*X]
 	
-	locate_f = Model(with_optimizer(Ipopt.Optimizer, print_level=2, mumps_mem_percent=5))
-	
+#	locate_f = Model(with_optimizer(Ipopt.Optimizer, mumps_mem_percent=5))	
+	locate_f = Model(with_optimizer(AmplNLWriter.Optimizer, "ipopt"))
+
 ## Variables
 	@variable(locate_f, 0 <= c[i = 1:n] <= 5)
 	@variable(locate_f, f[i = 1:n])
 	@variable(locate_f, 0 <= phi[i = 1:n] <= 2*pi)
 	
 ## Constraints
-	@NLconstraint(locate_f, sum((c[i] > 0) for i = 1:n) == nf)
+#	@NLconstraint(locate_f, sum((c[i] > 0) for i = 1:n) == nf)
 	
 ## Objective
-	@NLobjective(system_id, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*cos(f[i]*t + phi[i]))^2 for i = 1:n for t = 1:T-1))
-	
-	optimize!(locate_f)
+	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*cos(f[i]*t + phi[i]))^2 for i = 1:n for t = 1:T-1) + l*sum(c[i] for i=1:n))
+#	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i])))*(X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i]))) for i = 1:n for t = 1:T-1) + l*sum(c[i] for i = 1:n))
+		
+	JuMP.optimize!(locate_f)
 	
 	@info "$(now())"," -- Stop."
 	
@@ -60,9 +63,6 @@ function locate_forcing(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, n
 		phi = value.(phi)
 	)
 end
-
-
-function find_inertia_damping(
 
 
 
@@ -81,7 +81,7 @@ function system_identification_ipopt(X::Array{Float64,2}, m::Array{Float64,1}, d
 	D = diagm(0 => d)
 	l = .01
 
-	system_id = Model(with_optimizer(Ipopt.Optimizer, print_level=2, mumps_mem_percent=5))
+	system_id = Model(with_optimizer(Ipopt.Optimizer, mumps_mem_percent=5))
 		
 ## Variables
 	@variables(system_id, begin
@@ -100,13 +100,15 @@ function system_identification_ipopt(X::Array{Float64,2}, m::Array{Float64,1}, d
 	end
 	
 	for i in 1:n
-		@constraint(system_id, sum(L[i,:]) == 0)
+#		@constraint(system_id, sum(L[i,:]) == 0)
+		@constraint(system_id, L[i,i] == -sum(L[i,j] for j = 1:i-1) - sum(L[i,j] for j = i+1:n))
 	end
 	
 ## Objective
 	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], X[n+i,t+1] - X[n+i,t] - dt * (sum(-L[i,k]*X[k,t] for k = 1:n)/m[i] - d[i]*X[n+i,t]/m[i]))
 	
-	@NLobjective(system_id, Min, sum(err[i,t]^2 for i = 1:n for t = 1:T-1) - l * sum(L[i,j] for i = 1:n-1 for j = i+1:n)) 
+#	@NLobjective(system_id, Min, sum(err[i,t]^2 for i = 1:n for t = 1:T-1) - l * sum(L[i,j] for i = 1:n-1 for j = i+1:n))
+	@NLobjective(system_id, Min, sum(err[i,t]^2 for i in 1:n for t in 1:T-1)) 
 
 	optimize!(system_id)
 	
@@ -122,6 +124,8 @@ end
 
 ## Identification of the network Laplacian by an optimization formulation (Ipopt).
 ## !!!!!!!!!!!!!!!!!!! FOR TOO LARGE NETWORK/DATASET, IT FILLS THE RAM AND CRASHES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!¨
+
+
 
 function system_identification_ipopt(X::Array{Float64,2}, dt::Float64)
 	@info "$(now()) -- Start..."
