@@ -1,5 +1,7 @@
 using JuMP, AmplNLWriter, Ipopt, LinearAlgebra, DelimitedFiles, Dates, FFTW
 
+include("res_dist.jl")
+
 ## Identification of the network Laplacian, using the covariance matrix method, proposed in Lokhov18
 
 function system_identification_correl(X::Array{Float64,2}, dt::Float64, l::Float64=.01)
@@ -28,7 +30,43 @@ function find_forcing_freq(X::Array{Float64,2}, dt::Float64)
 end
 	
 		
-
+function locate_forcing_smart(Xs::Array{Float64,2}, pmu_idx::Array{Int64,1}, L::Array{Float64,2})
+	n = size(L)[1]
+	n_idx,T = size(Xs)
+	
+	n_fourier_modes = 5
+	
+	fXs = zeros(Complex{Float64},n_idx,T)
+	fXst = zeros(Complex{Float64},n_idx,T)
+	Xst = zeros(n_idx,T)
+	for i in 1:n_idx
+		fXs[i,:] = fft(Xs[i,:])
+		ids = Int.(sortslices([norm.(fXs[i,2:end]) Array(2:T)],dims=1,rev=true)[1:2*n_fourier_modes,2])
+		fXst[i,[1;ids]] = fXs[i,[1;ids]]
+		Xst[i,:] = real.(ifft(fXst[i,:]))
+	end
+	
+	Xst = Xst - repeat(Xst[1,:]',n_idx,1)
+	
+	Ld = pinv(L)
+	
+	errs = Array{Float64,1}()
+	
+	for i in 1:n
+		print("$i, ")
+		err = 0.
+		for j in 2:n_idx-1
+			for k in j+1:n_idx
+				err += norm(Xst[j,:].*(Ld[i,pmu_idx[k]] - Ld[i,pmu_idx[1]]) - Xst[k,:].*(Ld[i,pmu_idx[j]] - Ld[i,pmu_idx[1]]))^2
+			end
+		end
+		push!(errs,err)
+	end
+	
+	err_id = sortslices([errs 1:n], dims=1)
+	
+	return err_id
+end
 
 function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, nf::Int64 = 1, l::Float64=.1)
 	@info "$(now())"," -- Start..."
