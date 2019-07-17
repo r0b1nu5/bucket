@@ -1,10 +1,8 @@
 using DelimitedFiles
 
-idx = 45
-freq = 100.
-
 n = 120 
 
+Asp = readdlm("data/uk_adj_mat.csv",',')
 Lsp = readdlm("data/lap_mat.csv",',')
 L = zeros(n,n)
 
@@ -15,16 +13,5 @@ end
 m = ones(n)
 d = ones(n)
 
-c = zeros(n)
-c[idx] = 1.
-f = zeros(n)
-f[idx] = freq
-phi = zeros(n)
-phi[idx] = pi/10
-forc = (c,f,phi)
-
-sig = ones(n)
-
-ntw = "uk$idx"
 
 
