@@ -43,11 +43,11 @@ function system_identification_ipopt(X::Array{Float64,2}, m::Array{Float64,1}, d
 	
 ## Objective
 # Defining the error at each node and each time step
-	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], X[n+i,t+1] - X[n+i,t] - dt * (sum(-L[i,k]*X[k,t] for k = 1:n)/m[i] - d[i]*X[n+i,t]/m[i]))
+err = [ X[n+i,t+1] - X[n+i,t] - dt * (sum(-L[i,k]*X[k,t] for k = 1:n)/m[i] - d[i]*X[n+i,t]/m[i]) for i in 1:n for t in 1:T-1]
 @info "$(now()) -- Intermediate expressions defined"
 
 # Sum of squared errors
-	@NLobjective(system_id, Min, sum(err[i,t]^2 for i in 1:n for t in 1:T-1)) 
+	@objective(system_id, Min, sum(err[i,t]^2 for i in 1:n for t in 1:T-1)) 
 @info "$(now()) -- Objective function defined"
 
 	optimize!(system_id)
