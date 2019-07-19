@@ -14,7 +14,7 @@ T2 = 10000
 
 Xs = readdlm("uk_$(T1)_$(dt).csv",',')
 
-Xf = readdlm("ntw10_forced_0.0015_$(T2)_$(dt).csv",',')
+Xf = readdlm("uk_forced_0.0015_$(T2)_$(dt).csv",',')
 
 
 
