@@ -1,15 +1,17 @@
-using PyPlot, DelimitedFiles, SpecialFunctions, Logging, Dates
+using PyPlot, DelimitedFiles, SpecialFunctions, Dates
 
 include("journals.jl")
 include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
 
-number_sample = 500
+number_sample = 2500
 
 zipf_plot = false
 tail_plot = false
 plots = false
+save = true
+	iter = 100
 pl = true
 	s = 0.
 pl_co = true
@@ -22,9 +24,15 @@ poisson = false # useless, tail is too weak
 stretch_expo = false # not done, tail is too weak
 lognormal = false # not done, is exactly a parabola when plotted in loglog scales
 
-#js = ["energy",]
-js = [used_journals[parse(Int,ARGS[1])],]
+#js = ["chaos",]
+#js = [used_journals[parse(Int,ARGS[1])],]
 #js = [used_journals[jn],]
+ #js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre"]
+ #js = ["chaos", "ieee_trans_autom_control", "nature", "prl", "science"] 
+ #js = ["energy", "lancet", "neng_j_med", "prd", "scientometrics"]
+ js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
+
+precision = 1e-4
 
 ps = Array{Float64,1}()
 p_gof = Dict{String,Array{Float64,1}}
@@ -33,28 +41,35 @@ for j in js
 	global s,a,l,al,p_gof,ps
 # Plot histogram
 	@info("$(now()) -- Collecting data: $j")
-	num = Array{Float64,1}(vec(readdlm("./data/"*j*".txt",'\t')[2:end-2,2]))
-	mi = minimum(num)
-	ma = maximum(num)
-	nbins = Int(ma)
+#	num = Array{Float64,1}(vec(readdlm("./data/"*j*".txt",'\t')[2:end-2,2]))
+#	mi = minimum(num)
+#	ma = maximum(num)
+#	nbins = Int(ma)
+	num = Int.(readdlm("data/"*j*"_parsed.csv",','))
+	mi = num[1,1]
+	ma = num[1,end]
+	n_data = sum(num[2,:])
 	distributions = Array{String,1}()
 	max_k = 0.
 	
 	if plots
-		for i in mi:ma
+		for i in 1:size(num)[2]
 			figure(j)
-			PyPlot.plot([i,i],[1e-8,sum(num.==i)/length(num)],"-b",linewidth=2,color=journals_colors[j][1])
+			PyPlot.plot([num[1,i],num[1,i]],[1e-8,num[2,i]/n_data],linewidth=2,color=journals_colors[j][1])
 		end
+	@info "==========================================="
 	end
 		
 # Power law
 	if pl
 		@info("$(now()) -- $j: Power law...")	
 ## MLE
-		s = mle_pl(num)
+#		s = mle_pl(num)
+		s = new_mle_pl(num)
 		C = 1/zeta(s,mi)
 ## Goodness-of-fit
-		p_pl = gof_pl(j,num,s,C,mi,number_sample)
+#		p_pl = gof_pl(j,num,s,C,mi,number_sample)
+		p_pl = new_gof_pl(j,num,s,C,mi,number_sample)
 		push!(ps,p_pl)
 		push!(distributions,"Power law")
 		@info("$(now()) -- "*j*", power law: p-value = $p_pl")
@@ -66,15 +81,19 @@ for j in js
 			max_k = ceil(Int64,(length(num)/Hs)^(1/s))
 			PyPlot.plot([max_k,max_k],[.5/length(num),maximum(z)*length(num)*2],":k",linewidth=2)
 		end
+	@info "==========================================="
+		
 	end	
 # Power law with cutoff
 	if pl_co
 		@info("$(now()) -- Power law with cutoff...")
 ## MLE
-		a,l = mle_plc(num)
+#		a,l = mle_plc(num)
+		a,l = new_mle_plc(num)
 		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
 ## Goodness-of-fit
-		p_plc = gof_plc(j,num,a,l,C,mi,number_sample)
+#		p_plc = gof_plc(j,num,a,l,C,mi,number_sample)
+		p_plc = new_gof_plc(j,num,a,l,C,mi,number_sample)
 		push!(ps,p_plc)
 		push!(distributions,"Power law with cutoff")
 		@info("$(now()) -- "*j*", power law with cutoff: p-value = $p_plc")
@@ -83,6 +102,7 @@ for j in js
 			zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
 			PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
 		end
+	@info "==========================================="
 	end
 
 # MLE of exponential distribution
@@ -98,10 +118,12 @@ for j in js
 	if yule
 		@info("$(now()) -- Yule distribution...")
 ## MLE
-		al = mle_yule(num,mi)
+#		al = mle_yule(num,mi)
+		al = new_mle_yule(num,mi)
 		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
 ## Goodness-of-fit
-		p_yule = gof_yule(j,num,al,C,mi,number_sample)
+#		p_yule = gof_yule(j,num,al,C,mi,number_sample)
+		p_yule = new_gof_yule(j,num,al,C,mi,number_sample)
 		push!(ps,p_yule)
 		push!(distributions,"Yule-Simon distribution")
 		@info("$(now()) -- "*j*", Yule-Simon distribution: p-value = $p_yule")
@@ -110,6 +132,7 @@ for j in js
 			zzzz = C*(al-1)*beta.(mi:ma,al)
 			PyPlot.plot(mi:ma,zzzz,"--b",label="Yule distribution",linewidth=3)
 		end
+	@info "==========================================="
 	end
 
 # Poisson distribution
@@ -165,6 +188,7 @@ end
 
 j = js[1]
 
-writedlm("./analysis/"*j*"_params_$(number_sample)_$iter.csv",[s,a,l,al],',')
-writedlm("./analysis/"*j*"_p-gof_$(number_sample)_$iter.csv",ps,',')
-
+if save
+	writedlm("./analysis/"*j*"_params_$(number_sample)_$iter.csv",[s,a,l,al],',')
+	writedlm("./analysis/"*j*"_p-gof_$(number_sample)_$iter.csv",ps,',')
+end

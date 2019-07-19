@@ -30,6 +30,31 @@ function gof_pl(j::String,x::Array{Float64,1},s0::Float64,C0::Float64,mi::Float6
 	return p
 end
 
+function new_gof_pl(j::String, x::Array{Int64,2}, s0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
+	KS0 = new_KS_pl(x,s0,C0)
+	n_data = sum(x[2,:])
+	
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+		if (i%100 == 0) || i == n_sample
+			@info "$(now()) -- "*j*", GoF power law: $i/$n_sample"
+		end
+		z = new_rand_pl(rand(n_data), s0, C0, mi)
+		s = new_mle_pl(z)
+		C = 1/zeta(s,mi)
+		KS = new_KS_pl(z,s,C)
+		push!(KSs,KS)
+	end
+	
+	p = sum(KSs .> KS0)/n_sample
+	
+	writedlm("analysis/"*j*"_KS0_pl.csv",KS0,',')
+	writedlm("analysis/"*j*"_KSs_pl.csv",KSs,',')
+	
+	return p
+end
+
+
 function gof_plc(j::String,x::Array{Float64,1},a0::Float64,l0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
 	KS0 = KS_plc(x,a0,l0,C0)
 	n_data = length(x)
@@ -54,6 +79,35 @@ function gof_plc(j::String,x::Array{Float64,1},a0::Float64,l0::Float64,C0::Float
 	return p
 end
 
+function new_gof_plc(j::String, x::Array{Int64,2}, a0::Float64, l0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
+	KS0 = new_KS_plc(x,a0,l0,C0)
+	n_data = sum(x[2,:])
+	
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+		if (i%100 == 0) || i == n_sample
+			@info "$(now()) -- "*j*", GoF power law with cutoff: $i/$n_sample"
+		end
+		z = new_rand_plc(rand(n_data), a0, l0, C0, mi)
+# We should do as commented, but due to computation time, we truncate the tail of our synthetic data. Thus the MLE of the parameters is quite bad (at least for small data set, whereas the synthetic data follow correctly the our real data set and its fit. We then compute KS with respect to the estimated parameter a0 and s0. In this case it will give more accurate results.
+#= 
+		a,l = new_mle_plc(z)
+		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
+		KS = new_KS_plc(z,a,l,C)
+=#
+		KS = new_KS_plc(z,a0,l0,C0)
+		push!(KSs,KS)
+	end
+	
+	p = sum(KSs .> KS0)/n_sample
+	
+	writedlm("analysis/"*j*"_KS0_plc.csv",KS0,',')
+	writedlm("analysis/"*j*"_KSs_plc.csv",KSs,',')
+	
+	return p
+end
+
+
 function gof_yule(j::String,x::Array{Float64,1},a0::Float64,C0::Float64,mi::Float64,n_sample::Int=2500)
 	KS0 = KS_yule(x,a0,C0)
 	n_data = length(x)
@@ -74,6 +128,30 @@ function gof_yule(j::String,x::Array{Float64,1},a0::Float64,C0::Float64,mi::Floa
 	
 	writedlm("./analysis/"*j*"_KS0_yule.csv",KS0,',')
 	writedlm("./analysis/"*j*"_KSs_yule.csv",KSs,',')
+	
+	return p
+end
+
+function new_gof_yule(j::String, x::Array{Int64,2}, a0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
+	KS0 = new_KS_yule(x,a0,C0)
+	n_data = sum(x[2,:])
+	
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+		if (i%100 == 0) || i == n_sample
+			@info "$(now()) -- "*j*", GoF Yule law: $i/$n_sample"
+		end
+		z = new_rand_yule(rand(n_data), a0, C0, mi)
+		a = new_mle_yule(z,mi)
+		C = 1/(1-(a-1)*sum(beta.(1:(mi-1),a)))
+		KS = new_KS_yule(z,a,C)
+		push!(KSs,KS)
+	end
+	
+	p = sum(KSs .> KS0)/n_sample
+	
+	writedlm("analysis/"*j*"_KS0_yule.csv",KS0,',')
+	writedlm("analysis/"*j*"_KSs_yule.csv",KSs,',')
 	
 	return p
 end
@@ -122,6 +200,27 @@ function KS_pl(x::Array{Float64,1},s::Float64,C::Float64)
 	return KS
 end
 
+function new_KS_pl(x::Array{Int64,2}, s::Float64, C::Float64)
+	mi = x[1,1]
+	ma = x[1,end]
+	n = sum(x[2,:])
+	
+	cdf = [C*mi^(-s),]
+	ecdf = [x[2,1]/n,]
+	count = 2
+	for i in (mi+1):ma
+		if i == x[1,count]
+			count += 1
+		end
+		push!(cdf,cdf[end] + C*i^(-s))
+		push!(ecdf,sum(x[2,1:count-1])/n)
+	end
+	
+	KS = maximum(abs.(cdf - ecdf))
+	
+	return KS
+end
+
 function KS_plc(x::Array{Float64,1},a::Float64,l::Float64,C::Float64)
 	mi = minimum(x)
 	ma = maximum(x)
@@ -139,6 +238,27 @@ function KS_plc(x::Array{Float64,1},a::Float64,l::Float64,C::Float64)
 	return KS
 end
 
+function new_KS_plc(x::Array{Int64,2}, a::Float64, l::Float64, C::Float64)
+	mi = x[1,1]
+	ma = x[1,end]
+	n = sum(x[2,:])
+	
+	cdf = [C*mi^(-a)*exp(-l*mi),]
+	ecdf = [x[2,1]/n,]
+	count = 2
+	for i in (mi+1):ma
+		if i == x[1,count]
+			count += 1
+		end
+		push!(cdf,cdf[end] + C*i^(-a)*exp(-l*i))
+		push!(ecdf,sum(x[2,1:count-1])/n)
+	end
+	
+	KS = maximum(abs.(cdf - ecdf))
+	
+	return KS
+end
+
 function KS_yule(x::Array{Float64,1},a::Float64,C::Float64)
 	mi = minimum(x)
 	ma = maximum(x)
@@ -149,6 +269,27 @@ function KS_yule(x::Array{Float64,1},a::Float64,C::Float64)
 	for i in (mi+1):ma
 		push!(cdf,cdf[end]+C*(a-1)*beta(i,a))
 		push!(ecdf,sum(x .<= i)/n)
+	end
+	
+	KS = maximum(abs.(cdf - ecdf))
+	
+	return KS
+end
+
+function new_KS_yule(x::Array{Int64,2}, a::Float64, C::Float64)
+	mi = x[1,1]
+	ma = x[1,end]
+	n = sum(x[2,:])
+	
+	cdf = [C*(a-1)*beta(mi,a),]
+	ecdf = [x[2,1]/n,]
+	count = 2
+	for i in (mi+1):ma
+		if i == x[1,count]
+			count += 1
+		end
+		push!(cdf,cdf[end] + C*(a-1)*beta(i,a))
+		push!(ecdf,sum(x[2,1:count-1])/n)
 	end
 	
 	KS = maximum(abs.(cdf - ecdf))
@@ -192,6 +333,41 @@ function rand_pl(y::Array{Float64,1},s::Float64,C::Float64,mi::Float64=1.)
 	return ns
 end
 
+# Returns the histogram, takes too long to generate the data. The error in the tail of the CDF is eps.
+
+function new_rand_pl(yy::Array{Float64,1}, s::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-4)
+	x = 0.
+	n = Int(mi - 1)
+	
+	y = sort(yy)./C
+	ly = length(y)
+		
+	val_num = Array{Int64,2}(undef,2,0)
+	
+	id = 0
+	
+	while (ly - id)*(1 - C*x) > eps
+		while y[id+1] > x && (ly - id)*(1 - C*x) > eps
+			n += 1
+			x += n^(-s)
+		end
+		di = sum(y[id+1:end] .< x)
+		id += di
+		val_num = [val_num [n,di]]
+	end
+	
+	val_num = [val_num [n+1,(ly-id)]]
+	
+ #= # Takes far too much time
+	z = Array{Int64,1}()
+	for i in 1:length(ns)
+		z = [z;i*ones(ns[i])]
+	end
+# =#
+	
+	return val_num
+end
+
 function rand_plc(y::Array{Float64,1},a::Float64,l::Float64,C::Float64,mi::Float64=1.)
 	x = 0.
 	n = mi - 1
@@ -207,6 +383,33 @@ function rand_plc(y::Array{Float64,1},a::Float64,l::Float64,C::Float64,mi::Float
 	return ns
 end
 
+function new_rand_plc(yy::Array{Float64,1}, a::Float64, l::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-4)
+	x = 0.
+	n = Int(mi - 1)
+	
+	y = sort(yy)./C
+	ly = length(y)
+	
+	val_num = Array{Int64,2}(undef,2,0)
+	
+	id = 0
+	
+	while (ly - id)*(1 - C*x) > eps
+		while y[id+1] > x && (ly - id)*(1 - C*x) > eps
+			n += 1
+			x += n^(-a)*exp(-l*n)
+		end
+		di = sum(y[id+1:end] .< x)
+		id += di
+		val_num = [val_num [n,di]]
+	end
+	
+	val_num = [val_num [n+1,(ly-id)]]
+	
+	return val_num
+end
+
+
 function rand_yule(y::Array{Float64,1},a::Float64,C::Float64,mi::Float64=1.)
 	x = 0.
 	n = mi - 1
@@ -220,6 +423,32 @@ function rand_yule(y::Array{Float64,1},a::Float64,C::Float64,mi::Float64=1.)
 	end
 	
 	return ns
+end
+
+function new_rand_yule(yy::Array{Float64,1}, a::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-4)
+	x = 0.
+	n = Int(mi - 1)
+	
+	y = sort(yy)./C
+	ly = length(y)
+	
+	val_num = Array{Int64,2}(undef,2,0)
+	
+	id = 0
+	
+	while (ly - id)*(1 - C*x) > eps
+		while y[id+1] > x && (ly - id)*(C - x) > eps
+			n += 1
+			x += (a-1)*beta(n,a)
+		end
+		di = sum(y[id+1:end] .< x)
+		id += di
+		val_num = [val_num [n,di]]
+	end
+	
+	val_num = [val_num [n+1, (ly-id)]]
+	
+	return val_num
 end
 
 function rand_poisson(y::Array{Float64,1},mu::Float64,C::Float64,mi::Float64=1.)
