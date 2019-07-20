@@ -147,41 +147,88 @@ function locate_forcing_slow(Xs::Array{Float64,2}, pmu_idx::Array{Int64,1}, L::A
 	return err_id
 end
 
-function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, nf::Int64 = 1, l::Float64=.1)
+function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, f::Float64, nf::Int64 = 1, l::Float64 = 1.)
 	@info "$(now())"," -- Start..."
 	
 	nn,T = size(X)
 	n = Int(nn/2)
 	
-	AX = [zeros(n,T); A[n+1:2*n,:]*X]
+	AX = A*X
 	
-#	locate_f = Model(with_optimizer(Ipopt.Optimizer, mumps_mem_percent=5))	
-	locate_f = Model(with_optimizer(AmplNLWriter.Optimizer, "ipopt"))
+	locate_f = Model(with_optimizer(Ipopt.Optimizer))	
 
 ## Variables
-	@variable(locate_f, 0 <= c[i = 1:n] <= 5)
-	@variable(locate_f, f[i = 1:n])
-	@variable(locate_f, 0 <= phi[i = 1:n] <= 2*pi)
+	@variable(locate_f, 0 <= c[i = 1:n] <= 10)
+#	@variable(locate_f, f[i = 1:n])
+#	@variable(locate_f, 0 <= phi[i = 1:n] <= 2*pi)
 	
 ## Constraints
 #	@NLconstraint(locate_f, sum((c[i] > 0) for i = 1:n) == nf)
-	
+#=	for i in 2:n
+		@constraint(locate_f, c[i] == 0)
+	end
+=#	
 ## Objective
-	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*cos(f[i]*t + phi[i]))^2 for i = 1:n for t = 1:T-1) + l*sum(c[i] for i=1:n))
+	@objective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - dt*c[i]*cos(f*2*pi*t*dt))*(X[n+i,t+1] - AX[n+i,t] - dt*c[i]*cos(f*2*pi*t*dt)) for i in 1:n for t in 1:T-1) + l*sum(c[i] for i in 1:n))
+	
+#	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*cos(f[i]*t + phi[i]))^2 for i = 1:n for t = 1:T-1) + l*sum(c[i] for i=1:n))
 #	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i])))*(X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i]))) for i = 1:n for t = 1:T-1) + l*sum(c[i] for i = 1:n))
 		
 	JuMP.optimize!(locate_f)
 	
 	@info "$(now())"," -- Stop."
-	
+
+#= 	
 	return (
 		c = value.(c),
 		f = value.(f),
 		phi = value.(phi)
 	)
+=#
+	return value.(c)
 end
 
 
+function location_freq_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, nf::Int64 = 1, l::Float64 = 1.)
+	@info "$(now())"," -- Start..."
+	
+	nn,T = size(X)
+	n = Int(nn/2)
+	
+	AX = A*X
+	
+	locate_f = Model(with_optimizer(Ipopt.Optimizer))
+
+## Variables
+	@variable(locate_f, 0 <= c[i = 1:n] <= 10)
+	@variable(locate_f, f[i = 1:n])
+#	@variable(locate_f, 0 <= phi[i = 1:n] <= 2*pi)
+	
+## Constraints
+#	@NLconstraint(locate_f, sum((c[i] > 0) for i = 1:n) == nf)
+#=	for i in 2:n
+		@constraint(locate_f, c[i] == 0)
+	end
+=#
+	@NLexpression(locate_f, co[i,t] = cos(f[i]*2*pi*t*dt) for i in 1:n for t in 1:T-1)
+## Objective
+	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - dt*c[i]*co[i,t])*(X[n+i,t+1] - AX[n+i,t] - dt*c[i]*co[i,t]) for i in 1:n for t in 1:T-1) + l*sum(c[i] + f[i] for i in 1:n))
+	
+#	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*cos(f[i]*t + phi[i]))^2 for i = 1:n for t = 1:T-1) + l*sum(c[i] for i=1:n))
+#	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i])))*(X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i]))) for i = 1:n for t = 1:T-1) + l*sum(c[i] for i = 1:n))
+		
+	JuMP.optimize!(locate_f)
+	
+	@info "$(now())"," -- Stop."
+
+ 	
+	return (
+		c = value.(c),
+		f = value.(f),
+#		phi = value.(phi)
+	)
+
+end
 
 
 
