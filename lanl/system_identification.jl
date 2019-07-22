@@ -1,5 +1,41 @@
 using LinearAlgebra, JuMP, Ipopt, Dates
 
+
+function system_identification_ipopt(X::Array{Float64}, dt::Float64)
+	nn,T = size(X)
+	n = Int(nn/2)
+	
+	system_id = Model(with_optimizer(Ipopt.Optimizer))
+	
+	@variable(system_id, MiL[i = 1:n, j = 1:n])
+	@variable(system_id, mid[i = 1:n])
+@info "Variables"
+	
+	for i in 1:n-1
+		for j in i+1:n
+			@constraint(system_id, MiL[i,j] <= 0)
+			@constraint(system_id, MiL[j,i] <= 0)
+		end
+		@constraint(system_id, MiL[i,i] == -sum(MiL[i,j] for j = 1:i-1) - sum(MiL[i,j] for j = i+1:n))
+	end
+	@constraint(system_id, MiL[n,n] == -sum(MiL[n,j] for j = 1:n-1))
+@info "Constraints"
+	
+	@objective(system_id, Min, sum((X[n+i,t+1] - X[n+i,t] - dt * (sum(-MiL[i,k]*X[k,t] for k = 1:n) - mid[i]*X[n+i,t])) * (X[n+i,t+1] - X[n+i,t] - dt * (sum(-MiL[i,k]*X[k,t] for k = 1:n) - mid[i]*X[n+i,t])) for i = 1:n for t = 1:T-1))
+@info "Objective"
+	
+	optimize!(system_id)
+@info "Optimized"
+	
+	I = diagm(0 => ones(n))
+	
+	Ah = [I dt*I; (-dt*value.(MiL)) (I - dt*diagm(0 => value.(mid)))]
+	
+	return Ah
+end
+
+
+
 ## INPUT 
 # X: time series of the dynamic variables. In our case, rows 1 to n are the angles and rows n+1 to 2*n are the velocities. Each column is a time step.
 # m: Vector of inertias
@@ -10,7 +46,7 @@ using LinearAlgebra, JuMP, Ipopt, Dates
 # L: estimated Laplacian of the network.
 
 
-function system_identification_ipopt(X::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, dt::Float64)
+function laplacian_identification_ipopt(X::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, dt::Float64)
 	
 	T = size(X)[2]
 	n = length(m)
@@ -59,7 +95,7 @@ function system_identification_ipopt(X::Array{Float64,2}, m::Array{Float64,1}, d
 end
 
 
-function system_identification_ipopt_no_constraints(X::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, dt::Float64)
+function laplacian_identification_ipopt_no_constraints(X::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, dt::Float64)
 	
 	T = size(X)[2]
 	n = length(m)
