@@ -79,7 +79,7 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 			
 			xi = rand(Normal(0,1),n)
 			
-			X = [X (A*X0 + [zeros(n);B*xi] + [zeros(n);c.*cos.(2*pi*dt*t*f .+ phi)])]
+			X = [X (A*X0 + dt*([zeros(n);B*xi] + [zeros(n);c.*cos.(2*pi*dt*t*f .+ phi)]))]
 			X0 = X[:,end]
 		end
 		writedlm("data/temp_$(script_id)_$(surcount).csv",X,',')
