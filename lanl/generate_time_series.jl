@@ -127,8 +127,6 @@ function generate_forced_inertialess_time_series(ntw::String, L::Array{Float64,2
 	
 	c,f,phi = forcing
 	
-	@info "c,f,phi = ($(c[45]),$(f[45]),$(phi[45])"
-	
 	X0 = zeros(n)
 	X = Array{Float64,2}(undef,n,0)
 	
@@ -163,7 +161,7 @@ function generate_forced_inertialess_time_series(ntw::String, L::Array{Float64,2
 	end
 	
 	writedlm(str,Xf,',')
-
+	return Xf
 end
 
 
