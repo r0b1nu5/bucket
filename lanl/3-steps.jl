@@ -85,7 +85,7 @@ function find_A_n_f(X::Array{Float64,2}, dt::Float64)
 		while test == true
 			test = false
 			for k in [minimum(ids)-1,maximum(ids)+1]
-				if 1 <= k <= T
+				if 1 < k <= T
 					if nfX[n+i,k] > .5*ma
 						push!(mas,nfX[n+i,k])
 						push!(ids,k)
@@ -101,7 +101,9 @@ function find_A_n_f(X::Array{Float64,2}, dt::Float64)
 		push!(maxs,ma)
 	end
 	
-	fh = sum(maxs.^2 .* freqs)/sum(maxs.^2)
+	m,k = findmax(maxs)
+	fh = freqs[k]
+#	fh = sum(maxs.^2 .* freqs)/sum(maxs.^2)
 
 	Xt = zeros(nn,T)
 	for i in 1:n

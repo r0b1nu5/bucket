@@ -3,7 +3,7 @@ using DelimitedFiles
 n = 120 
 
 Asp = readdlm("data/uk_adj_mat.csv",',')
-Lsp = readdlm("data/lap_mat.csv",',')
+Lsp = readdlm("data/uk_lap_mat.csv",',')
 L = zeros(n,n)
 
 for i in 1:size(Lsp)[1]

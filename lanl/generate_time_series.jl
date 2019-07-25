@@ -46,7 +46,7 @@ function generate_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64
 end
 
 
-function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, forcing::Tuple{Array{Float64,1}, Array{Float64,1}, Array{Float64,1}}, T::Int64, dt::Float64, sig::Array{Float64,1})
+function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, forcing::Tuple{Array{Float64,1}, Array{Float64,1}, Array{Float64,1}}, T::Int64, dt::Float64, sig::Array{Float64,1},verb::Bool = false)
 	n = size(L)[1]
 	script_id = rand(1:1000)
 	
@@ -58,19 +58,21 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 	
 	B = diagm(0 => sqrt(dt)*sig./m)
 	
-	c,f,phi = forcing
+	a,f,phi = forcing
 	
 	X0 = zeros(2*n)
 	X = Array{Float64,2}(undef,2*n,0)
 	
 	t = 0
 
-	str = "data/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv"
+	str = "data3/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv"
  ##=
 	surcount = 0
 	
 	while t < T
-		@info "t/T = $(t)/$(T)"
+		if verb
+			@info "t/T = $(t)/$(T)"
+		end
 		surcount += 1
 		subcount = 0
 		while subcount < 1000 && t < T
@@ -79,21 +81,21 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 			
 			xi = rand(Normal(0,1),n)
 			
-			X = [X (A*X0 + dt*([zeros(n);B*xi] + [zeros(n);c.*cos.(2*pi*dt*t*f .+ phi)]))]
+			X = [X (A*X0 + dt*([zeros(n);B*xi] + [zeros(n);a.*cos.(2*pi*dt*t*f .+ phi)]))]
 			X0 = X[:,end]
 		end
-		writedlm("data/temp_$(script_id)_$(surcount).csv",X,',')
+		writedlm("data3/temp_$(script_id)_$(surcount).csv",X,',')
 		X = Array{Float64,2}(undef,2*n,0)
 	end
 
 	Xf = Array{Float64,2}(undef,2*n,0)
 	for i in 1:surcount
-		X = readdlm("data/temp_$(script_id)_$(i).csv",',')
+		X = readdlm("data3/temp_$(script_id)_$(i).csv",',')
 		Xf = [Xf X]
-		rm("data/temp_$(script_id)_$(i).csv")
+		rm("data3/temp_$(script_id)_$(i).csv")
 	end
 
-	writedlm("data/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv",Xf,',')
+	writedlm("data2/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv",Xf,',')
 # =#
 		
  #=	
@@ -165,5 +167,27 @@ function generate_forced_inertialess_time_series(ntw::String, L::Array{Float64,2
 end
 
 
+function generate_uk_ntw(brng::Tuple{Float64,Float64} = (1.,1.), mrng::Tuple{Float64,Float64} = (1.,1.), drng::Tuple{Float64,Float64} = (1.,1.), CSV_address::String = "data/uk_adj_mat.csv")
+	n = 120
+	
+	Asp = readdlm(CSV_address,',')
+	A = zeros(n,n)
+	b = rand(Uniform(brng[1],brng[2]),165)
+	bb = repeat(b, inner=2)
+	
+	for i in 1:size(Asp)[1]
+		A[Int(Asp[i,1]),Int(Asp[i,2])] = bb[i]
+	end
+	
+	L = diagm(0 => vec(sum(A,dims=2))) - A
+	
+	m = rand(Uniform(mrng[1],mrng[2]),n)
+	d = rand(Uniform(drng[1],drng[2]),n)
+	
+	return L, m, d
+end
 
+
+	
+	
 

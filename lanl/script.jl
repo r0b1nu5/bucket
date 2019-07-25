@@ -1,22 +1,19 @@
-using Dates 
+ti = time()
 
-include("generate_time_series.jl")
+fX45 = fft(Xs[120+45,:])
+fX114 = fft(Xs[120+114,:])
 
-dt = .25
-T = 50000
+figure()
+subplot(211)
+PyPlot.plot((0:T-1)./(dt*T),real.(fX45))
+subplot(212)
+PyPlot.plot((0:T-1)./(dt*T),real.(fX114))
 
-for n in [5,10,20,40,80]
-	@info "n = $(n)"
-	
-	ntw = "C$(n)"
-	
-	L = 2*diagm(0 => ones(n)) - diagm(1 => ones(n-1)) - diagm(-1 => ones(n-1)) - diagm(n-1 => ones(1)) - diagm(1-n => ones(1))
-	m = ones(n)
-	d = ones(n)
-	
-	X = generate_time_series(ntw,L,m,d,T,dt,ones(n))
-end
+Ah, fh = find_A_n_f(Xs,dt)
 
+ah, ph = locate_f_n_lag(Xs,dt,fh,Ah)
+
+@info "Total time: $(time() - ti)"
 
 
 
