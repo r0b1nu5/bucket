@@ -66,7 +66,7 @@ function find_A_n_f(X::Array{Float64,2}, dt::Float64)
 		Xt[i+n,:] = real.(ifft(fXt[i+n,:]))
 	end
 	
-	Ah, Adh = system_identification_correl(Xt, dt)
+	Ah, Adh = system_id_correl(Xt, dt)
 	
 	return Ah, fh
 end
@@ -114,5 +114,24 @@ function locate_f_n_lag(X::Array{Float64,2}, dt::Float64, f::Float64, A::Array{F
 
 	return a, phi
 end
+
+
+#### SYSTEM IDENTIFICATION USING CORRELATION MATRICES #################
+
+function system_id_correl(X::Array{Float64,2}, dt::Float64, l::Float64=.01)
+	nn,T = size(X)
+	n = Int(nn/2)
+
+	S0 = X[:,1:T-1]*X[:,1:T-1]' ./ (T-1)
+	S1 = X[:,2:T]*X[:,1:T-1]' ./ (T-1)
+	
+	Ah = S1*inv(S0)
+	Adh = (Ah - diagm(0 => ones(2*n)))./dt
+	
+	return Ah,Adh
+end
+
+
+
 
 
