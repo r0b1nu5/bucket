@@ -22,13 +22,6 @@ function system_identification_correl(X::Array{Float64,2}, dt::Float64, l::Float
 end
 
 
-function find_forcing_freq(X::Array{Float64,2}, dt::Float64)
-	n,T = size(X)
-	
-	for i in 1:n
-	end
-end
-
 
 ## INPUT
 # Xs: time series of measurements at the PMUs.
@@ -147,7 +140,7 @@ function locate_forcing_slow(Xs::Array{Float64,2}, pmu_idx::Array{Int64,1}, L::A
 	return err_id
 end
 
-function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, f::Float64, nf::Int64 = 1, l::Float64 = 1.)
+function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Float64, l::Float64 = .1)
 	@info "$(now())"," -- Start..."
 	
 	nn,T = size(X)
@@ -158,9 +151,9 @@ function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Floa
 	locate_f = Model(with_optimizer(Ipopt.Optimizer))	
 
 ## Variables
-	@variable(locate_f, 0 <= c[i = 1:n] <= 10)
-#	@variable(locate_f, f[i = 1:n])
-#	@variable(locate_f, 0 <= phi[i = 1:n] <= 2*pi)
+	@variable(locate_f, 0 <= a[i = 1:n] <= 10)
+	@variable(locate_f, f[i = 1:n])
+	@variable(locate_f, 0 <= phi[i = 1:n] <= 2*pi)
 	
 ## Constraints
 #	@NLconstraint(locate_f, sum((c[i] > 0) for i = 1:n) == nf)
@@ -169,7 +162,7 @@ function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Floa
 	end
 =#	
 ## Objective
-	@objective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - dt*c[i]*cos(f*2*pi*t*dt))*(X[n+i,t+1] - AX[n+i,t] - dt*c[i]*cos(f*2*pi*t*dt)) for i in 1:n for t in 1:T-1) + l*sum(c[i] for i in 1:n))
+@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - dt*a[i]*cos(f[i]*2*pi*t*dt + phi[i]))*(X[n+i,t+1] - AX[n+i,t] - dt*a[i]*cos(f[i]*2*pi*t*dt + phi[i])) for i in 1:n for t in 1:T-1) + l*sum(a[i] for i in 1:n))
 	
 #	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*cos(f[i]*t + phi[i]))^2 for i = 1:n for t = 1:T-1) + l*sum(c[i] for i=1:n))
 #	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i])))*(X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i]))) for i = 1:n for t = 1:T-1) + l*sum(c[i] for i = 1:n))
@@ -178,14 +171,13 @@ function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Floa
 	
 	@info "$(now())"," -- Stop."
 
-#= 	
+ 	
 	return (
-		c = value.(c),
+		a = value.(a),
 		f = value.(f),
 		phi = value.(phi)
 	)
-=#
-	return value.(c)
+
 end
 
 
@@ -294,42 +286,41 @@ function system_identification_ipopt(X::Array{Float64,2}, dt::Float64)
 	@variables(system_id, begin
 		Lm[i = 1:n, j = 1:n]
 		dm[i = 1:n] >= 0
-		a[i = 1:n] 
-		f[i = 1:n] 
-		phi[i = 1:n]
+		a[i = 1:n] >= 0 
+		f[i = 1:n] >= 0
+		0 <= phi[i = 1:n] <= 2pi
 	end)
-	
+
 ## Constraints
 	for i in 1:n-1
 		for j in i+1:n
-			@constraint(system_id, L[i,j] <= 0)
-			@constraint(system_id, L[j,i] <= 0)
+			@constraint(system_id, Lm[i,j] <= 0)
+			@constraint(system_id, Lm[j,i] <= 0)
 		end
 	end
 	
 	for i in 1:n
-		@constraint(system_id, sum(L[i,:]) == 0)
+		@constraint(system_id, sum(Lm[i,:]) == 0)
 	end
-	
+
 ## Objective
 @NLexpression(system_id, err[i = 1:n, t = 1:T-1], X[n+i,t+1] - X[n+i,t] - dt * (sum(-Lm[i,k]*X[k,t] for k = 1:n) - dm[i]*X[n+i,t] - a[i]*cos(2*pi*f[i]*t*dt + phi[i])))
-	
-	@NLobjective(system_id, Min, sum(err[i,t]^2 for i = 1:n for t = 1:T-1) - l * sum(L[i,j] for i = 1:n-1 for j = i+1:n)) 
 
+@NLobjective(system_id, Min, sum(err[i,t]^2 for i = 1:n for t = 1:T-1) - l * sum(Lm[i,j] for i = 1:n-1 for j = i+1:n)) 
+@info "Objective done."
 	
 	optimize!(system_id)
 	
 	@info "$(now()) -- Stop."
 	
 	return (
-		Lm = value.(L),
-		dm = value.(d),
+		Lm = value.(Lm),
+		dm = value.(dm),
 		a = value.(a),
 		f = value.(f),
 		phi = value.(phi)
 	)
 end
 	
-
 
 
