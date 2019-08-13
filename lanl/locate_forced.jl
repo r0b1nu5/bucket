@@ -155,18 +155,9 @@ function locate_forcing_ipopt(X::Array{Float64,2}, A::Array{Float64,2}, dt::Floa
 	@variable(locate_f, f[i = 1:n])
 	@variable(locate_f, 0 <= phi[i = 1:n] <= 2*pi)
 	
-## Constraints
-#	@NLconstraint(locate_f, sum((c[i] > 0) for i = 1:n) == nf)
-#=	for i in 2:n
-		@constraint(locate_f, c[i] == 0)
-	end
-=#	
 ## Objective
 @NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - dt*a[i]*cos(f[i]*2*pi*t*dt + phi[i]))*(X[n+i,t+1] - AX[n+i,t] - dt*a[i]*cos(f[i]*2*pi*t*dt + phi[i])) for i in 1:n for t in 1:T-1) + l*sum(a[i] for i in 1:n))
 	
-#	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*cos(f[i]*t + phi[i]))^2 for i = 1:n for t = 1:T-1) + l*sum(c[i] for i=1:n))
-#	@NLobjective(locate_f, Min, sum((X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i])))*(X[n+i,t+1] - AX[n+i,t] - c[i]*(1-(f[i]*t + phi[i])*(1-f[i]*t + phi[i]))) for i = 1:n for t = 1:T-1) + l*sum(c[i] for i = 1:n))
-		
 	JuMP.optimize!(locate_f)
 	
 	@info "$(now())"," -- Stop."
@@ -272,13 +263,11 @@ end
 
 
 
-function system_identification_ipopt(X::Array{Float64,2}, dt::Float64)
+function system_identification_ipopt(X::Array{Float64,2}, dt::Float64, l::Float64=.01)
 	@info "$(now()) -- Start..."
 	
 	nn,T = size(X)
 	n = Int(nn/2)
-	
-	l = .01
 		
 	system_id = Model(with_optimizer(Ipopt.Optimizer))
 	
@@ -291,6 +280,7 @@ function system_identification_ipopt(X::Array{Float64,2}, dt::Float64)
 		0 <= phi[i = 1:n] <= 2pi
 	end)
 
+#=
 ## Constraints
 	for i in 1:n-1
 		for j in i+1:n
@@ -302,12 +292,12 @@ function system_identification_ipopt(X::Array{Float64,2}, dt::Float64)
 	for i in 1:n
 		@constraint(system_id, sum(Lm[i,:]) == 0)
 	end
+=#
 
 ## Objective
 @NLexpression(system_id, err[i = 1:n, t = 1:T-1], X[n+i,t+1] - X[n+i,t] - dt * (sum(-Lm[i,k]*X[k,t] for k = 1:n) - dm[i]*X[n+i,t] - a[i]*cos(2*pi*f[i]*t*dt + phi[i])))
 
-@NLobjective(system_id, Min, sum(err[i,t]^2 for i = 1:n for t = 1:T-1) - l * sum(Lm[i,j] for i = 1:n-1 for j = i+1:n)) 
-@info "Objective done."
+@NLobjective(system_id, Min, sum(err[i,t]^2 for i = 1:n for t = 1:T-1) - l * sum(Lm[i,j] + Lm[j,i] for i = 1:n-1 for j = i+1:n)) 
 	
 	optimize!(system_id)
 	
@@ -323,4 +313,53 @@ function system_identification_ipopt(X::Array{Float64,2}, dt::Float64)
 end
 	
 
+function system_identification_ipopt_fullA(X::Array{Float64,2}, dt::Float64, l::Float64=.01)
+	@info "$(now()) -- Start..."
+	
+	nn,T = size(X)
+	n = Int(nn/2)
+		
+	system_id = Model(with_optimizer(Ipopt.Optimizer))
+	
+## Variables
+	@variables(system_id, begin
+		A[i = n+1:2*n, j = 1:2*n]
+		a[i = 1:n] >= 0 
+		f[i = 1:n] >= 0
+		0 <= phi[i = 1:n] <= 2pi
+	end)
+
+## Constraints
+	for i in 1:n-1
+		for j in i+1:n
+			@constraint(system_id, A[i+n,j] >= 0)
+			@constraint(system_id, A[j+n,i] >= 0)
+			@constraint(system_id, A[i+n,j+n] == 0)
+			@constraint(system_id, A[j+n,i+n] == 0)
+		end
+	end
+	
+	for i in 1:n
+		@constraint(system_id, sum(A[i+n,k] for k = 1:n) == 0)
+		@constraint(system_id, A[i+n,i+n] >= 0)
+	end
+
+## Objective
+@NLexpression(system_id, err[i = 1:n, t = 1:T-1], X[n+i,t+1] - X[n+i,t] - sum(A[i+n,k]*X[k,t] for k = 1:2*n) - dt * (a[i]*cos(2*pi*f[i]*t*dt + phi[i])))
+
+@NLobjective(system_id, Min, sum(err[i,t]^2 for i = 1:n for t = 1:T-1) - l * sum(A[i+n,j] + A[j+n,i] for i = 1:n-1 for j = i+1:n)) 
+@info "Objective done."
+	
+	optimize!(system_id)
+	
+	@info "$(now()) -- Stop."
+	
+	return (
+		A = value.(A),
+		a = value.(a),
+		f = value.(f),
+		phi = value.(phi)
+	)
+end
+	
 
