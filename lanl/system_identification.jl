@@ -1,7 +1,7 @@
 using LinearAlgebra, JuMP, Ipopt, Dates
 
 
-function system_identification_ipopt(X::Array{Float64}, dt::Float64)
+function dynamics_identification_ipopt(X::Array{Float64}, dt::Float64)
 	nn,T = size(X)
 	n = Int(nn/2)
 	
