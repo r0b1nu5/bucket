@@ -312,6 +312,56 @@ function system_identification_ipopt(X::Array{Float64,2}, dt::Float64, l::Float6
 	)
 end
 	
+function system_identification_ipopt2(X::Array{Float64,2}, dt::Float64, l::Float64=.01)
+	@info "$(now()) -- Start..."
+	
+	nn,T = size(X)
+	n = Int(nn/2)
+		
+	system_id = Model(with_optimizer(Ipopt.Optimizer))
+	
+## Variables
+	@variables(system_id, begin
+		Lm[i = 1:n, j = 1:n]
+		dm[i = 1:n] >= 0
+		a[i = 1:n] >= 0 
+		f[i = 1:n] >= 0
+		0 <= phi[i = 1:n] <= 2pi
+	end)
+
+ ##=
+## Constraints
+	for i in 1:n-1
+		for j in i+1:n
+			@constraint(system_id, Lm[i,j] <= 0)
+			@constraint(system_id, Lm[j,i] <= 0)
+		end
+	end
+	
+	for i in 1:n
+		@constraint(system_id, sum(Lm[i,:]) == 0)
+	end
+# =#
+
+## Objective
+@expression(system_id, err[i = 1:n, t = 1:T-1], X[n+i,t+1] - X[n+i,t] - dt * (sum(-Lm[i,k]*X[k,t] for k = 1:n) - dm[i]*X[n+i,t]))
+@NLexpression(system_id, coss[i = 1:n, t = 1:T], a[i]*cos(2*pi*f[i]*dt*t + phi[i]))
+
+@NLobjective(system_id, Min, sum(((X[n+i,t+1] - coss[i,t+1]) - (X[n+i,t] - coss[i,t]) - dt * (sum(-Lm[i,k]*X[k,t] for k = 1:n) - dm[i]*X[n+i,t]))*((X[n+i,t+1] - coss[i,t+1]) - (X[n+i,t] - coss[i,t]) - dt * (sum(-Lm[i,k]*X[k,t] for k = 1:n) - dm[i]*X[n+i,t])) for i = 1:n for t = 1:T-1) + l * sum(Lm[i,j] + L[j,i] for i = 1:n-1 for j = i+1:n))
+
+	optimize!(system_id)
+	
+	@info "$(now()) -- Stop."
+	
+	return (
+		Lm = value.(Lm),
+		dm = value.(dm),
+		a = value.(a),
+		f = value.(f),
+		phi = value.(phi)
+	)
+end
+	
 
 function system_identification_ipopt_fullA(X::Array{Float64,2}, dt::Float64, l::Float64=.01)
 	@info "$(now()) -- Start..."
