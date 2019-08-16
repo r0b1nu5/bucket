@@ -312,22 +312,27 @@ function system_identification_ipopt(X::Array{Float64,2}, dt::Float64, l::Float6
 	)
 end
 	
-function system_identification_ipopt2(X::Array{Float64,2}, dt::Float64, l::Float64=.01)
+
+##### NOT COMPLETE !!!!!!!!!!!!!!!!! 
+
+function system_identification_ipopt2(id::Int64, X::Array{Float64,2}, dt::Float64, l::Float64=.01)
 	@info "$(now()) -- Start..."
 	
 	nn,T = size(X)
 	n = Int(nn/2)
-		
+	
+	Ah = system_identification_correl(X,dt)
+	Lh = -Ah[n+1:2*n,1:n]/dt
+	dh = (1 - diag(Ah[n+1:2*n,n+1:2*n]))/dt
+
 	system_id = Model(with_optimizer(Ipopt.Optimizer))
 	
 ## Variables
-	@variables(system_id, begin
-		Lm[i = 1:n, j = 1:n]
-		dm[i = 1:n] >= 0
-		a[i = 1:n] >= 0 
-		f[i = 1:n] >= 0
-		0 <= phi[i = 1:n] <= 2pi
-	end)
+	@variable(system_id, Lm[i = 1:n, j = 1:n], start = Lh)
+	@variable(system_id, dm[i = 1:n], start = dh)
+	@variable(system_id, a >= 0)
+	@variable(system_id, f >= 0)
+	@variabel(system_id, 0 <= phi <= 2pi)
 
  ##=
 ## Constraints
