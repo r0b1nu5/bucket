@@ -6,9 +6,15 @@ include("mle.jl")
 include("gof.jl")
 
 number_sample = 2500
+precision = 1e-4
 
-zipf_plot = false
-tail_plot = false
+############## JOURNALS TO USE ########################################
+#js = [used_journals[parse(Int,ARGS[1])],]
+#js = [used_journals[jn],]
+ js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
+
+
+################ DO / DON'T LIST #######################################
 plots = false
 save = true
 	iter = 100
@@ -17,41 +23,42 @@ pl = true
 pl_co = true
 	a = 0.
 	l = 0.
-expo = false # useless, tail is too weak
 yule = true
 	al = 0.
+
+# ============= useless ==============================================
+expo = false # useless, tail is too weak
 poisson = false # useless, tail is too weak
 stretch_expo = false # not done, tail is too weak
 lognormal = false # not done, is exactly a parabola when plotted in loglog scales
 
-#js = ["chaos",]
-#js = [used_journals[parse(Int,ARGS[1])],]
-#js = [used_journals[jn],]
- #js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre"]
- #js = ["chaos", "ieee_trans_autom_control", "nature", "prl", "science"] 
- #js = ["energy", "lancet", "neng_j_med", "prd", "scientometrics"]
- js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
+zipf_plot = false
+tail_plot = false
+# ===================================================================
 
-precision = 1e-4
 
 ps = Array{Float64,1}()
 p_gof = Dict{String,Array{Float64,1}}
 
 for j in js
 	global s,a,l,al,p_gof,ps
-# Plot histogram
+
+################ COLLECTING DATA ################################
+	
 	@info("$(now()) -- Collecting data: $j")
-#	num = Array{Float64,1}(vec(readdlm("./data/"*j*".txt",'\t')[2:end-2,2]))
-#	mi = minimum(num)
-#	ma = maximum(num)
-#	nbins = Int(ma)
-	num = Int.(readdlm("data/"*j*"_parsed.csv",','))
+	if j == "prl" || j == "prd"
+		num = Int.(readdlm("data/"*j*"_reduced_parsed.csv",','))
+	else
+		num = Int.(readdlm("data/"*j*"_parsed.csv",','))
+	end
+	
 	mi = num[1,1]
 	ma = num[1,end]
 	n_data = sum(num[2,:])
 	distributions = Array{String,1}()
 	max_k = 0.
 	
+############## PLOT HISTOGRAM ##################################
 	if plots
 		for i in 1:size(num)[2]
 			figure(j)
@@ -60,20 +67,21 @@ for j in js
 	@info "==========================================="
 	end
 		
-# Power law
+############### POWER LAW ###################################
 	if pl
 		@info("$(now()) -- $j: Power law...")	
-## MLE
-#		s = mle_pl(num)
+
+# ============= mle =====================================
 		s = new_mle_pl(num)
 		C = 1/zeta(s,mi)
-## Goodness-of-fit
-#		p_pl = gof_pl(j,num,s,C,mi,number_sample)
+
+# ============= goodness-of-fit =========================
 		p_pl = new_gof_pl(j,num,s,C,mi,number_sample)
 		push!(ps,p_pl)
 		push!(distributions,"Power law")
 		@info("$(now()) -- "*j*", power law: p-value = $p_pl")
-## Plot
+
+# ============= plot ====================================
 		if plots
 			Hs = sum(1.0./((mi:ma).^s))
 			z = C * ((mi:ma).^(-s))
@@ -84,20 +92,23 @@ for j in js
 	@info "==========================================="
 		
 	end	
-# Power law with cutoff
+
+
+################# POWER LAW WITH CUTOFF ########################
 	if pl_co
 		@info("$(now()) -- Power law with cutoff...")
-## MLE
-#		a,l = mle_plc(num)
+
+# =========== mle ==========================================
 		a,l = new_mle_plc(num)
 		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
-## Goodness-of-fit
-#		p_plc = gof_plc(j,num,a,l,C,mi,number_sample)
+
+# =========== goodness-of-fit =============================
 		p_plc = new_gof_plc(j,num,a,l,C,mi,number_sample)
 		push!(ps,p_plc)
 		push!(distributions,"Power law with cutoff")
 		@info("$(now()) -- "*j*", power law with cutoff: p-value = $p_plc")
-## Plot
+
+# =========== plot =========================================
 		if plots
 			zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
 			PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
@@ -105,6 +116,41 @@ for j in js
 	@info "==========================================="
 	end
 
+
+################## YULE #####################################
+	if yule
+		@info("$(now()) -- Yule distribution...")
+# =========== mle ==========================================
+		al = new_mle_yule(num,mi)
+		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
+
+# =========== goodness-of-fit =============================
+		p_yule = new_gof_yule(j,num,al,C,mi,number_sample)
+		push!(ps,p_yule)
+		push!(distributions,"Yule-Simon distribution")
+		@info("$(now()) -- "*j*", Yule-Simon distribution: p-value = $p_yule")
+
+# =========== plot =========================================
+		if plots
+			zzzz = C*(al-1)*beta.(mi:ma,al)
+			PyPlot.plot(mi:ma,zzzz,"--b",label="Yule distribution",linewidth=3)
+		end
+	@info "==========================================="
+	end
+
+############### SAVING ANALYSIS ################################
+if save
+	writedlm("./analysis/"*j*"_params_$(number_sample)_$iter.csv",[s,a,l,al],',')
+	writedlm("./analysis/"*j*"_p-gof_$(number_sample)_$iter.csv",ps,',')
+end
+
+
+
+
+
+
+
+############### USELESS DISTRIBUTIONS ############################################
 # MLE of exponential distribution
 	if expo
 		@info("$(now()) -- Exponential distribution...")
@@ -114,26 +160,6 @@ for j in js
 		PyPlot.plot(mi:ma,zzz,":k",label="Exp distribution",linewidth=3)
 	end
 
-# Yule distribution
-	if yule
-		@info("$(now()) -- Yule distribution...")
-## MLE
-#		al = mle_yule(num,mi)
-		al = new_mle_yule(num,mi)
-		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
-## Goodness-of-fit
-#		p_yule = gof_yule(j,num,al,C,mi,number_sample)
-		p_yule = new_gof_yule(j,num,al,C,mi,number_sample)
-		push!(ps,p_yule)
-		push!(distributions,"Yule-Simon distribution")
-		@info("$(now()) -- "*j*", Yule-Simon distribution: p-value = $p_yule")
-## Plot
-		if plots
-			zzzz = C*(al-1)*beta.(mi:ma,al)
-			PyPlot.plot(mi:ma,zzzz,"--b",label="Yule distribution",linewidth=3)
-		end
-	@info "==========================================="
-	end
 
 # Poisson distribution
 	if poisson
@@ -186,9 +212,4 @@ for j in js
 
 end
 
-j = js[1]
 
-if save
-	writedlm("./analysis/"*j*"_params_$(number_sample)_$iter.csv",[s,a,l,al],',')
-	writedlm("./analysis/"*j*"_p-gof_$(number_sample)_$iter.csv",ps,',')
-end

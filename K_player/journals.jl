@@ -1,20 +1,27 @@
 # List of journals considered.
 # For each journal, we removed the Anonymous author, as well as the authors whose number of articles had not all data due to limits in file size on WoS.
 
-journals_short = ["bmj",
-	"chaos","chaos_91-99","chaos_00-08","chaos_09-17",
-	"energy",
-	"food_chem_tox",
-	"ieee_trans_autom_control",
-	"lancet","lancet_letters",
-	"medical_ped_onc",
-	"nature",
-	"neng_j_med","neng_j_med_letters",
+journals_short = ["nature",
 	"pnas",
+	"science",
+# sociology
+# psychology
+	"lancet","lancet_letters",
+	"neng_j_med","neng_j_med_letters",
+# biology
+# chemistry
+	"ieee_trans_autom_control",
+	"chaos","chaos_91-99","chaos_00-08","chaos_09-17",
+# mathematics
+#
 	"prl","prl_58-77","prl_78-97","prl_98-17",
 	"prd",
+#	  
+	"bmj",
+	"energy",
+	"food_chem_tox",
+	"medical_ped_onc",
 	"pre",
-	"science",
 	"scientometrics"]
 
 used_journals = ["chaos","ieee_trans_autom_control","lancet","nature","neng_j_med","pnas","prd","pre","prl","science","bmj","medical_ped_onc","scientometrics"]
@@ -70,17 +77,26 @@ journals_code["food_chem_tox"] = "M"
 
 journals_colors = Dict{String,Tuple{Array{Float64,1},Array{Float64,1}}}()
 
-journals_colors["chaos"] = ([1.,0.,0.],[1.,0.,1.])
-journals_colors["energy"] = ([1.,0.,0.],[1.,0.,1.])
-journals_colors["ieee_trans_autom_control"] = ([0.,1.,0.],[0.,.8,0.])
-journals_colors["lancet"] = ([0.,0.,1.],[0.,1.,1.])
-journals_colors["nature"] = ([.9,.9,0.],[1.,.5,0.])
-journals_colors["neng_j_med"] = ([1.,0.,1.],[1.,0.,0.])
-journals_colors["pnas"] = ([0.,1.,1.],[0.,0.,1.])
-journals_colors["prd"] = ([1.0,0.0,0.5],[0.,0.,0.])
+journals_colors["nature"] = ([1.,0.,0.],[0.,0.,0.])
+journals_colors["pnas"] = ([1.,.5,0.],[0.,0.,0.])
+journals_colors["science"] = ([1.,1.,0.],[0.,0.,0.])
+# sociology = ([.5,1.,0.],[0.,0.,0.])
+# psychology = ([0.,1.,0.],[0.,0.,0.])
+journals_colors["lancet"] = ([0.,1.,.5],[0.,0.,0.])
+journals_colors["neng_j_med"] = ([0.,1.,1.],[0.,0.,0.])
+# biology = ([0.,.5,1.],[0.,0.,0.])
+# chemistry = ([0.,0.,1.],[0.,0.,0.])
+journals_colors["ieee_trans_autom_control"] = ([.5,0.,1.],[0.,0.,0.])
+journals_colors["chaos"] = ([1.,0.,1.],[0.,0.,0.])
+# mathematics = ([1.,0.,.5],[0.,0.,0.])
+
+journals_colors["prl"] = ([.3,.3,.3],[0.,0.,0.])
+journals_colors["prd"] = ([.6,.6,.6],[0.,0.,0.])
+# + cross-figure
+
+## Appendix...
 journals_colors["pre"] = ([0.,0.,0.],[.5,.5,.5])
-journals_colors["prl"] = ([1.,.5,0.],[.9,.9,0.])
-journals_colors["science"] = ([.5,.5,.5],[0.,0.,0.])
+journals_colors["energy"] = ([1.,0.,0.],[1.,0.,1.])
 journals_colors["bmj"] = ([148/255,0.,211/255],[0.,0.,0.])
 journals_colors["medical_ped_onc"] = ([0.,.5,0.],[0.,0.,0.])
 journals_colors["scientometrics"] = ([.25,.87,.81],[0.,0.,0.])
