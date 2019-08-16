@@ -1,4 +1,4 @@
-
+using JuMP, Ipopt
 
 function find_cos(X::Array{Float64,1}, dt::Float64)
 	T = length(X)
