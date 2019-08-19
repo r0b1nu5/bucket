@@ -39,6 +39,7 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,I
 	a = 0.
 	l = 0.
 	al = 0.
+	ps = Array{Float64,1}()
 	
 ############### POWER LAW ###################################
 	if pl
