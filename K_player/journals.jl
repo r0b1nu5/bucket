@@ -4,31 +4,35 @@
 journals_short = ["nature",
 	"pnas",
 	"science",
-# sociology
-# psychology
 	"lancet","lancet_letters",
 	"neng_j_med","neng_j_med_letters",
-# biology
-# chemistry
+	"plant_cell",
+	"j_phys_chem_a",
 	"ieee_trans_autom_control",
+	"energy",
 	"chaos","chaos_91-99","chaos_00-08","chaos_09-17",
-# mathematics
+	"siam",
+	"ann_math",
 #
 	"prl","prl_58-77","prl_78-97","prl_98-17",
 	"prd",
 #	  
 	"bmj",
-	"energy",
 	"food_chem_tox",
 	"medical_ped_onc",
 	"pre",
-	"scientometrics"]
+	"molecular_bio_evo",
+	"scientometrics",
+	"j_mat_chem_a",
+	"bull_ams"]
 
 used_journals = ["chaos","ieee_trans_autom_control","lancet","nature","neng_j_med","pnas","prd","pre","prl","science","bmj","medical_ped_onc","scientometrics"]
 
 journals_full = Dict{String,String}()
 
+journals_full["ann_math"] = "Annals of Mathematics"
 journals_full["bmj"] = "BMJ"
+journals_full["bull_ams"] = "Bulletin of the American Mathematical Society"
 journals_full["chaos"] = "Chaos"
 journals_full["chaos_91-99"] = "Chaos (1991-99)"
 journals_full["chaos_95-03"] = "Chaos (1995-2003)"
@@ -38,12 +42,17 @@ journals_full["chaos_09-17"] = "Chaos (2009-17)"
 journals_full["energy"] = "Energy"
 journals_full["food_chem_tox"] = "Food and Chemical Toxicology"
 journals_full["ieee_trans_autom_control"] = "IEEE Transactions on Automatic Control"
+journals_full["j_phys_chem_a"] = "Journal of Physical Chemistry A"
+journals_full["j_mat_chem_a"] = "Journal of Material Chemistry A"
 journals_full["lancet"] = "Lancet"
 journals_full["lancet_letters"] = "Letters of Lancet"
 journals_full["medical_ped_onc"] = "Medical and Pediatric Oncology"
+journals_full["molecular_bio_evo"] = "Molecular Biology and Evolution"
 journals_full["nature"] = "Nature"
+journals_full["nature_comm"] = "Nature Communications"
 journals_full["neng_j_med"] = "New England Journal of Medicine"
 journals_full["neng_j_med_letters"] = "Letters of New England Journal of Medicine"
+journals_full["plant_cell"] = "Plant Cell"
 journals_full["pnas"] = "PNAS"
 journals_full["prd"] = "Physical Review D"
 journals_full["pre"] = "Physical Review E"
@@ -55,6 +64,7 @@ journals_full["prl_88-07"] = "Physical Review Letters (1988-2007)"
 journals_full["prl_98-17"] = "Physical Review Letters (1998-2017)"
 journals_full["science"] = "Science"
 journals_full["scientometrics"] = "Scientometrics"
+journals_full["siam"] = "SIAM Journal on Applied Mathematics"
 
 journals_code = Dict{String,String}()
 

@@ -6,10 +6,10 @@ include("rm_line.jl")
 include("L2B.jl")
 include("isconnected.jl")
 
-thr = 6
+thr = 2
 h = 1e-4
 
-n_simu = 1000
+n_simu = 100
 
 ntw = "ieee118"
 Lsp = readdlm(ntw*"_data/"*ntw*"_lap_mat.csv",',')
@@ -53,6 +53,7 @@ for i in 1:n-1
 		end
 	end
 end
+ll = length(cutable_lines)
 
 E = eigen(Array(L))
 ls = E.values
@@ -79,10 +80,12 @@ covP = cov(Ps,dims=2)
 Es = Array{Float64,2}(undef,3,0)
 vars = Array{Float64,2}(undef,3,0)
 
+rocofs = zeros(length(cutable_lines),n_simu)
+
 c = 0
 
 for l in cutable_lines
-	global c,L,Li,P,M,n,us,Ps,ls,varP,n_simu,h,Es,vars,covP
+	global c,L,Li,P,M,n,us,Ps,ls,varP,n_simu,h,Es,vars,covP,rocofs
 	c += 1
 	@info "$(now()) -- Line $c/$(length(cutable_lines))"
 	
@@ -116,7 +119,7 @@ for l in cutable_lines
 	
 	rcfs = Array{Float64,1}()
 	for sim in 1:n_simu
-		@info "Simu $sim"
+#		@info "Simu $sim"
 #=	
 		dP = Array{Float64,1}()
 		for i in 1:n
@@ -141,8 +144,28 @@ for l in cutable_lines
 	
 	Es = [Es [Ei_p,Ej_p,E_m]]
 	vars = [vars [vari_p,varj_p,var_m]]
-end
 	
+	rocofs[c,:] = rcfs
+end
+
+rankings = zeros(ll,n_simu)
+for i in 1:n_simu
+	global rocofs,rankings
+	ranks = sortslices([rocofs[:,i] 1:ll],dims=1,rev=true)
+	rks = sortslices([ranks[:,2] 1:ll],dims=1)
+	rankings[:,i] = rks[:,2]
+end
+score = sum(rankings,dims=2)
+sorted_ids = (sortslices([score 1:ll],dims=1))[:,2]
+m = Array{Float64,1}()
+mps = Array{Float64,1}()
+mms = Array{Float64,1}()
+for i in 1:ll
+	push!(m,Es[1,Int(sorted_ids[i])])
+	push!(mps,Es[1,Int(sorted_ids[i])] + sqrt(vars[1,Int(sorted_ids[i])]))
+	push!(mms,Es[1,Int(sorted_ids[i])] - sqrt(vars[1,Int(sorted_ids[i])]))
+end
+
  #= 	
 figure()
 PyPlot.plot(Es[1,:],"o",label="Node i")
@@ -174,8 +197,18 @@ legend()
 # =#
 
  ##=
+figure()
+PyPlot.plot(m,"-r")
+PyPlot.plot(mps,"--r")
+PyPlot.plot(mms,"--r")
+xlabel("Line rank")
+ylabel("RoCoF (predicted)")
+
+ ##=
 writedlm("data/Es_$(thr).csv",Es,',')
 writedlm("data/vars_$(thr).csv",vars,',')
+writedlm("data/rocofs_$(thr).csv",rocofs,',')
+writedlm("data/rankings_$(thr).csv",rankings,',')
 # =#
 
 
