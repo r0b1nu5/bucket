@@ -9,7 +9,7 @@ include("isconnected.jl")
 thr = 2
 h = 1e-4
 
-n_simu = 100
+n_simu = 10000
 
 ntw = "ieee118"
 Lsp = readdlm(ntw*"_data/"*ntw*"_lap_mat.csv",',')
@@ -145,7 +145,7 @@ for l in cutable_lines
 	Es = [Es [Ei_p,Ej_p,E_m]]
 	vars = [vars [vari_p,varj_p,var_m]]
 	
-	rocofs[c,:] = rcfs
+	rocofs[c,:] = abs.(rcfs)
 end
 
 rankings = zeros(ll,n_simu)
@@ -161,9 +161,9 @@ m = Array{Float64,1}()
 mps = Array{Float64,1}()
 mms = Array{Float64,1}()
 for i in 1:ll
-	push!(m,Es[1,Int(sorted_ids[i])])
-	push!(mps,Es[1,Int(sorted_ids[i])] + sqrt(vars[1,Int(sorted_ids[i])]))
-	push!(mms,Es[1,Int(sorted_ids[i])] - sqrt(vars[1,Int(sorted_ids[i])]))
+	push!(m,abs(Es[1,Int(sorted_ids[i])]))
+	push!(mps,abs(Es[1,Int(sorted_ids[i])]) + sqrt(vars[1,Int(sorted_ids[i])]))
+	push!(mms,abs(Es[1,Int(sorted_ids[i])]) - sqrt(vars[1,Int(sorted_ids[i])]))
 end
 
  #= 	

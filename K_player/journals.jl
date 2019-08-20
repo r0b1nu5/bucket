@@ -1,22 +1,25 @@
 # List of journals considered.
 # For each journal, we removed the Anonymous author, as well as the authors whose number of articles had not all data due to limits in file size on WoS.
 
+ #=
 journals_short = ["nature",
 	"pnas",
 	"science",
-	"lancet","lancet_letters",
-	"neng_j_med","neng_j_med_letters",
+	"lancet",#"lancet_letters",
+	"neng_j_med",#"neng_j_med_letters",
 	"plant_cell",
 	"j_phys_chem_a",
 	"ieee_trans_autom_control",
 	"energy",
-	"chaos","chaos_91-99","chaos_00-08","chaos_09-17",
+	"chaos",#"chaos_91-99","chaos_00-08","chaos_09-17",
 	"siam",
 	"ann_math",
 #
-	"prl","prl_58-77","prl_78-97","prl_98-17",
-	"prd",
-#	  
+	"prl",#"prl_58-77","prl_78-97","prl_98-17",
+# =#
+journals_short =["prd",]
+#
+ #=
 	"bmj",
 	"food_chem_tox",
 	"medical_ped_onc",
@@ -25,7 +28,7 @@ journals_short = ["nature",
 	"scientometrics",
 	"j_mat_chem_a",
 	"bull_ams"]
-
+# =#
 used_journals = ["chaos","ieee_trans_autom_control","lancet","nature","neng_j_med","pnas","prd","pre","prl","science","bmj","medical_ped_onc","scientometrics"]
 
 journals_full = Dict{String,String}()
