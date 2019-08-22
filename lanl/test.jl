@@ -136,6 +136,8 @@ function test_w_forcing2(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Flo
 	Ah,x = system_identification_correl(Xs,dt)
 	Li = -Ah[n+1:2*n,1:n]/dt
 
+	df = rand(Normal(0,f0[1]),n,T)
+
 	ids = Array{Tuple{Int64,Int64},1}()
 	idx = Array{Int64,1}()
 	li = zeros(n^2)
@@ -161,7 +163,6 @@ function test_w_forcing2(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Flo
 	@variable(system_id, dm[i = 1:n])
 	@variable(system_id, a[i = 1:n])
 	@variable(system_id, f[i = 1:n])
-	set_start_value.(f,f0)
 	@variable(system_id, phi[i = 1:n])
         
 	ks = Array{Array{Int64,1},1}()
@@ -175,7 +176,7 @@ function test_w_forcing2(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Flo
 	end
 	@NLexpression(system_id, LX[i = 1:n, t = 1:T-1], sum(Lm[Int(n*(i-1) + k)]*(Xs[k,t] - Xs[i,t]) for k = ks[i]))
 	
-	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], Xs[n+i,t+1] - Xs[n+i,t] - dt * (-LX[i,t] - dm[i]*Xs[n+i,t] + a[i]*cos(2*pi*f[i]*t*dt + phi[i])))
+	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], Xs[n+i,t+1] - Xs[n+i,t] - dt * (-LX[i,t] - dm[i]*Xs[n+i,t] + a[i]*cos(2*pi*(1+df[i,t])*f[i]*t*dt + phi[i])))
 
 	@NLobjective(system_id, Min, 1/T*sum(err[i,t]^2 for i = 1:n for t = 1:T-1)) 
         
