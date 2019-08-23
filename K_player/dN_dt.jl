@@ -1,91 +1,122 @@
-using PyPlot, Logging
-@Logging.configure(level=INFO)
+using PyPlot, Logging, DelimitedFiles
+# #=
 include("journals.jl")
 
-# #=
-journals = ["prl","science","lancet"]
-journal = journals[1]
-spans = ["00","80"]
-span = spans[1]
-# =#
+#ref_year = "00"
+ref_year = "80"
 
+journal = "science"
 yi = 99
 ny = 10
-hor = 1
+hor = 3
 
-# each column of aut_year is a year, and each line is an author, each element is the number of articles published by author i in year j.
-aut_fin = sort(readdlm("data/time_split/"*journal*"_"*span*"_$((yi+ny)%100).txt",'\t')[2:end-2,1])
-aut_year = zeros(length(aut_fin),ny+1)
-@info(" Year: $yi")
-an = sortrows(readdlm("data/time_split/"*journal*"_"*span*"_$yi.txt",'\t')[2:end-2,1:2])
-j = 1
-k = 1
-while j <= length(aut_fin) && k <= size(an)[1]
-	if an[k,1] == aut_fin[j]
-		aut_year[j,1] = an[k,2]
-		k += 1
-		j += 1
-	elseif an[k,1] < aut_fin[j]
-		k += 1
-	else
-		j += 1
-	end
-end
-
+nums = Array{Array{Float64,1},1}()
+push!(nums,collect(Float64,readdlm("data/time_split/"*journal*"_"*ref_year*"_$yi.txt",'\t')[2:end-2,2]))
 for i in 1:ny
-	@info(" Year: $((yi+i)%100)")
-#	an = sortrows(readdlm("data/time_split/"*journal*"_$((yi+i)%100).txt",'\t')[2:end-2,1:2])	
-	an = sortrows(readdlm("data/time_split/"*journal*"_"*span*"_$((yi+i)%100).txt",'\t')[2:end-2,1:2])	
-	j = 1
-	k = 1
-	while j <= length(aut_fin) && k <= size(an)[1]
-		if an[k,1] == aut_fin[j]
-			aut_year[j,i+1] = an[k,2]
-			k += 1
-			j += 1
-		elseif an[k,1] < aut_fin[j]
-			k += 1
-		else
-			j += 1
-		end	
-	end
+	push!(nums,collect(Float64,readdlm("data/time_split/"*journal*"_"*ref_year*"_$((yi+i)%100).txt",'\t')[2:end-2,2]))
 end
 
+ma = maximum(nums[end])
+
+Ns = Array{Array{Float64,1},1}()
+N = Array{Float64,1}()
+for i in 1:Int(ma)
+	push!(N,sum(nums[1] .== i))
+end
+push!(Ns,N)
+
+dNs = Array{Array{Float64,1},1}()
+mtot = Array{Float64,1}()
+
+for num in nums[2:end]
+	N = Array{Float64,1}()
+	for i in 1:Int(ma)
+		push!(N,sum(num .== i))
+	end
+	push!(Ns,N)
+	push!(dNs,Ns[end]-Ns[end-1])
+	push!(mtot,sum(dNs)[1])
+end
+
+ms = Array{Array{Float64,1},1}()
+
+aut = readdlm("data/time_split/"*journal*"_"*ref_year*"_$yi.txt",'\t')[2:end-2,1]
+
+
+for i in 1:(ny-hor+1)
+	numi = collect(Float64,readdlm("data/time_split/"*journal*"_"*ref_year*"_$((yi+i-1)%100).txt",'\t')[2:end-2,2])
+	auti = readdlm("data/time_split/"*journal*"_"*ref_year*"_$((yi+i-1)%100).txt",'\t')[2:end-2,1]
+	dnumi = collect(Float64,readdlm("data/time_split/"*journal*"_$((yi+i)%100).txt",'\t')[2:end-2,2])
+	dauti = readdlm("data/time_split/"*journal*"_$((yi+i)%100).txt",'\t')[2:end-2,1]
+	
+	for k in 2:hor
+		x = collect(Float64,readdlm("data/time_split/"*journal*"_$((yi+i+k-1)%100).txt",'\t')[2:end-2,2])
+		y = readdlm("data/time_split/"*journal*"_$((yi+i+k-1)%100).txt",'\t')[2:end-2,1]
+		for l in 1:length(x)
+			idx = (dauti .== y[l]).*(1:length(dauti))
+			os = intersect(idx,(1:length(dauti)))
+
+			if length(os) > 0
+				dnumi[os] .+= x[l]/length(os)
+			else
+				push!(dauti,y[l])
+				push!(dnumi,x[l])
+			end
+		end
+	end
+	dnumi /= hor
+
+	m = zeros(Int(10*ma))
+	
+	for j in 1:length(dnumi)
+		if j%1000 == 0
+		@info(" $i/$ny : $j/$(length(dnumi))")
+		end
+		
+		nu = dnumi[j]
+		au = dauti[j]
+		
+		idx = (auti .== au).*(1:length(auti))
+		ks = intersect(idx,(1:length(auti)))
+		
+		if length(ks) > 0
+			mean_n = round(nu/length(ks))
+			for k in ks
+				nold = numi[k]
+				nnew = nold + mean_n
+				m[Int(nold)] += mean_n
+			end
+		end
+	end
+	
+	push!(ms,m)
+end
+
+# =#
 
 x = Array{Float64,1}()
 y = Array{Float64,1}()
 
-for i in 1:ny-hor
-	@info(" Year: $i/$(ny-hor)")
-#	num = collect(sum(aut_year[:,1:i],2))
-	num = collect(aut_year[:,i])
-	for j in 1:maximum(num)
-		idx = (num .== j).*(1:length(num))
-		ids = intersect(idx,1:length(num))
-#		nnew_papers = sum(aut_year[ids,i+1:i+hor])/hor
-		nnew_papers = sum(aut_year[ids,i+hor]-aut_year[ids,i])/hor
-		if length(ids) > 0 && nnew_papers > 0
-#		if length(ids) > 0
-			new_p_aut = nnew_papers/length(ids)
+for i in 1:(ny-hor+1)
+	for j in 1:length(Ns[i])
+		if Ns[i][j] > .1 && ms[i][j] > 0
 			push!(x,j)
-			push!(y,new_p_aut)
+ 			push!(y,ms[i][j]./Ns[i][j])
 		end
 	end
 end
 
-
-
-sx = sqrt(mean((x-mean(x)).^2))
-sy = sqrt(mean((y-mean(y)).^2))
-mx = mean(x)
-my = mean(y)
-mxy = mean(x.*y)
+mx = sum(x)/length(x)
+my = sum(y)/length(y)
+mxy = sum(x.*y)/length(x)
+sx = sqrt(sum((x.-mx).^2)/length(x))
+sy = sqrt(sum((y.-my).^2)/length(y))
 r = (mxy - mx*my)/(sx*sy)
 
-figure(journal)
-PyPlot.plot(x,y,"o",color=journals_colors[journal][1],markersize=8,label="horizon = $hor, r = $(round(r,4))")
+figure()
+PyPlot.plot(x,y,"o",color=journals_colors[journal][1])
 xlabel("Number of articles (k)")
 ylabel("Number of new articles per author with k articles")
-legend()
-title(journals_code[journal])
+title(journal*": Correlation = $(r-r%.0001)")
+
 

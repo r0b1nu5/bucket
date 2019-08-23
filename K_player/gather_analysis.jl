@@ -12,8 +12,8 @@ for j in journals_short
 	
 	ps = sum(p_gofs,dims=2)./25
 	
-	writedlm("analysis/"*j*"_params.csv",',')
-	writedlm("analysis/"*j*"_p-gof.csv",',')
+	writedlm("analysis/"*j*"_params.csv",params,',')
+	writedlm("analysis/"*j*"_p-gof.csv",ps,',')
 end
 
 

@@ -64,7 +64,28 @@ for j in js
 			figure(j)
 			PyPlot.plot([num[1,i],num[1,i]],[1e-8,num[2,i]/n_data],linewidth=2,color=journals_colors[j][1])
 		end
-	@info "==========================================="
+# ============ power law ===============================
+		s = new_mle_pl(num)
+		C = 1/zeta(s,mi)
+		Hs = sum(1.0./((mi:ma).^s))
+		z = C * ((mi:ma).^(-s))
+		PyPlot.plot(mi:ma,z,"--k",label="Zipf's law fit, s = $(round(s; digits=3))",linewidth=2)
+		max_k = ceil(Int64,(length(num)/Hs)^(1/s))
+		PyPlot.plot([max_k,max_k],[.5/length(num),maximum(z)*length(num)*2],"--k",linewidth=2)
+		
+# ============ power law with cutoff ===============================
+		a,l = new_mle_plc(num)
+		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
+		zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
+		PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
+		
+# ============ yule-simon ===============================
+		al = new_mle_yule(num,mi)
+		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
+		zzzz = C*(al-1)*beta.(mi:ma,al)
+		PyPlot.plot(mi:ma,zzzz,":k",label="Yule distribution",linewidth=3)
+		
+		@info "==========================================="
 	end
 		
 ############### POWER LAW ###################################
@@ -81,14 +102,6 @@ for j in js
 		push!(distributions,"Power law")
 		@info("$(now()) -- "*j*", power law: p-value = $p_pl")
 
-# ============= plot ====================================
-		if plots
-			Hs = sum(1.0./((mi:ma).^s))
-			z = C * ((mi:ma).^(-s))
-			PyPlot.plot(mi:ma,z,"--k",label="Zipf's law fit, s = $(round(s; digits=3))",linewidth=2)
-			max_k = ceil(Int64,(length(num)/Hs)^(1/s))
-			PyPlot.plot([max_k,max_k],[.5/length(num),maximum(z)*length(num)*2],":k",linewidth=2)
-		end
 	@info "==========================================="
 		
 	end	
@@ -108,11 +121,6 @@ for j in js
 		push!(distributions,"Power law with cutoff")
 		@info("$(now()) -- "*j*", power law with cutoff: p-value = $p_plc")
 
-# =========== plot =========================================
-		if plots
-			zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
-			PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
-		end
 	@info "==========================================="
 	end
 
@@ -130,11 +138,6 @@ for j in js
 		push!(distributions,"Yule-Simon distribution")
 		@info("$(now()) -- "*j*", Yule-Simon distribution: p-value = $p_yule")
 
-# =========== plot =========================================
-		if plots
-			zzzz = C*(al-1)*beta.(mi:ma,al)
-			PyPlot.plot(mi:ma,zzzz,"--b",label="Yule distribution",linewidth=3)
-		end
 	@info "==========================================="
 	end
 

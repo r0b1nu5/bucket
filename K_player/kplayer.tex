@@ -48,9 +48,9 @@
 
 \section{Introduction} 
 
-\todo[inline]{Re-write intro
+\todo[inline]{Add log-normal distri
 
-Select journals for sociology, psychology, biology, chemistry, mathematics.
+Re-write intro
 
 Do statistical analysis.
 
@@ -89,18 +89,20 @@ We denote by ${\cal J}\coloneqq\{{\rm BMJ},{\rm CHA},...,{\rm TAC}\}$ the set of
  \begin{tabular}{l|l|l}
   & Label & Journal name \\
   \hline
-  \hline 1 & BMJ & British Medical Journal \\
-  \hline 2 & CHA & Chaos \\
-  \hline 3 & ENE & Energy \\
+  \hline 1 & NAT & Nature$^*$ \\
+  \hline 2 & PNA & Proc. of the Natural Academy of Sciences$^{**}$ \\
+  \hline 3 & SCI & Science$^*$ \\
   \hline 4 & LAN & The Lancet$^*$ \\
-  \hline 5 & NAT & Nature$^*$ \\
-  \hline 6 & NEG & New England Journal of Medicin$^*$ \\
-  \hline 7 & PNA & Proceedings of the Natural Academy of Sciences$^{**}$ \\
-  \hline 8 & PRD & Physical Review D \\
-  \hline 9 & PRL & Physical Review Letters$^*$ \\
-  \hline 10 & SCI & Science$^*$ \\
-  \hline 11 & SCM & Scientometrics \\
-  \hline 12 & TAC & IEEE Transactions on Automatic Control 
+  \hline 5 & NEM & New England Journal of Medicine$^*$ \\
+  \hline 6 & PLC & Plant Cell \\
+  \hline 7 & PCA & Journal of Physical Chemistry A \\
+  \hline 8 & TAC & IEEE Transactions on Automatic Control \\
+  \hline 9 & ENE & Energy \\
+  \hline 10 & CHA & Chaos \\
+  \hline 11 & SIA & SIAM Journal on Applied Mathematics \\
+  \hline 12 & AMA & Annals of Mathematics \\
+  \hline 13 & PRD & Physical Review D \\
+  \hline 14 & PRL & Physical Review Letters$^*$ 
  \end{tabular}
  \caption{Labels and names of the journals considered. 
  Journals where the authors with one (resp. two) articles published were discarded are indicated by $^*$ (resp. $^{**}$).}
@@ -124,12 +126,18 @@ To the eye, these distributions have a heavy tail and it is tempting to fit a po
 \begin{align}\label{eq:pl}
  \mathbb{P}_{\rm pl}(a = n) &= C_1\cdot n^{-\alpha}\, .
 \end{align}
-However, as pointed out by Broido and Clauset~\cite{Bro18}, caution is needed when fitting a power law to heavy tailed data. 
-Thus we also tried to fit other heavy tailed distributions, the \emph{power law with cutoff}~\cite{Bro18} being one of them, 
+However, as pointed out by Broido and Clauset~\cite{Bro18}, caution is needed when fitting a distribution to heavy tailed data. 
+Thus we also tried to fit other heavy tailed distributions.
+We tried the \emph{power law with cutoff}~\cite{Bro18}, 
 \begin{align}\label{eq:plco}
- \mathbb{P}_{\rm plc}(a = n) &= C_2\cdot n^{-\beta}e^{-\gamma n}\, .
+ \mathbb{P}_{\rm plc}(a = n) &= C_2\cdot n^{-\beta}e^{-\gamma n}\, ,
 \end{align} 
-We performed the distribution fitting by optimizing the parameters $\alpha$, $\beta$, and $\gamma$ with a Maximum Likelihood Estimator (MLE)~\cite{Cla09}. 
+and the Yule-Simon distribution, 
+\begin{align}\label{eq:yule}
+ \mathbb{P}_{\rm ys}(a = n) &= C_3\cdot (\rho-1){\rm B}(n,\rho)\, ,
+\end{align}
+where ${\rm B}(x,y)$ is the beta function. 
+We performed the distribution fitting by optimizing the parameters $\alpha$, $\beta$, $\gamma$, and $\rho$ with a Maximum Likelihood Estimator (MLE)~\cite{Cla09}. 
 
 To evaluate the goodness of our fitting, we proceeded as follows. 
 We generated $2500$ sets of synthetic data $D_i$, $i=1,...,2500$, following the distribution obtained. 
@@ -145,22 +153,24 @@ This can be seen in Fig.~\ref{fig:1} as for most of the journals, the tail of th
 However, for some journals \textcolor{red}{(namely BLI, BLA, BLO)}, the $p$-value of the power law with cutoff is high and it seems to be a rather good fit (black dotted line in Fig.~\ref{fig:1}). 
 
 \begin{table}
- \begin{tabular}{l|l||c|c||c|c|c}
-  && \multicolumn{2}{c||}{PL} & \multicolumn{3}{c}{PL with cutoff} \\
-  && $\alpha$ & $p$ & $\beta$ & $\gamma$ & $p$ \\
+ \begin{tabular}{l|l||c|c||c|c|c||c|c}
+  && \multicolumn{2}{c||}{PL} & \multicolumn{3}{c||}{PLwC} & \multicolumn{2}{c}{Y-S} \\
+  && $\alpha$ & $p$ & $\beta$ & $\gamma$ & $p$ & $\rho$ & $p$ \\
   \hline
-  \hline 1 & BMJ & &&&& \\
-  \hline 2 & CHA & &&&& \\
-  \hline 3 & ENE & &&&& \\
-  \hline 4 & LAN & &&&& \\
-  \hline 5 & NAT & &&&& \\
-  \hline 6 & NEG & &&&& \\
-  \hline 7 & PNA & &&&& \\
-  \hline 8 & PRD & &&&& \\
-  \hline 9 & PRL & &&&& \\
-  \hline 10 & SCI & &&&& \\
-  \hline 11 & SCM & &&&& \\
-  \hline 12 & TAC & &&&&
+  \hline 1 & NAT & $2.58$ & $0.00$ & $0.00$ & $0.32$ & $0.00$ & $3.10$ & $0.00$  \\
+  \hline 2 & PNA & $2.53$ & $0.00$ & $0.00$ & $0.17$ & $0.00$ & $2.83$ & $0.00$  \\
+  \hline 3 & SCI & $2.68$ & $0.00$ & $0.00$ & $0.34$ & $0.00$ & $3.28$ & $0.00$  \\
+  \hline 4 & LAN & $2.49$ & $0.00$ & $0.00$ & $0.29$ & $0.00$ & $2.90$ & $0.00$  \\
+  \hline 5 & NEM & $2.76$ & $0.00$ & $0.00$ & $0.36$ & $0.00$ & $3.43$ & $0.094$ \\
+  \hline 6 & PLC & $2.30$ & $0.00$ & $1.92$ & $0.10$ & $0.659$ & $3.01$ & $0.007$ \\
+  \hline 7 & PCA & $2.04$ & $0.00$ & $1.78$ & $0.04$ & $0.927$ & $2.45$ & $0.00$  \\
+  \hline 8 & TAC & $2.08$ & $0.00$ & $1.84$ & $0.04$ & $0.078$ & $2.51$ & $0.0004$ \\
+  \hline 9 & ENE & $2.36$ & $0.00$ & $2.12$ & $0.06$ & $0.199$ & $3.15$ & $0.00$  \\
+  \hline 10 & CHA & $2.47$ & $0.00$ & $2.28$ & $0.05$ & $0.979$ & $3.43$ & $0.00$  \\
+  \hline 11 & SIA & $2.49$ & $0.00$ & $2.20$ & $0.08$ & $0.429$ & $3.49$ & $0.082$ \\
+  \hline 12 & AMA & $2.26$ & $0.00$ & $1.72$ & $0.14$ & $0.206$ & $2.95$ & $0.00$  \\
+  \hline 13 & PRD & $***$ & $***$ & $xxx$ & $xxx$ & $xxx$ & $xxx$ & $xxx$ \\
+  \hline 14 & PRL & $1.73$ & $0.00$ & $0.91$ & $0.02$ & $0.00$ & $1.80$ & $0.00$  
  \end{tabular}
  \caption{Fitted parameters and $p$-value of the goodness-of-fit for power law and power law with cutoff distributions.}
  \label{tab:fit_gof}
@@ -185,6 +195,7 @@ Assumptions (i) and (ii) together imply that this author is likely to published 
 To make this more rigorous, for three journals (BLI, BLA, and BLO) we compared the number of authors having published $k$ articles at year $t$ 
 with the number of articles published by these authors between years $t$ and $t+1$. 
 Defining $m_k(t,s)$ as the number of articles published between years $t$ and $s$ by the authors with $k$ articles at time $t$, we plot in Fig.~\ref{fig:2} the values of $m_k(t,t+1)/N_k(t)$ with respect to $k$ for years $t\in\{1999,...,2008\}$. 
+Note that, for each year considered, we did not take into account authors who did not publish, because the majority of those are not active anymore (retired or dead). 
 For each of the three journals, these values have a linear correlation coefficient larger than $0.5$, supporting a fairly good linear dependence, 
 \begin{align}\label{eq:prop}
  m_k(t,t+1) &\approx k\cdot N_k(t)\, . 
@@ -231,7 +242,7 @@ After a quick search, we realize that the peaks correspond to the research group
  \caption{Beuh.}
  \label{fig:prl_prd}
 \end{figure}
-These two experiments are so big that they can be seen, even in the aggregated data used in our analysis. 
+These two experiments are so big and gather so many authors that they can be seen, even in the data used in our analysis, aggregated throughout the whole history of PRL (since 1958) and PRD (since 1970). 
 
 \section{Conclusion}
 
