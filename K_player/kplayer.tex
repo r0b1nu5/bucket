@@ -48,17 +48,13 @@
 
 \section{Introduction} 
 
-\todo[inline]{Add log-normal distri
+\todo[inline]{Add log-normal distri, parabolic fractal distri, Levy distri, Weibull distri (mostly to discard them);
 
-Re-write intro
+Redo all figures (main 12 journals, pref-attach, PRL-PRD-cross, appendix other journals);
 
-Do statistical analysis.
+Review all the text, especially intro.
 
-Figure with PRL, PRD, and cross-data.
-
-Check code + figures for preferential attachment.
-
-Other journals $\to$ appendix.}
+}
 
 As pointed out by Sekara et al.~\cite{Sek18}, publishing in a peer-reviewed journal is more likely if one author of the manuscript already published in the same journal.
 An outcome that could be expected of such an observation is a high representation of a few authors in a given journal. 
@@ -178,6 +174,9 @@ However, for some journals \textcolor{red}{(namely BLI, BLA, BLO)}, the $p$-valu
 
 We tried to fit other heavy tailed distributions \textcolor{red}{(such as BLI, BLA, BLO)}, but none of them performed better than the power law with cutoff under our goodness-of-fit test. 
 
+\todo[inline]{Note that exponential distribution is taken into account in the \emph{power law with cutoff}. 
+But in any case where the data were better fitted by an exponential, the KS test discarded it.}
+
 
 \paragraph{}
 {\bf General explanation. }
@@ -213,6 +212,10 @@ The probability that a new paper is signed by an author with $k$ publications is
 According to~\cite{Kra00}, if it was exactly proportional, after a long enough time, the distribution of $N_k$ would follow a power law. 
 The fact that the relation~\eqref{eq:prop} is not exact and that our samples are limited to a finite time horizon, explain that we do not obtain exactly a power law. 
 However, the good correlation between $m_k(t,t+1)/N_k(t)$ and $k$ tells us that the distribution should not be too far away from a power law, in agreement with our observation of a power law with cutoff.
+
+\subsection{List of discarded distribution}
+Exonential: light tail, Poisson: light tail, Strechted exponential: light tail,...
+
 
 
 \section{Observations}

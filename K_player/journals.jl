@@ -1,7 +1,7 @@
 # List of journals considered.
 # For each journal, we removed the Anonymous author, as well as the authors whose number of articles had not all data due to limits in file size on WoS.
 
- #=
+# #=
 journals_short = ["nature",
 	"pnas",
 	"science",
@@ -17,9 +17,9 @@ journals_short = ["nature",
 #
 	"prl",#"prl_58-77","prl_78-97","prl_98-17",
 # =#
-journals_short =["prd",]
+#journals_short = ["prd",]
 #
- #=
+# #=
 	"bmj",
 	"food_chem_tox",
 	"medical_ped_onc",
