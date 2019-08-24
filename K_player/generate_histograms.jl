@@ -30,7 +30,7 @@ yule = true
 expo = false # useless, tail is too weak
 poisson = false # useless, tail is too weak
 stretch_expo = false # not done, tail is too weak
-lognormal = false # not done, is exactly a parabola when plotted in loglog scales
+lognormal = false # not done, no closed form for the normalization constant. Furthermore, it is exactly a parabola when plotted in loglog scales, thus does not match the shape of the data very well...
 
 zipf_plot = false
 tail_plot = false

@@ -3,24 +3,29 @@ using DelimitedFiles
 #include("journals.jl")
 journals_shors = ["prd",]
 
-for j in journals_short
-	params = vec(readdlm("analysis/"*j*"_params_100_1.csv",','))
-	
-	p_gofs = zeros(3,25)
-	for i in 1:25
-		p_gofs[:,i] = vec(readdlm("analysis/"*j*"_p-gof_100_$i.csv",','))
-	end
-	
-	ps = sum(p_gofs,dims=2)./25
-	
-#	writedlm("analysis/"*j*"_pl_params_2500.csv",params[1],',')
-#	writedlm("analysis/"*j*"_pl_p-gof_2500.csv",ps[1],',')
-	writedlm("analysis/"*j*"_plco_params_2500.csv",[params[2],params[3]],',')
-	writedlm("analysis/"*j*"_plco_p-gof_2500.csv",ps[2],',')
-#	writedlm("analysis/"*j*"_yule_params_2500.csv",params[4],',')
-#	writedlm("analysis/"*j*"_yule_p-gof_2500.csv",ps[3],',')
-end
+distri = ["pl","plc","yule","expo","poisson"]
 
+n_threads = 25
+n_samp = 100
+
+for j in journals_short
+	for dist in distri
+		params = vec(readdlm("analysis/"*j*"_"*dist*"_params_$(n_samp)_1.csv",','))
+		
+		p_gofs = Array{Float64,1}()
+		for i in 1:n_threads
+			push!(p_gofs,readdlm("analysis/"*j*"_"*dist*"_p-gof_$(n_samp)_$i.csv",',')[1])
+
+			rm("analysis/"*j*"_"*dist*"_params_$(n_samp)_$i.csv")
+			rm("analysis/"*j*"_"*dist*"_p-gof_$(n_samp)_$i.csv")
+		end
+		
+		p_gof = sum(p_gofs)/n_threads
+
+		writedlm("analysis/"*j*"_"*dist*"_params_$(n_samp*n_threads).csv",params,',')
+		writedlm("analysis/"*j*"_"*dist*"_p-gof_$(n_samp*n_threads).csv",p_gof,',')
+	end
+end
 
 
 

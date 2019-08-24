@@ -12,14 +12,16 @@ for j in journals_short
 	end
 end
 
-function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,Int64})
+function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,Bool,Bool,Int64})
 	j = tup[1]
 	number_sample = tup[2]
 	save = tup[3]
 	pl = tup[4]
 	pl_co = tup[5]
 	yule = tup[6]
-	id = tup[7]
+	expo = tup[7]
+	poisson = tup[8]
+	id = tup[9]
 	
 ################ COLLECTING DATA ################################
 	@info("$(now()) -- Collecting data: $j")
@@ -35,11 +37,17 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,I
 	distributions = Array{String,1}()
 	max_k = 0.
 
-	s = 0.
-	a = 0.
-	l = 0.
-	al = 0.
-	ps = Array{Float64,1}()
+	s = -1000.
+	p_pl = -1000.
+	a = -1000.
+	l = -1000.
+	p_plco = -1000.
+	al = -1000.
+	p_yule = -1000.
+	b = -1000.
+	p_exp = -1000.
+	mu = -1000.
+	p_poisson = -1000.
 	
 ############### POWER LAW ###################################
 	if pl
@@ -51,11 +59,13 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,I
 
 # ============= goodness-of-fit =========================
 		p_pl = new_gof_pl(j,num,s,C,mi,number_sample)
-		push!(ps,p_pl)
-		push!(distributions,"Power law")
 		@info("$(now()) -- "*j*", power law: p-value = $p_pl")
-
-	@info "==========================================="
+		@info "==========================================="
+		
+		if save
+			writedlm("./analysis/"*j*"_pl_params_$(number_sample)_$id.csv",s,',')
+			writedlm("./analysis/"*j*"_pl_p-gof_$(number_sample)_$id.csv",p_pl,',')
+		end
 		
 	end	
 
@@ -70,11 +80,13 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,I
 
 # =========== goodness-of-fit =============================
 		p_plc = new_gof_plc(j,num,a,l,C,mi,number_sample)
-		push!(ps,p_plc)
-		push!(distributions,"Power law with cutoff")
 		@info("$(now()) -- "*j*", power law with cutoff: p-value = $p_plc")
-
-	@info "==========================================="
+		@info "==========================================="
+		
+		if save
+			writedlm("./analysis/"*j*"_plc_params_$(number_sample)_$id.csv",[a,l],',')
+			writedlm("./analysis/"*j*"_plc_p-gof_$(number_sample)_$id.csv",p_plc,',')
+		end
 	end
 
 
@@ -87,20 +99,59 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,I
 
 # =========== goodness-of-fit =============================
 		p_yule = new_gof_yule(j,num,al,C,mi,number_sample)
-		push!(ps,p_yule)
-		push!(distributions,"Yule-Simon distribution")
 		@info("$(now()) -- "*j*", Yule-Simon distribution: p-value = $p_yule")
+		@info "==========================================="
 
-	@info "==========================================="
+		if save
+			writedlm("./analysis/"*j*"_yule_params_$(number_sample)_$id.csv",al,',')
+			writedlm("./analysis/"*j*"_yule_p-gof_$(number_sample)_$id.csv",p_yule,',')
+		end
 	end
 
-############### SAVING ANALYSIS ################################
-	if save
-		writedlm("./analysis/"*j*"_params_$(number_sample)_$id.csv",[s,a,l,al],',')
-		writedlm("./analysis/"*j*"_p-gof_$(number_sample)_$id.csv",ps,',')
+
+################# EXPONENTIAL ###################################
+	if expo
+		@info "$(now()) -- Exponential distribution..."
+# =========== mle ==========================================
+		b = new_mle_exp(num,mi)
+		C = (1 - exp(b))/exp(-b*mi)
+# =========== goodness-of-fit =============================
+		p_exp = new_gof_exp(j,num,b,C,mi,number_sample)
+		
+		@info "$(now()) -- "*j*", exponential distribution: p-value = $p_exp"
+		@info "==========================================="
+		
+		if save
+			writedlm("./analysis/"*j*"_expo_params_$(number_sample)_$id.csv",b,',')
+			writedlm("./analysis/"*j*"_expo_p-gof_$(number_sample)_$id.csv",p_exp,',')
+		end
 	end
+
+
+################ POISSON ########################################
+	if poisson
+		@info "$(now()) -- Poisson distribution..."
+# =========== mle ==========================================
+		mu = new_mle_poisson(num,mi)
+		C = 1/(exp(mu) - sum((mu.^(0:mi-1))./(factorial.(0:mi-1))))
+# =========== goodness-of-fit =============================
+		p_poisson = new_gof_poisson(j,num,mu,C,mi,number_sample)
+		
+		@info " $(now()) -- "*j*", Poisson distribution: p-value = $p_poisson"
+		@info "==========================================="
+
+		if save
+			writedlm("./analysis/"*j*"_poisson_params_$(number_sample)_$id.csv",mu,',')
+			writedlm("./analysis/"*j*"_poisson_p-gof_$(number_sample)_$id.csv",p_poisson,',')
+		end
+	end
+
 	
-	return s,a,l,al,ps
+	return (pl = (s = s, p = p_pl), 
+		plco = (a = a, l = l, p = p_plco),
+		yule = (al = al, p = p_yule),
+		expo = (b = b, p = p_exp),
+		poisson = (mu = mu, p = p_poisson))
 end
 
 

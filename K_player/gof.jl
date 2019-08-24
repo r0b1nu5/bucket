@@ -85,6 +85,57 @@ function new_gof_yule(j::String, x::Array{Int64,2}, a0::Float64, C0::Float64, mi
 	return p
 end
 
+
+function new_gof_exp(j::String, x::Array{Int64,2}, b0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
+	KS0 = new_KS_exp(x,b0,C0)
+	n_data = sum(x[2,:])
+
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+		if (i%100 == 0) || i == n_sample
+			@info "$(now()) -- "*j*", GoF exponential distribution: $i/$n_sample"
+		end
+		z = new_rand_exp(rand(n_data), b0, C0, mi)
+		b = new_mle_exp(z,mi)
+		C = (1 - exp(-b))/exp(-b*mi)
+		KS = new_KS_exp(z,b,C)
+		push!(KSs,KS)
+	end
+
+	p = sum(KSs .> KS0)/n_sample
+
+	writedlm("analysis/"*j*"_KS0_exp.csv",KS0,',')
+	writedlm("analysis/"*j*"_KSs_exp.csv",KSs,',')
+
+	return p
+end
+
+
+function new_gof_poisson(j::String, x::Array{Int64,2}, m0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
+	KS0 = new_KS_poisson(x,m0,C0)
+	n_data = sum(x[2,:])
+
+	KSs = Array{Float64,1}()
+	for i in 1:n_sample
+		if (i%100 == 0) || i == n_sample
+			@info "$(now()) -- "*j*", GoF Poisson distribution: $i/$n_sample"
+		end
+		z = new_rand_poisson(rand(n_data), m0, C0, mi)
+		m = new_mle_poisson(z,mi)
+		C = 1/(exp(m) - sum((m.^(0:mi-1))./(factorial.(0:mi-1))))
+		KS = new_KS_poisson(z,m,C)
+		push!(KSs,KS)
+	end
+
+	p = sum(KSs .> KS0)/n_sample
+
+	writedlm("analysis/"*j*"_KS0_poisson.csv",KS0,',')
+	writeslm("analysis/"*j*"_KSs_poisson.csv",KSs,',')
+
+	return p
+end
+
+
 ## ============================ Kolmogorov-Smirnov measures ==================================
 
 function new_KS_pl(x::Array{Int64,2}, s::Float64, C::Float64)
@@ -141,14 +192,57 @@ function new_KS_yule(x::Array{Int64,2}, a::Float64, C::Float64)
 		if i == x[1,count]
 			count += 1
 		end
-		push!(cdf,cdf[end] + C*(a-1)*beta(i,a))
-		push!(ecdf,sum(x[2,1:count-1])/n)
+		push!(cdf, cdf[end] + C*(a-1)*beta(i,a))
+		push!(ecdf, sum(x[2,1:count-1])/n)
 	end
 	
 	KS = maximum(abs.(cdf - ecdf))
 	
 	return KS
 end
+
+function new_KS_exp(x::Array{Int64,2}, b::Float64, C::Float64)
+	mi = x[1,1]
+	ma = x[1,end]
+	n = sum(x[2,:])
+
+	cdf = [C*exp(-b*mi),]
+	ecdf = [x[2,1]/n,]
+	count = 2
+	for i in (mi+1):ma
+		if i == x[1,count]
+			count += 1
+		end
+		push!(cdf, cdf[end] + C*exp(-b*i))
+		push!(ecdf, sum(x[2,1:count-1])/n)
+	end
+
+	KS = maximum(abs.(cdf - ecdf))
+
+	return KS
+end
+
+function new_KS_poisson(x::Array{Int64,1}, m::Float64, C::Float64)
+	mi = x[1,1]
+	ma = x[1,end]
+	n = sum(x[2,:])
+
+	cdf = [C * m^mi/factorial(mi),]
+	ecdf = [x[2,1]/n,]
+	count = 2
+	for i in (mi+1):ma
+		if i == x[1,count]
+			count += 1
+		end
+		push!(cdf, cdf[end] + C*m^i/factorial(i))
+		push!(ecdf, sum(x[2,1:count-1])/n)
+	end
+
+	KS = maximum(abs.(cdf - ecdf))
+
+	return KS
+end
+
 
 ## ================================== Synthetic variables generation ================================
 
@@ -166,7 +260,7 @@ function new_rand_pl(yy::Array{Float64,1}, s::Float64, C::Float64, mi::Int64 = 1
 	id = 0
 	
 	while (ly - id)*(1 - C*x) > eps
-		while y[id+1] > x && (ly - id)*(1 - C*x) > eps
+		while y[id+1] > x 
 			n += 1
 			x += n^(-s)
 		end
@@ -199,7 +293,7 @@ function new_rand_plc(yy::Array{Float64,1}, a::Float64, l::Float64, C::Float64, 
 	id = 0
 	
 	while (ly - id)*(1 - C*x) > eps
-		while y[id+1] > x && (ly - id)*(1 - C*x) > eps
+		while y[id+1] > x
 			n += 1
 			x += n^(-a)*exp(-l*n)
 		end
@@ -226,7 +320,7 @@ function new_rand_yule(yy::Array{Float64,1}, a::Float64, C::Float64, mi::Int64 =
 	id = 0
 	
 	while (ly - id)*(1 - C*x) > eps
-		while y[id+1] > x && (ly - id)*(C - x) > eps
+		while y[id+1] > x
 			n += 1
 			x += (a-1)*beta(n,a)
 		end
@@ -237,6 +331,60 @@ function new_rand_yule(yy::Array{Float64,1}, a::Float64, C::Float64, mi::Int64 =
 	
 	val_num = [val_num [n+1, (ly-id)]]
 	
+	return val_num
+end
+
+
+function new_rand_exp(yy::Array{Float64,1}, b::Float64, C::Float64, mi::Int64=1, eps::Float64=1e-4)
+	x = 0.
+	n = Int(mi - 1)
+
+	y = sort(yy)./C
+	ly = length(y)
+
+	val_num = Array{Int64,2}(undef,2,0)
+
+	id = 0
+
+	while (ly - id)*(1 - C*x) > eps
+		while y[id+1] > x
+			n += 1
+			x += exp(-b*n)
+		end
+		di = sum(y[id+1:end] .< x)
+		id += di
+		val_num = [val_num [n,di]]
+	end
+
+	val_num = [val_num [n+1, (ly-id)]]
+
+	return val_num
+end
+
+
+function new_rand_poisson(yy::Array{Float64,1}, m::Float64, C::Float64, mi::Int64=1, eps::Float64=1e-4)
+	x = 0.
+	n = Int(mi - 1)
+
+	y = sort(yy)./C
+	ly = lenght(y)
+
+	val_num = Array{Int64,2}(undef,2,0)
+
+	id = 0
+
+	while (ly - id)*(1 - C*x) > eps
+		while y[id+1] > x
+			n += 1
+			x += m^n/factorial(n)
+		end
+		di = sum(y[id+1:end] .< x)
+		id += di
+		val_num = [val_num [n,di]]
+	end
+
+	val_num = [val_num [n,di]]
+
 	return val_num
 end
 
