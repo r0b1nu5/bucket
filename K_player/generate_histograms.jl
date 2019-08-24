@@ -25,10 +25,12 @@ pl_co = true
 	l = 0.
 yule = true
 	al = 0.
+expo = true
+	b = 0.
+poisson = true
+	m = 0.
 
 # ============= useless ==============================================
-expo = false # useless, tail is too weak
-poisson = false # useless, tail is too weak
 stretch_expo = false # not done, tail is too weak
 lognormal = false # not done, no closed form for the normalization constant. Furthermore, it is exactly a parabola when plotted in loglog scales, thus does not match the shape of the data very well...
 
@@ -85,6 +87,19 @@ for j in js
 		zzzz = C*(al-1)*beta.(mi:ma,al)
 		PyPlot.plot(mi:ma,zzzz,":k",label="Yule distribution",linewidth=3)
 		
+# ============ exponential ===============================
+		b = new_mle_exp(num,mi)
+		C = (1 - exp(-b))/exp(-b*mi)
+		z = C * exp.(-b*(mi:ma))
+		PyPlot.plot(mi:ma,z,":r",label="Exponential distribution",linewith=3)
+
+# ============ poisson ===============================
+		m = new_mle_poisson(num,mi)
+		C = 1/(exp(m) - sum((m.^(0:mi-1))./(factorial.(0:mi-1))))
+		z = C * (m.^(mi:ma))./(factorial.(mi:ma))
+		PyPlot.plot(mi:ma,z,"--r",label="Poisson distribution2",linewidth=3)
+
+		loglog()
 		@info "==========================================="
 	end
 		
