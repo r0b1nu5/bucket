@@ -66,18 +66,23 @@ function test_w_forcing_l0(id::Int64, L::Array{Float64,2}, d::Array{Float64,1}, 
         return (Lm = value.(Lm), dm = value.(dm), a = value.(a), f = value.(f), phi = value.(phi))
 end
 
-function test_w_forcing(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Float64,1}, f0::Array{Float64,1}, p0::Array{Float64,1}, Xs::Array{Float64,2}, dt::Float64, l1::Float64=0., l2::Float64=0., mu::Float64=1e-1)
+function test_w_forcing(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Float64,1}, f0::Array{Float64,1}, p0::Array{Float64,1}, Xs::Array{Float64,2}, dt::Float64, l1::Float64=0., l2::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,T = size(Xs)
 	n = Int.(nn/2)
 
-	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push=1e-5))
-        
+	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
+  	
+	Ah,x = system_identification_correl(Xs,dt)
+	L0 = -Ah[n+1:2*n,1:n]/dt
+
 	@variable(system_id, Lm[i = 1:n, j = 1:n])
+	set_start_value.(Lm,L0)
 	@variable(system_id, dm[i = 1:n])
-	@variable(system_id, a[i = 1:n] >= 0)
-	@variable(system_id, f[i = 1:n] >= 0)
-	@variable(system_id, 0 <= phi[i = 1:n] <= 2pi)
+	@variable(system_id, a[i = 1:n])
+	@variable(system_id, f[i = 1:n])
+	@variable(system_id, phi[i = 1:n])
         
+	#=
 	for i in 1:n-1
                 for j in i+1:n
                         @constraint(system_id, Lm[i,j] <= 0)
@@ -88,6 +93,7 @@ function test_w_forcing(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Floa
         for i in 1:n
                 @constraint(system_id, sum(Lm[i,:]) == 0)
         end
+=#
 
 	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], Xs[n+i,t+1] - Xs[n+i,t] - dt * (sum(-Lm[i,k]*Xs[k,t] for k = 1:n) - dm[i]*Xs[n+i,t] + a[i]*cos(2*pi*f[i]*t*dt + phi[i])))
 #	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], Xs[n+i,t+1] - Xs[n+i,t] - dt * (sum(-Lm[i,k]*Xs[k,t] for k = 1:n) - dm[i]*Xs[n+i,t]))
@@ -95,7 +101,7 @@ function test_w_forcing(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Floa
 @NLobjective(system_id, Min, sum(err[i,t]^2 for i = 1:n for t = 1:T-1) - l1 * sum(Lm[i,j] + Lm[j,i] for i = 1:n-1 for j = i+1:n) + l2 * sum(a[i] for i in 1:n)) 
         
         optimize!(system_id)
-
+#=
 	reLm = abs.(L - value.(Lm))./abs.(L)
 	redm = abs.(d - value.(dm))./abs.(d)
 	rea = abs.(a0 - value.(a))./abs.(a0)
@@ -125,7 +131,7 @@ function test_w_forcing(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Floa
 	PyPlot.plot(n^2+3*n .+ (1:n), aep, "o", label="phi0")
 	title("Absolute error")
 	legend()
-
+=#
         return (Lm = value.(Lm), dm = value.(dm), a = value.(a), f = value.(f), phi = value.(phi))
 end
 
@@ -193,7 +199,7 @@ function test_w_forcing2(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Flo
 			end
 		end
 	end
-
+#=
 	reLm = abs.(L - Lf)./abs.(L)
 	redm = abs.(d - value.(dm))./abs.(d)
 	rea = abs.(a0 - value.(a))./abs.(a0)
@@ -223,10 +229,131 @@ function test_w_forcing2(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Flo
 	PyPlot.plot(n^2+3*n .+ (1:n), aep, "o", label="phi0")
 	title("Absolute error")
 	legend()
-
+=#
         return (Lm = Lf, dm = value.(dm), a = value.(a), f = value.(f), phi = value.(phi))
 end
 
+function find_freq_autocorr(Xs,dt,plot::Bool=false)
+	nn,T = size(Xs)
+	n = Int(nn/2)
+	
+	ac = Array{Float64,2}(undef,nn,0)
+	leng = floor(Int,T/10)
+	for i in 1:leng
+		XX = Xs[:,1:end-i].*Xs[:,i+1:end]
+		ac = [ac vec(sum(XX,dims=2)./(T-i))]
+	end
+	@info "Autocorrelations computed."
+
+	if plot
+		figure()
+		for i in 1:n
+			PyPlot.plot((1:floor(Int,T/10)).*dt,ac[i,:],"--",color="C$(i-1)")
+			PyPlot.plot((1:floor(Int,T/10)).*dt,ac[n+i,:],color="C$(i-1)")
+		end
+	end
+
+	fh = Array{Float64,1}()
+	for i in 1:n
+		@info "$i/$(2*n)"
+
+		tops = Array{Int64,1}()
+		bots = Array{Int64,1}()
+
+		for j in 2:leng-1
+			if (ac[i,j-1] > ac[i,j]) && (ac[i,j+1] > ac[i,j])
+				push!(bots,j)
+			elseif (ac[i,j-1] < ac[i,j]) && (ac[i,j+1] < ac[i,j])
+				push!(tops,j)
+			end
+		end
+		dtops = tops[2:end] - tops[1:end-1]
+		dbots = bots[2:end] - bots[1:end-1]
+		del = median([dtops;dbots])
+		
+		push!(fh,1/(del*dt))
+	end
+
+	return fh
+end
+
+
+function test_w_forcing3(L::Array{Float64,2}, d::Array{Float64,1}, aa::Array{Float64,1}, ff::Array{Float64,1}, pp::Array{Float64,1}, Xs::Array{Float64,2}, dt::Float64, Dt::Int64, l1::Float64=0., l2::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	nn,T = size(Xs)
+	n = Int.(nn/2)
+	n_bin = floor(Int,T/Dt)
+
+	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
+  	
+	Ah,x = system_identification_correl(Xs,dt)
+	L0 = -Ah[n+1:2*n,1:n]/dt
+	
+	f0 = mean(find_freq_autocorr(Xs,dt))
+
+	a0 = maximum(Xs[n+1:2*n,:])*sqrt(n)/f0
+
+	@variable(system_id, Lm[i = 1:n, j = 1:n])
+	set_start_value.(Lm,L0)
+	@variable(system_id, dm[i = 1:n])
+	@variable(system_id, a[i = 1:n])
+	set_start_value.(a,a0*ones(n))
+	@variable(system_id, f[i = 1:n])
+	set_start_value.(f,f0*ones(n))
+	@variable(system_id, phi[i = 1:n, j = 1:n_bin])
+        
+# #=
+	for i in 1:n-1
+                for j in i+1:n
+                        @constraint(system_id, Lm[i,j] <= 1e-5)
+                        @constraint(system_id, Lm[j,i] <= 1e-5)
+                end
+        end
+        
+        for i in 1:n
+                @constraint(system_id, sum(Lm[i,:]) == 0)
+        end
+# =#
+
+	@NLexpression(system_id, err[i = 1:n, t = 1:Dt-1, j = 1:n_bin], Xs[n+i,t+1] - Xs[n+i,t] - dt * (sum(-Lm[i,k]*Xs[k,t] for k = 1:n) - dm[i]*Xs[n+i,t] + a[i]*cos(2*pi*f[i]*t*dt + phi[i,j])))
+#	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], Xs[n+i,t+1] - Xs[n+i,t] - dt * (sum(-Lm[i,k]*Xs[k,t] for k = 1:n) - dm[i]*Xs[n+i,t]))
+
+#@NLobjective(system_id, Min, 1/T*sum(err[i,t,j]^2 for i = 1:n for t = 1:Dt-1 for j = 1:n_bin) + l1 * sum(abs(Lm[i,j]) + abs(Lm[j,i]) for i = 1:n-1 for j = i+1:n) + l2 * sum(abs(a[i]) for i in 1:n)) 
+@NLobjective(system_id, Min, 1/T*sum(err[i,t,j]^2 for i = 1:n for t = 1:Dt-1 for j = 1:n_bin)) 
+        
+        optimize!(system_id)
+#=
+	reLm = abs.(L - value.(Lm))./abs.(L)
+	redm = abs.(d - value.(dm))./abs.(d)
+	rea = abs.(aa - value.(a))./abs.(a0)
+	ref = abs.(ff - value.(f))./abs.(f0)
+	rep = abs.(pp - value.(phi))./abs.(p0)
+
+	aeLm = abs.(L - value.(Lm))
+	aedm = abs.(d - value.(dm))
+	aea = abs.(aa - value.(a))
+	aef = abs.(ff - value.(f))
+	aep = abs.(pp - value.(phi))
+	
+	figure()
+	subplot(211)
+	PyPlot.plot(1:n^2, vec(reLm), "o", label="M^{-1}*L")
+	PyPlot.plot(n^2 .+ (1:n), redm, "o", label="d/m")
+	PyPlot.plot(n^2+n .+ (1:n), rea, "o", label="a0")
+	PyPlot.plot(n^2+2*n .+ (1:n), ref, "o", label="f0")
+	PyPlot.plot(n^2+3*n .+ (1:n), rep, "o", label="phi0")
+	title("Relative error")
+
+	subplot(212)
+	PyPlot.plot(1:n^2, vec(aeLm), "o", label="M^{-1}*L")
+	PyPlot.plot(n^2 .+ (1:n), aedm, "o", label="d/m")
+	PyPlot.plot(n^2+n .+ (1:n), aea, "o", label="a0")
+	PyPlot.plot(n^2+2*n .+ (1:n), aef, "o", label="f0")
+	PyPlot.plot(n^2+3*n .+ (1:n), aep, "o", label="phi0")
+	title("Absolute error")
+	legend()
+=#
+        return (Lm = value.(Lm), dm = value.(dm), a = value.(a), f = value.(f), phi = value.(phi))
+end
 
 function test_w_forcing_warm_start(L::Array{Float64,2}, d::Array{Float64,1}, a0::Array{Float64,1}, f0::Array{Float64,1}, p0::Array{Float64,1}, Xs::Array{Float64,2}, dt::Float64, L0::Array{Float64,2}, d0::Array{Float64,1}, l1::Float64=0., l2::Float64=0., mu::Float64=1e-1)
 	nn,T = size(Xs)
