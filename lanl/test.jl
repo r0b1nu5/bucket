@@ -274,7 +274,7 @@ function find_freq_autocorr(Xs,dt,plot::Bool=false)
 		push!(fh,1/(del*dt))
 	end
 
-	return fh
+	return fh,ac
 end
 
 
