@@ -288,8 +288,8 @@ function test_w_forcing3(L::Array{Float64,2}, d::Array{Float64,1}, aa::Array{Flo
 	Ah,x = system_identification_correl(Xs,dt)
 	L0 = -Ah[n+1:2*n,1:n]/dt
 	
-	f0 = mean(find_freq_autocorr(Xs,dt))
-f0 /= 2
+	f0 = mean(find_freq_autocorr(Xs,dt)[1])
+	
 	a0 = maximum(Xs[n+1:2*n,:])*sqrt(n)/f0
 
 	@variable(system_id, Lm[i = 1:n, j = 1:n])

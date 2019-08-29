@@ -63,11 +63,11 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 	X0 = zeros(2*n)
 	X = Array{Float64,2}(undef,2*n,0)
 	
-	t = 0
+	t = -1000
 
 	str = "data3/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv"
  ##=
-	surcount = 0
+	surcount = -1
 	
 	while t < T
 		if verb
@@ -87,6 +87,8 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 		writedlm("data3/temp_$(script_id)_$(surcount).csv",X,',')
 		X = Array{Float64,2}(undef,2*n,0)
 	end
+	
+	rm("data3/temp_$(script_id)_0.csv")
 
 	Xf = Array{Float64,2}(undef,2*n,0)
 	for i in 1:surcount

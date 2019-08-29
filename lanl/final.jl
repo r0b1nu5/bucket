@@ -1,5 +1,46 @@
 using DelimitedFiles, PyPlot, FFTW, Statistics, LinearAlgebra, JuMP, Ipopt
 
+
+
+
+################## TODO: run_location_large_ntw ######################################
+
+
+
+
+# Identifies dynamics and forcing for a small network, base only on measurements.
+#
+# INPUT:
+# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+# dt: Time step.
+# Df: Radius of data over which the median of neighboring Fourier modes in computed. 
+# n_period: Number of period considered in each data chunk.
+# mu: Initial value of the barrier parameter (in IPOPT).
+# bp: Initial value of the bound_push parameter (in IPOPT).
+# Zro: Tolerance for zero.
+#
+# OUTPUT:
+# Lm: Laplacian matrix normalized by the inertias.
+# dm: Damping over inertia ratios.
+# a: Vector of amplitudes of the forcing.
+# f: Vector of frequencies of the forcing.
+# p: Vector of phases of the forcing.
+
+function run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
+	fh = get_fh_fourier(Xs,dt,Df)
+	
+	Ah,Lh,dh = get_Ah_correl(Xs,dt,fh)
+
+	ah = get_ah(Xs,dt,fh)
+
+	Lm,dm,a,f,ps = optim_chunks(Xs,dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
+
+	p = optim_phase(Xs,dt,Lm,dm,a,f)
+
+	return Lm,dm,a,f,p
+end
+
+
 # Estimates the forcings frequency, based on the Fourier Transform of the times series of the phase frequencies. A peak is identified by dividing the value of each Fourier mode by the median value of its 2*Df neighbors.
 #
 # INPUT:
@@ -10,7 +51,7 @@ using DelimitedFiles, PyPlot, FFTW, Statistics, LinearAlgebra, JuMP, Ipopt
 # OUTPUT:
 # fh: Estimate of the forcing's frequency.
 
-function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int=10)
+function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	nn,T = size(Xs)
 	n = Int(nn/2)
 
@@ -100,7 +141,7 @@ function get_fh_autocorr(Xs::Array{Float64,2}, dt::Float64, p::Float64=.1)
 		dbots = bots[2:end] - bots[1:end-1]
 		del = median([dtops;dbots])
 
-		push!(fs,1/(del*dt))
+		push!(fh,1/(del*dt))
 	end
 
 	return median(fh)
@@ -125,12 +166,12 @@ function get_Ah_correl(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 
 	Xt = filter_signal(Xs, dt, fh)
 
-	S0 = Xt*X' ./ T
-	S1 = Xt[:,2:T]*X[:,1:T-1] ./ (T-1)
+	S0 = Xt*Xt' ./ T
+	S1 = Xt[:,2:T]*Xt[:,1:T-1]' ./ (T-1)
 
 	Ah = S1*inv(S0)
 	Lh = -Ah[n+1:2*n,1:n]/dt
-	dh = (diagm(0 => ones(n)) - Ah[n+1:2*n,n+1:2*n])./dt
+	dh = (ones(n) - diag(Ah[n+1:2*n,n+1:2*n]))./dt
 
 	return Ah,Lh,dh
 end
@@ -153,16 +194,16 @@ function filter_signal(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 
 	ta = ceil(Int64,T*5e-5)
 
-	mi,id = findmin(abs.(fs .- dh))
+	mi,id = findmin(abs.(fs .- fh))
 
-	fX = zeros(nn,T)
-	fXt = zeros(nn,T)
+	fX = zeros(Complex{Float64},nn,T)
+	fXt = zeros(Complex{Float64},nn,T)
 	Xt = zeros(nn,T)
 
 	for i in 1:nn
-		fX[i,:] = fft(Xs)
+		fX[i,:] = fft(Xs[i,:])
 		fXt[i,:] = [fX[i,1:id-ta-1];zeros(2*ta+1);fX[i,id+ta+1:T-id+1-ta];zeros(2*ta+1);fX[i,T-id+3+ta:T]]
-		Xt[i,:] = ifft(fXt[i,:])
+		Xt[i,:] = real.(ifft(fXt[i,:]))
 	end
 
 	return Xt
@@ -183,7 +224,7 @@ function get_ah(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 	nn,T = size(Xs)
 	n = Int(nn/2)
 
-	ah = (maximum(abs.(Xs[n+1:2*n,:])) * sqrt(n)) / (2*pi*fh)
+	ah = maximum(abs.(Xs[1:n,:])) * sqrt(n) * (2*pi*fh)
 
 	return ah
 end
@@ -210,7 +251,7 @@ end
 # f: Optimized forcing frequencies.
 # p: Optimized phase lags in each chunk.
 
-function optim_chunks(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Array{Float64,1}, fh::Array{Float64,1}, n_period::Float64, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
+function optim_chunks(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Float64, fh::Float64, n_period::Float64, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
 	nn,T = size(Xs)
 	n = Int(nn/2)
 
@@ -223,10 +264,10 @@ function optim_chunks(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, d
 	set_start_value.(Lm,Lh)
 	@variable(system_id, dm[i = 1:n])
 	set_start_value.(dm,dh)
-	@variable(system_id, a[i = 1:n])
-	set_start_value.(a,ah)
+	@variable(system_id, a[i = 1:n])	
+	set_start_value.(a,ah*ones(n))
 	@variable(system_id, f[i = 1:n])
-	set_start_value.(f,fh)
+	set_start_value.(f,fh*ones(n))
 	@variable(system_id, p[i = 1:n, j = 1:n_bin])
 
 	for i in 1:n-1
@@ -236,12 +277,12 @@ function optim_chunks(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, d
 		end
 	end
 	for i in 1:n
-		@constraint(system_id, Lm[i,i] == -sum(L[i,j] for j = [[1:i-1];[i+1:n]]))
+		@constraint(system_id, sum(Lm[i,:]) == 0)
 	end
-
+	
 	@NLexpression(system_id, err[i = 1:n, t = 1:Dt-1, j = 1:n_bin], Xs[n+i,(j-1)*Dt + t + 1] - Xs[n+i,(j-1)*Dt + t] - dt * (sum(-Lm[i,k]*Xs[k,(j-1)*Dt + t] for k = 1:n) - dm[i]*Xs[n+i,(j-1)*Dt + t] + a[i]*cos(2*pi*f[i]*((j-1)*Dt + t)*dt + p[i,j])))
 
-	@NLobjective(system_id, Min, sum(err[i,t,j]^2 for i = 1:n for t = 1:Dt for j = 1:n_bin)/T)
+	@NLobjective(system_id, Min, sum(err[i,t,j]^2 for i = 1:n for t = 1:Dt-1 for j = 1:n_bin)/T)
 
 	optimize!(system_id)
 
@@ -291,7 +332,7 @@ function optim_all(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::
 		end
 	end
 	for i in 1:n
-		@constraint(system_id, Lm[i,i] == -sum(L[i,j] for j = [[1:i-1];[i+1:n]]))
+		@constraint(system_id, sum(Lm[i,:]) == 0)
 	end
 
 	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], Xs[n+i,t+1] - Xs[n+i,t] - dt * (sum(-Lm[i,k]*Xs[k,t] for k = 1:n) - dm[i]*Xs[n+i,t] + a[i]*cos(2*pi*f[i]*t*dt + p[i])))
@@ -301,6 +342,40 @@ function optim_all(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::
 	optimize!(system_id)
 
 	return value.(Lm), value.(dm), value.(a), value.(f), value.(p)
+end
+
+
+# Optimizes the phase lag of the forcing.
+#
+# INPUT:
+# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+# dt: Time step.
+# Lm: Estimate of the normalized Laplacian matrix.
+# dm: Estimate of the damping over inertia ratios.
+# a: Estimate of the forcing's amplitude.
+# f: Estimate of the forcing's frequency.
+# mu: Initial value of the barrier parameter (in IPOPT).
+# bp: Initial value of the bound_push parameter (in IPOPT).
+#
+# OUTPUT: 
+# p: Vector of phases of the forcing.
+
+function optim_phase(Xs::Array{Float64,2}, dt::Float64, Lm::Array{Float64,2}, dm::Array{Float64,1}, a::Array{Float64,1}, f::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
+	n = length(dm)
+
+	A = diagm(0 => ones(2*n)) + dt * [zeros(n,n) diagm(0 => ones(n));-Lm -diagm(0 => dm)]
+	AX = A*Xs
+
+	phase_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
+
+	@variable(phase_id, c[i = 1:n])
+	@variable(phase_id, s[i = 1:n])
+
+	@objective(phase_id, Min, sum((Xs[n+i,t+1] - AX[n+i,t] - dt * (a[i]*c[i]*cos(f[i]*2*pi*dt*t) - a[i]*s[i]*sin(f[i]*2*pi*dt*t))) * (Xs[n+i,t+1] - AX[n+i,t] - dt * (a[i]*c[i]*cos(f[i]*2*pi*dt*t) - a[i]*s[i]*sin(f[i]*2*pi*dt*t))) for i = 1:n for t = 1:T-1))
+
+	optimize!(phase_id)
+
+	return value.(p)
 end
 
 
