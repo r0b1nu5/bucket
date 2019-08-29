@@ -625,6 +625,34 @@ end
 
 
 
+# !!! f is an Array because we allow multiple forcing frequencies. It's not the frequency at each node!
+function optim_all_lin(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Array{Float64,1}, f::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
+	nn,T = size(Xs)
+	n = Int(nn/2)
+	nf = length(f)
+
+	Ah = diagm(0 => ones(nn)) + dt*[zeros(n,n) diagm(0 => ones(n));-Lh -diagm(0 => dh)]
+	AX = Ah*Xs
+
+	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
+
+	@variable(system_id, ac[i = 1:n, j = 1:nf])
+	@variable(system_id, as[i = 1:n, j = 1:nf])
+
+	@objective(system_id, Min, sum((Xs[n+i,t+1] - AX[n+i,t] - dt * (sum(ac[i,j]*cos(f[j]*2*pi*dt*t) - as[i,j]*sin(f[j]*2*pi*dt*t) for j = 1:nf))) * (Xs[n+i,t+1] - AX[n+i,t] - dt * (sum(ac[i,j]*cos(f[j]*2*pi*dt*t) - as[i,j]*sin(f[j]*2*pi*dt*t) for j = 1:nf))) for i = 1:n for t = 1:T-1))
+
+	optimize!(system_id)
+	
+	a = Array{Array{Float64,1},1}()
+	p = Arary{Array{Float64,1},1}()
+	for j in 1:nf
+		push!(a,sqrt.(value.(ac[:,j]).^2 + value.(as[:,j]).^2))
+		push!(p,angle.(value.(ac[:,j]) + im.*value.(as[:,j])))
+	end
+
+	return a,p
+end
+
 
 
 
