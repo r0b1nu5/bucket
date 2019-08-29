@@ -375,7 +375,9 @@ function optim_phase(Xs::Array{Float64,2}, dt::Float64, Lm::Array{Float64,2}, dm
 
 	optimize!(phase_id)
 
-	return value.(p)
+	p = angle.(value.(c) + im*value.(s))
+
+	return p
 end
 
 
