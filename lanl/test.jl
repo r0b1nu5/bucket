@@ -336,9 +336,9 @@ function test_w_forcing3_l0(id::Int64, L::Array{Float64,2}, d::Array{Float64,1},
 	Ah,x = system_identification_correl(Xs,dt)
 	L0 = -Ah[n+1:2*n]/dt
 
-	f0 = median(find_freq_autocorr(Xs,dt))
+	f0 = median(find_freq_autocorr(Xs,dt)[1])
 
-	a0 = maximum(abs.(Xs[n+1:2*n,:])*sqrt(n)/f0)
+	a0 = maximum(abs.(Xs[n+1:2*n,:]))*sqrt(n)*f0
 
 	@variable(system_id, Lm[i = 1:n, j = 1:n])
 	set_start_value.(Lm,L0)
@@ -364,7 +364,7 @@ function test_w_forcing3_l0(id::Int64, L::Array{Float64,2}, d::Array{Float64,1},
 	@NLexpression(system_id, erri[t = 1:Dt-1, j = 1:n_bin], Xs[n+id,(j-1)*Dt + t + 1] - Xs[n+id,(j-1)*Dt + t] - dt * (sum(-Lm[id,k]*Xs[k,(j-1)*Dt + t] for k = 1:n) - dm[id]*Xs[n+id,(j-1)*Dt + t] + a*cos(2*pi*f*dt*((j-1)*Dt + t) + phi[j])))
 #	@NLexpression(system_id, err[i = 1:n, t = 1:T-1], Xs[n+i,t+1] - Xs[n+i,t] - dt * (sum(-Lm[i,k]*Xs[k,t] for k = 1:n) - dm[i]*Xs[n+i,t]))
 
-	@NLobjective(system_id, Min, 1/T*sum(err[i,t,j]^2 for i = [1:id-1;id+1:n] for t = 1:Dt-1 for j = 1:n_bin) + sum(erri[t,j]^2 for t = 1:Dt-1 for j = 1:n_bin)) 
+@NLobjective(system_id, Min, (sum(err[i,t,j]^2 for i = [1:id-1;id+1:n] for t = 1:Dt-1 for j = 1:n_bin) + sum(erri[t,j]^2 for t = 1:Dt-1 for j = 1:n_bin))/T) 
         
         optimize!(system_id)
 

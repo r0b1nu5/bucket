@@ -88,34 +88,35 @@ journals_code["scientometrics"] = "L"
 
 journals_code["food_chem_tox"] = "M"
 
+### Colors from the "category20" panel.
 journals_colors = Dict{String,Tuple{Array{Float64,1},Array{Float64,1}}}()
 
-journals_colors["nature"] = ([1.,0.,0.],[0.,0.,0.])
-journals_colors["pnas"] = ([1.,.5,0.],[0.,0.,0.])
-journals_colors["science"] = ([1.,1.,0.],[0.,0.,0.])
-journals_colors["lancet"] = ([.5,1.,0.],[0.,0.,0.])
-journals_colors["neng_j_med"] = ([0.,1.,0.],[0.,0.,0.])
-journals_colors["plant_cell"] = ([0.,1.,.5],[0.,0.,0.])
-journals_colors["j_phys_chem_a"] = ([0.,1.,1.],[0.,0.,0.])
-journals_colors["ieee_trans_autom_control"] = ([0.,.5,1.],[0.,0.,0.])
-journals_colors["energy"] = ([0.,0.,1.],[0.,0.,0.])
-journals_colors["chaos"] = ([.5,0.,1.],[0.,0.,0.])
-journals_colors["siam"] = ([1.,0.,1.],[0.,0.,0.])
-journals_colors["ann_math"] = ([1.,0.,.5],[0.,0.,0.])
+journals_colors["nature"] = (parse.(Int64,["1f","77","b4"],base = 16)./255,[0.,0.,0.])
+journals_colors["pnas"] = (parse.(Int64,["ff","7f","0e"],base = 16)./255,[0.,0.,0.])
+journals_colors["science"] = (parse.(Int64,["2c","a0","2c"],base = 16)./255,[0.,0.,0.])
+journals_colors["lancet"] = (parse.(Int64,["d6","27","28"],base = 16)./255,[0.,0.,0.])
+journals_colors["neng_j_med"] = (parse.(Int64,["94","67","bd"],base = 16)./255,[0.,0.,0.])
+journals_colors["plant_cell"] = (parse.(Int64,["8c","56","4b"],base = 16)./255,[0.,0.,0.])
+journals_colors["j_phys_chem_a"] = (parse.(Int64,["e3","77","c2"],base = 16)./255,[0.,0.,0.])
+journals_colors["ieee_trans_autom_control"] = (parse.(Int64,["7f","7f","7f"],base = 16)./255,[0.,0.,0.])
+journals_colors["energy"] = (parse.(Int64,["bc","bd","22"],base = 16)./255,[0.,0.,0.])
+journals_colors["chaos"] = (parse.(Int64,["17","be","cf"],base = 16)./255,[0.,0.,0.])
+journals_colors["siam"] = (parse.(Int64,["ae","c7","e8"],base = 16)./255,[0.,0.,0.])
+journals_colors["ann_math"] = (parse.(Int64,["ff","bb","78"],base = 16)./255,[0.,0.,0.])
 
-journals_colors["prl"] = ([.3,.3,.3],[0.,0.,0.])
-journals_colors["prd"] = ([.6,.6,.6],[0.,0.,0.])
+journals_colors["prl"] = (parse.(Int64,["98","df","8a"],base = 16)./255,[0.,0.,0.])
+journals_colors["prd"] = (parse.(Int64,["ff","98","96"],base = 16)./255,[0.,0.,0.])
 # + cross-figure
 
 ## Appendix...
-journals_colors["bmj"] = ([1.,0.,0.],[0.,0.,0.])
-journals_colors["food_chem_tox"] = ([1.,.5,0.],[0.,0.,0.])
-journals_colors["medical_ped_onc"] = ([1.,1.,0.],[0.,0.,0.])
-journals_colors["pre"] = ([.5,1.,0.],[0.,0.,0.])
-journals_colors["molecular_bio_evo"] = ([0.,1.,0.],[0.,0.,0.])
-journals_colors["scientometrics"] = ([0.,1.,.5],[0.,0.,0.])
-journals_colors["j_mat_chem_a"] = ([0.,1.,1.],[0.,0.,0.])
-journals_colors["bull_ams"] = ([0.,.5,1.],[0.,0.,0.])
+journals_colors["bmj"] = (parse.(Int64,["1f","77","b4"],base = 16)./255,[0.,0.,0.])
+journals_colors["food_chem_tox"] = (parse.(Int64,["ff","7f","0e"],base = 16)./255,[0.,0.,0.])
+journals_colors["medical_ped_onc"] = (parse.(Int64,["2c","a0","2c"],base = 16)./255,[0.,0.,0.])
+journals_colors["pre"] = (parse.(Int64,["d6","27","28"],base = 16)./255,[0.,0.,0.])
+journals_colors["molecular_bio_evo"] = (parse.(Int64,["94","67","bd"],base = 16)./255,[0.,0.,0.])
+journals_colors["scientometrics"] = (parse.(Int64,["8c","56","4b"],base = 16)./255,[0.,0.,0.])
+journals_colors["j_mat_chem_a"] = (parse.(Int64,["e3","77","c2"],base = 16)./255,[0.,0.,0.])
+journals_colors["bull_ams"] = (parse.(Int64,["7f","7f","7f"],base = 16)./255,[0.,0.,0.])
 
 
 

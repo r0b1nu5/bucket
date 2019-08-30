@@ -1,4 +1,4 @@
-using DelimitedFiles, PyPlot, FFTW, Statistics, LinearAlgebra, JuMP, Ipopt
+using DelimitedFiles, PyPlot, FFTW, Statistics, LinearAlgebra, JuMP, Ipopt, Distributed
 
 
 
@@ -7,25 +7,27 @@ using DelimitedFiles, PyPlot, FFTW, Statistics, LinearAlgebra, JuMP, Ipopt
 
 
 
+"""
+    run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
 
-# Identifies dynamics and forcing for a small network, base only on measurements.
-#
-# INPUT:
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# Df: Radius of data over which the median of neighboring Fourier modes in computed. 
-# n_period: Number of period considered in each data chunk.
-# mu: Initial value of the barrier parameter (in IPOPT).
-# bp: Initial value of the bound_push parameter (in IPOPT).
-# Zro: Tolerance for zero.
-#
-# OUTPUT:
-# Lm: Laplacian matrix normalized by the inertias.
-# dm: Damping over inertia ratios.
-# a: Vector of amplitudes of the forcing.
-# f: Vector of frequencies of the forcing.
-# p: Vector of phases of the forcing.
+Identifies dynamics and forcing for a small network, base only on measurements.
 
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`Df`: Radius of data over which the median of neighboring Fourier modes in computed. 
+`n_period`: Number of period considered in each data chunk.
+`mu`: Initial value of the barrier parameter (in IPOPT).
+`bp`: Initial value of the bound_push parameter (in IPOPT).
+`Zro`: Tolerance for zero.
+
+_OUTPUT_:
+`Lm`: Laplacian matrix normalized by the inertias.
+`dm`: Damping over inertia ratios.
+`a`: Vector of amplitudes of the forcing.
+`f`: Vector of frequencies of the forcing.
+`p`: Vector of phases of the forcing.
+"""
 function run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
 	fh = get_fh_fourier(Xs,dt,Df)
 	
@@ -40,17 +42,19 @@ function run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10,
 	return Lm,dm,a,f,p
 end
 
+"""
+    get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 
-# Estimates the forcings frequency, based on the Fourier Transform of the times series of the phase frequencies. A peak is identified by dividing the value of each Fourier mode by the median value of its 2*Df neighbors.
-#
-# INPUT:
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# Df: Radius of data over which the median in computed. 
-#
-# OUTPUT:
-# fh: Estimate of the forcing's frequency.
+Estimates the forcings frequency, based on the Fourier Transform of the times series of the phase frequencies. A peak is identified by dividing the value of each Fourier mode by the median value of its 2*Df neighbors.
 
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`Df`: Radius of data over which the median in computed. 
+
+_OUTPUT_:
+`fh`: Estimate of the forcing's frequency.
+"""
 function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	nn,T = size(Xs)
 	n = Int(nn/2)
@@ -103,16 +107,19 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 end
 
 
-# Estimates the forcing's frequency based on the autocorrelation of the times series of the phase angles.
-#
-# INPUT:
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# p: Proportion of the measure time over which the autocorrelation is computed.
-#
-# OUTPUT: 
-# fh: Estimate of the forcing's frequency.
+"""
+    get_fh_autocorr(Xs::Array{Float64,2}, dt::Float64, p::Float64=.1)
 
+Estimates the forcing's frequency based on the autocorrelation of the times series of the phase angles.
+
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`p`: Proportion of the measure time over which the autocorrelation is computed.
+
+_OUTPUT_: 
+`fh`: Estimate of the forcing's frequency.
+"""
 function get_fh_autocorr(Xs::Array{Float64,2}, dt::Float64, p::Float64=.1)
 	nn,T = size(Xs)
 	n = Int(nn/2)
@@ -148,18 +155,21 @@ function get_fh_autocorr(Xs::Array{Float64,2}, dt::Float64, p::Float64=.1)
 end
 
 
-# Estimates the dynamics matrix bases on Lokhov18.
-#
-# INPUT:
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# fh: Estimate of forcing's frequency.
-#
-# OUTPUT: 
-# Ah: Estimate of the full dynamics matrix.
-# Lh: Estimate of the Laplacian matrix normalized by the inertias (M^{-1}*L).
-# dh: Estimate of the damping over inertia ratios.
+"""
+    get_Ah_correl(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 
+Estimates the dynamics matrix bases on Lokhov18.
+
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`fh`: Estimate of forcing's frequency.
+
+_OUTPUT_: 
+`Ah`: Estimate of the full dynamics matrix.
+`Lh`: Estimate of the Laplacian matrix normalized by the inertias (M^{-1}*L).
+`dh`: Estimate of the damping over inertia ratios.
+"""
 function get_Ah_correl(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 	nn,T = size(Xs)
 	n = Int(nn/2)
@@ -177,16 +187,19 @@ function get_Ah_correl(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 end
 
 
-# Removes the Fourier modes of frequency fh from the signal Xs.
-#
-# INPUT: 
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# fh: Frequency to remove.
-#
-# OUPUT:
-# Xt: Filtered signal.
+"""
+    filter_signal(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 
+Removes the Fourier modes of frequency fh from the signal Xs.
+
+_INPUT_: 
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`fh`: Frequency to remove.
+
+_OUPUT_:
+`Xt`: Filtered signal.
+"""
 function filter_signal(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 	nn,T = size(Xs)
 
@@ -210,16 +223,19 @@ function filter_signal(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 end
 
 
-# Estimates the amplitude of the forcing. This is a very rough estimate, but we hope it is better than nothing.
-#
-# INPUT
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# fh: Estimate of the forcing's frequency.
-#
-# OUTPUT:
-# ah: Estimate of the forcing's amplitude.
+"""
+    get_ah(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 
+Estimates the amplitude of the forcing. This is a very rough estimate, but we hope it is better than nothing.
+
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`fh`: Estimate of the forcing's frequency.
+
+_OUTPUT_:
+`ah`: Estimate of the forcing's amplitude.
+"""
 function get_ah(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 	nn,T = size(Xs)
 	n = Int(nn/2)
@@ -230,27 +246,30 @@ function get_ah(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 end
 
 
-# Optimizes the dynamics matrix and forcing's paramters on chunks of the time series. The optimization allows different phase lags on each chunk, but requires the same amplitude and frequency.
-#
-# INPUT:
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# Lh: Estimate of the normalized Laplacian matrix.
-# dh: Estimate of the damping over inertia ratios.
-# ah: Estimate of the forcing's amplitude.
-# fh: Estimate of the forcing's frequency.
-# n_period: Number of period considered in each data chunk.
-# mu: Initial value of the barrier parameter (in IPOPT).
-# bp: Initial value of the bound_push parameter (in IPOPT).
-# Zro: Tolerance for zero.
-#
-# OUTPUT:
-# Lm: Optimized normalized Laplacian matrix.
-# dm: Optimized damping of inertia ratios.
-# a: Optimized forcing amplitudes.
-# f: Optimized forcing frequencies.
-# p: Optimized phase lags in each chunk.
+"""
+    optim_chunks(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Float64, fh::Float64, n_period::Float64, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
 
+Optimizes the dynamics matrix and forcing's paramters on chunks of the time series. The optimization allows different phase lags on each chunk, but requires the same amplitude and frequency.
+
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`Lh`: Estimate of the normalized Laplacian matrix.
+`dh`: Estimate of the damping over inertia ratios.
+`ah`: Estimate of the forcing's amplitude.
+`fh`: Estimate of the forcing's frequency.
+`n_period`: Number of period considered in each data chunk.
+`mu`: Initial value of the barrier parameter (in IPOPT).
+`bp`: Initial value of the bound_push parameter (in IPOPT).
+`Zro`: Tolerance for zero.
+
+_OUTPUT_:
+`Lm`: Optimized normalized Laplacian matrix.
+`dm`: Optimized damping of inertia ratios.
+`a`: Optimized forcing amplitudes.
+`f`: Optimized forcing frequencies.
+`p`: Optimized phase lags in each chunk.
+"""
 function optim_chunks(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Float64, fh::Float64, n_period::Float64, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
 	nn,T = size(Xs)
 	n = Int(nn/2)
@@ -290,25 +309,29 @@ function optim_chunks(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, d
 end
 
 
-# Optimizes the dynamics matrix and forcing's paramters on the whole time series. 
-#
-# INPUT:
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# Lh: Estimate of the normalized Laplacian matrix.
-# dh: Estimate of the damping over inertia ratios.
-# ah: Estimate of the forcing's amplitude.
-# fh: Estimate of the forcing's frequency.
-# mu: Initial value of the barrier parameter (in IPOPT).
-# bp: Initial value of the bound_push parameter (in IPOPT).
-# Zro: Tolerance for zero.
-#
-# OUTPUT:
-# Lm: Optimized normalized Laplacian matrix.
-# dm: Optimized damping of inertia ratios.
-# a: Optimized forcing amplitudes.
-# f: Optimized forcing frequencies.
-# p: Optimized phase lags.
+"""
+    optim_all(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Array{Float64,1}, fh::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
+
+Optimizes the dynamics matrix and forcing's paramters on the whole time series. 
+
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`Lh`: Estimate of the normalized Laplacian matrix.
+`dh`: Estimate of the damping over inertia ratios.
+`ah`: Estimate of the forcing's amplitude.
+`fh`: Estimate of the forcing's frequency.
+`mu`: Initial value of the barrier parameter (in IPOPT).
+`bp`: Initial value of the bound_push parameter (in IPOPT).
+`Zro`: Tolerance for zero.
+
+_OUTPUT_:
+`Lm`: Optimized normalized Laplacian matrix.
+`dm`: Optimized damping of inertia ratios.
+`a`: Optimized forcing amplitudes.
+`f`: Optimized forcing frequencies.
+`p`: Optimized phase lags.
+"""
 function optim_all(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Array{Float64,1}, fh::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
 	nn,T = size(Xs)
 	n = Int(nn/2)
@@ -345,21 +368,139 @@ function optim_all(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::
 end
 
 
-# Optimizes the phase lag of the forcing.
-#
-# INPUT:
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# Lm: Estimate of the normalized Laplacian matrix.
-# dm: Estimate of the damping over inertia ratios.
-# a: Estimate of the forcing's amplitude.
-# f: Estimate of the forcing's frequency.
-# mu: Initial value of the barrier parameter (in IPOPT).
-# bp: Initial value of the bound_push parameter (in IPOPT).
-#
-# OUTPUT: 
-# p: Vector of phases of the forcing.
+"""
+    optim_chunks_l0(id::Int64, Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Float64, fh::Float64, n_period::Float64, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
 
+Optimizes the dynamics matrix and forcing's paramters on chunks of the time series, assuming the forcing is at node id. The optimization allows different phase lags on each chunk, but requires the same amplitude and frequency.
+
+_INPUT_:
+`id`: Index of the node where the forcing is assumed to be.
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`Lh`: Estimate of the normalized Laplacian matrix.
+`dh`: Estimate of the damping over inertia ratios.
+`ah`: Estimate of the forcing's amplitude.
+`fh`: Estimate of the forcing's frequency.
+`n_period`: Number of period considered in each data chunk.
+`mu`: Initial value of the barrier parameter (in IPOPT).
+`bp`: Initial value of the bound_push parameter (in IPOPT).
+`Zro`: Tolerance for zero.
+
+_OUTPUT_:
+`Lm`: Optimized normalized Laplacian matrix.
+`dm`: Optimized damping of inertia ratios.
+`a`: Optimized forcing amplitudes.
+`f`: Optimized forcing frequencies.
+`p`: Optimized phase lags in each chunk.
+`obj`: Value of the objective function.
+"""
+function optim_chunks_l0(id::Int64, Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Float64, fh::Float64, n_period::Float64, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
+	nn,T = size(Xs)
+	n = Int(nn/2)
+	
+	Dt = ceil(Int64,1/(fh*dt))
+	n_bin = floor(Int64,T/Dt)
+
+	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
+
+	@variable(system_id, Lm[i = 1:n, j = 1:n])
+	set_start_value.(Lm,Lh)
+	@variable(system_id, dm[i = 1:n])
+	set_start_value.(dm,dh)
+	@variable(system_id, a)
+	set_start_value(a,ah)
+	@variable(system_id, f)
+	set_start_value(f,fh)
+	@variable(system_id, p[j = 1:n_bin])
+
+	for i in 1:n-1
+		for j in i+1:n
+			@constraint(system_id, Lm[i,j] >= Zro)
+			@constraint(system_id, Lm[j,i] >= Zro)
+		end
+	end
+	for i in 1:n
+		@constraint(system_id, sum(Lm[i,:]) == 0)
+	end
+
+	@NLexpression(system_id, err[i = [1:id-1;id+1:n], t = 1:Dt-1, j = 1:n_bin], Xs[n+i,(j-1)*Dt + t + 1] - Xs[n+i,(j-1)*Dt + t] - dt * (sum(-Lm[i,k]*Xs[k,(j-1)*Dt + t] for k = 1:n) - dm[i]*Xs[n+i,(j-1)*Dt + t]))
+	@NLexpression(system_id, erri[t = 1:Dt-1, j = 1:n_bin], Xs[n+id,(j-1)*Dt + t + 1] - Xs[n+id,(j-1)*Dt + t] - dt * (sum(-Lm[id,k]*Xs[k,(j-1)*Dt + t] for k = 1:n) - dm[id]*Xs[n+id,(j-1)*Dt + t] + a*cos(2*pi*f*dt*((j-1)*Dt + t) + p[j])))
+
+	@NLobjective(system_id, Min, (sum(err[i,t,j]^2 for i = [1:id-1;id+1:n] for t = 1:Dt-1 for j = 1:n_bin) + sum(erri[t,j]^2 for t = 1:Dt-1 for j = 1:n_bin))/T)
+
+	optimize!(system_id)
+
+	return value.(Lm),value.(dm),value(a),value(f),value.(p),objective_value(system_id) 
+end
+
+"""
+Intermediate function.
+"""
+function interim(x::Tuple{Int64, Array{Float64,2}, Float64, Array{Float64,2}, Array{Float64,1}, Float64, Float64, Float64, Float64, Float64, Float64})
+	return optim_chunks_l0(x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11])
+end
+
+
+"""
+    parallel_optim(n_thread::Int64, Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Float64, fh::Float64, n_period::Float64, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
+
+Runs the function `optim_chunks_l0` in parallel for each id = 1:n.
+   
+_INPUT_:
+`n_thread`: Number of threads to parallelize on.
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`Lh`: Estimate of the normalized Laplacian matrix.
+`dh`: Estimate of the damping over inertia ratios.
+`ah`: Estimate of the forcing's amplitude.
+`fh`: Estimate of the forcing's frequency.
+`n_period`: Number of period considered in each data chunk.
+`mu`: Initial value of the barrier parameter (in IPOPT).
+`bp`: Initial value of the bound_push parameter (in IPOPT).
+`Zro`: Tolerance for zero.
+
+_OUTPUT_:
+`sols`: Array of the outputs of `optim_chunks_l0` for each id = 1:n.
+"""
+function parallel_optim(n_thread::Int64, Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, ah::Float64, fh::Float64, n_period::Float64, mu::Float64=1e-1, bp::Float64=1e-1, Zro::Float64=1e-5)
+	n = length(dh)
+	nw = nworkers()
+
+	if n_thread > nw
+		addprocs(n_thread - nw)
+	end
+
+	@everywhere include("final.jl")
+
+	args = Array{Tuple{Int64, Array{Float64,2}, Float64, Array{Float64,2}, Array{Float64,1}, Float64, Float64, Float64, Float64, Float64, Float64},1}()
+	for i in 1:n
+		push!(args,(i,Xs,dt,Lh,dh,ah,fh,n_period,mu,bp,Zro))
+	end
+	sols = pmap(interim,args)
+#	sols = pmap(optim_chunks_l0,1:n,[Xs,],[dt,],[Lh,],[dh,],[ah,],[dh,],[n_period,],[mu,],[bp,],[Zro,])
+	return sols
+end
+
+
+
+"""
+    optim_phase(Xs::Array{Float64,2}, dt::Float64, Lm::Array{Float64,2}, dm::Array{Float64,1}, a::Array{Float64,1}, f::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
+
+Optimizes the phase lag of the forcing.
+
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`Lm`: Estimate of the normalized Laplacian matrix.
+`dm`: Estimate of the damping over inertia ratios.
+`a`: Estimate of the forcing's amplitude.
+`f`: Estimate of the forcing's frequency.
+`mu`: Initial value of the barrier parameter (in IPOPT).
+`bp`: Initial value of the bound_push parameter (in IPOPT).
+
+_OUTPUT_: 
+`p`: Vector of phases of the forcing.
+"""
 function optim_phase(Xs::Array{Float64,2}, dt::Float64, Lm::Array{Float64,2}, dm::Array{Float64,1}, a::Array{Float64,1}, f::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
 	n = length(dm)
 
@@ -381,21 +522,24 @@ function optim_phase(Xs::Array{Float64,2}, dt::Float64, Lm::Array{Float64,2}, dm
 end
 
 
-# Optimizes the forcing's amplitude and phase lag, assuming known dynamics matrix and frequency. These assumptions allow to write the problem as a Linear program, i.e., accelerates it a lot and makes it more scalable. 
-#
-# INPUT:
-# Xs: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-# dt: Time step.
-# Lh: Estimate of the normalized Laplacian matrix.
-# dh: Estimate of the damping over inertia ratios.
-# f: Estimate of the forcing's frequency.
-# mu: Initial value of the barrier parameter (in IPOPT).
-# bp: Initial value of the bound_push parameter (in IPOPT).
-#
-# OUTPUT:
-# a: Optimized forcing amplitudes.
-# p: Optimized phase lags.
+"""
+    optim_all_lin(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, f::Float64, mu::Float64=1e-1, bp::Float64=1e-1)
 
+Optimizes the forcing's amplitude and phase lag, assuming known dynamics matrix and frequency. These assumptions allow to write the problem as a Linear program, i.e., accelerates it a lot and makes it more scalable. 
+
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`Lh`: Estimate of the normalized Laplacian matrix.
+`dh`: Estimate of the damping over inertia ratios.
+`f`: Estimate of the forcing's frequency.
+`mu`: Initial value of the barrier parameter (in IPOPT).
+`bp`: Initial value of the bound_push parameter (in IPOPT).
+
+_OUTPUT_:
+`a`: Optimized forcing amplitudes.
+`p`: Optimized phase lags.
+"""
 function optim_all_lin(Xs::Array{Float64,2}, dt::Float64, Lh::Array{Float64,2}, dh::Array{Float64,1}, f::Float64, mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,T = size(Xs)
 	n = Int(nn/2)
