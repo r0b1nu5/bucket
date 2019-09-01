@@ -5,10 +5,11 @@ include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
 
-tups = Array{Tuple{String,Int64,Bool,Bool,Bool,Bool,Int64},1}()
+tups = Array{Tuple{String,Int64,Bool,Bool,Bool,Bool,Bool,Bool,Int64},1}()
+
 for j in journals_short
 	for id in 1:25
-		push!(tups,(j,100,true,true,true,true,id))
+		push!(tups,(j,100,true,false,false,false,true,true,id))
 	end
 end
 
@@ -114,7 +115,7 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,B
 		@info "$(now()) -- Exponential distribution..."
 # =========== mle ==========================================
 		b = new_mle_exp(num,mi)
-		C = (1 - exp(b))/exp(-b*mi)
+		C = (1 - exp(-b))/exp(-b*mi)
 # =========== goodness-of-fit =============================
 		p_exp = new_gof_exp(j,num,b,C,mi,number_sample)
 		

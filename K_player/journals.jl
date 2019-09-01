@@ -20,6 +20,7 @@ journals_short = ["nature",
 #journals_short = ["prd",]
 #
 # #=
+	"prd",
 	"bmj",
 	"food_chem_tox",
 	"medical_ped_onc",

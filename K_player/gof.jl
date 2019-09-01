@@ -76,7 +76,8 @@ function new_gof_yule(j::String, x::Array{Int64,2}, a0::Float64, C0::Float64, mi
 		KS = new_KS_yule(z,a,C)
 		push!(KSs,KS)
 	end
-	
+
+@info "$(maximum(KSs)), $KS0"
 	p = sum(KSs .> KS0)/n_sample
 	
 	writedlm("analysis/"*j*"_KS0_yule.csv",KS0,',')
@@ -89,7 +90,6 @@ end
 function new_gof_exp(j::String, x::Array{Int64,2}, b0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
 	KS0 = new_KS_exp(x,b0,C0)
 	n_data = sum(x[2,:])
-
 	KSs = Array{Float64,1}()
 	for i in 1:n_sample
 		if (i%100 == 0) || i == n_sample
@@ -103,7 +103,9 @@ function new_gof_exp(j::String, x::Array{Int64,2}, b0::Float64, C0::Float64, mi:
 	end
 
 	p = sum(KSs .> KS0)/n_sample
-
+@info "$p"
+	@info "$(maximum(KSs))"
+	@info "$KS0"
 	writedlm("analysis/"*j*"_KS0_exp.csv",KS0,',')
 	writedlm("analysis/"*j*"_KSs_exp.csv",KSs,',')
 
@@ -130,7 +132,7 @@ function new_gof_poisson(j::String, x::Array{Int64,2}, m0::Float64, C0::Float64,
 	p = sum(KSs .> KS0)/n_sample
 
 	writedlm("analysis/"*j*"_KS0_poisson.csv",KS0,',')
-	writeslm("analysis/"*j*"_KSs_poisson.csv",KSs,',')
+	writedlm("analysis/"*j*"_KSs_poisson.csv",KSs,',')
 
 	return p
 end
@@ -222,7 +224,7 @@ function new_KS_exp(x::Array{Int64,2}, b::Float64, C::Float64)
 	return KS
 end
 
-function new_KS_poisson(x::Array{Int64,1}, m::Float64, C::Float64)
+function new_KS_poisson(x::Array{Int64,2}, m::Float64, C::Float64)
 	mi = x[1,1]
 	ma = x[1,end]
 	n = sum(x[2,:])
@@ -234,7 +236,7 @@ function new_KS_poisson(x::Array{Int64,1}, m::Float64, C::Float64)
 		if i == x[1,count]
 			count += 1
 		end
-		push!(cdf, cdf[end] + C*m^i/factorial(i))
+		push!(cdf, cdf[end] + C*m^i/factorial(Float64(i)))
 		push!(ecdf, sum(x[2,1:count-1])/n)
 	end
 
@@ -367,23 +369,24 @@ function new_rand_poisson(yy::Array{Float64,1}, m::Float64, C::Float64, mi::Int6
 	n = Int(mi - 1)
 
 	y = sort(yy)./C
-	ly = lenght(y)
+	ly = length(y)
 
 	val_num = Array{Int64,2}(undef,2,0)
 
 	id = 0
+	di = 0
 
 	while (ly - id)*(1 - C*x) > eps
 		while y[id+1] > x
 			n += 1
-			x += m^n/factorial(n)
+			x += m^n/factorial(Float64(n))
 		end
 		di = sum(y[id+1:end] .< x)
 		id += di
 		val_num = [val_num [n,di]]
 	end
 
-	val_num = [val_num [n,di]]
+	val_num = [val_num [n+1,di]]
 
 	return val_num
 end

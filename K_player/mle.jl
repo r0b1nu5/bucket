@@ -76,7 +76,7 @@ function new_mle_yule(x::Array{Int64,2}, xmin::Int64)
 end
 
 
-function new_mle_exp(x::Array{Float64,1},xmin::Float64)
+function new_mle_exp(x::Array{Int64,2}, xmin::Int64)
 	side = 4.99
 	btemp = 5.
 	n = sum(x[2,:])
@@ -98,7 +98,7 @@ function new_mle_exp(x::Array{Float64,1},xmin::Float64)
 end
 
 
-function new_mle_poisson(x::Array{Float64,1},xmin::Float64)
+function new_mle_poisson(x::Array{Int64,2}, xmin::Int64)
 	side = 4.99
 	mtemp = 5.0
 	n = sum(x[2,:])
@@ -131,6 +131,14 @@ end
 # Computes log(x!)
 function log_factorial(x::Int64)
 	return sum(log.(1:x))
+end
+
+function log_factorial(x::Array{Int64,1})
+	lf = Array{Float64,1}()
+	for xx in x
+		push!(lf,log_factorial(xx))
+	end
+	return lf
 end
 
 ##################### OLD MLE #####################################
