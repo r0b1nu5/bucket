@@ -2,10 +2,13 @@ using PyPlot, Logging, DelimitedFiles
 # #=
 include("journals.jl")
 
-#ref_year = "00"
-ref_year = "80"
+ref_year = "00"
+#ref_year = "80"
 
-journal = "science"
+#journal = "science"
+#journal = "prl"
+journal = "lancet"
+
 yi = 99
 ny = 10
 hor = 3

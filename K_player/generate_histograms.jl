@@ -11,23 +11,24 @@ precision = 1e-4
 ############## JOURNALS TO USE ########################################
 #js = [used_journals[parse(Int,ARGS[1])],]
 #js = [used_journals[jn],]
- js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
-
+#js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
+js = journals_short
+js = ["prl", "prd"]
 
 ################ DO / DON'T LIST #######################################
-plots = false
-save = true
+plots = true
+save = false
 	iter = 100
-pl = true
+pl = false
 	s = 0.
-pl_co = true
+pl_co = false
 	a = 0.
 	l = 0.
-yule = true
+yule = false
 	al = 0.
-expo = true
+expo = false
 	b = 0.
-poisson = true
+poisson = false
 	m = 0.
 
 # ============= useless ==============================================
@@ -48,8 +49,8 @@ for j in js
 ################ COLLECTING DATA ################################
 	
 	@info("$(now()) -- Collecting data: $j")
-	if j == "prl" || j == "prd"
-		num = Int.(readdlm("data/"*j*"_reduced_parsed.csv",','))
+	if j == "prl_reduced" || j == "prd_reduced"
+		num = Int.(readdlm("data/"*j*"_parsed.csv",','))
 	else
 		num = Int.(readdlm("data/"*j*"_parsed.csv",','))
 	end
@@ -71,36 +72,44 @@ for j in js
 		C = 1/zeta(s,mi)
 		Hs = sum(1.0./((mi:ma).^s))
 		z = C * ((mi:ma).^(-s))
-		PyPlot.plot(mi:ma,z,"--k",label="Zipf's law fit, s = $(round(s; digits=3))",linewidth=2)
-		max_k = ceil(Int64,(length(num)/Hs)^(1/s))
-		PyPlot.plot([max_k,max_k],[.5/length(num),maximum(z)*length(num)*2],"--k",linewidth=2)
+		PyPlot.plot(mi:ma,z,"--k",label="pl: s = $(round(s; digits=3))",linewidth=1)
+		max_k = ceil(Int64,(sum(num[2,:])/Hs)^(1/s))
+		PyPlot.plot([max_k,max_k],[.5/sum(num[2,:]),maximum(z)*sum(num[2,:])*2],"--k",linewidth=1)
 		
 # ============ power law with cutoff ===============================
 		a,l = new_mle_plc(num)
 		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
 		zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
-		PyPlot.plot(mi:ma,zz,".-k",label="PL with cutoff",linewidth=3)
+		PyPlot.plot(mi:ma,zz,"-.k",label="plc: a = $(round(a; digits=3)), l = $(round(l; digits=3))",linewidth=1)
 		
 # ============ yule-simon ===============================
 		al = new_mle_yule(num,mi)
 		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
 		zzzz = C*(al-1)*beta.(mi:ma,al)
-		PyPlot.plot(mi:ma,zzzz,":k",label="Yule distribution",linewidth=3)
+		PyPlot.plot(mi:ma,zzzz,":k",label="yule: al = $(round(al; digits=3))",linewidth=1)
 		
 # ============ exponential ===============================
 		b = new_mle_exp(num,mi)
 		C = (1 - exp(-b))/exp(-b*mi)
 		z = C * exp.(-b*(mi:ma))
-		PyPlot.plot(mi:ma,z,":r",label="Exponential distribution",linewith=3)
+		PyPlot.plot(mi:ma,z,"--k",label="exp: b = $(round(b; digits=3))",linewidth=1)
 
+#=
 # ============ poisson ===============================
 		m = new_mle_poisson(num,mi)
 		C = 1/(exp(m) - sum((m.^(0:mi-1))./(factorial.(0:mi-1))))
-		z = C * (m.^(mi:ma))./(factorial.(mi:ma))
+		z = C * (m.^(mi:ma))./(factorial.(Array{Float64,1}(mi:ma)))
 		PyPlot.plot(mi:ma,z,"--r",label="Poisson distribution2",linewidth=3)
 
-		loglog()
+=#
 		@info "==========================================="
+		
+		title(journals_code[j]*", max. # articles predicted: $(ceil(Int,max_k))")
+		xlabel("Number of articles")
+		ylabel("Number of authors")
+		axis([.9*mi,2*ma,.5/sum(num[2,:]),2.])
+		loglog()
+		legend()
 	end
 		
 ############### POWER LAW ###################################
@@ -192,18 +201,9 @@ end
 		@info("$(now()) -- "*j*", Poisson distribution: p-value = $p_poisson")
 ## Plot
 		if plots
-			z5 = C .* mu.^(mi:ma)./(factorial.(mi:ma))
+			z5 = C .* mu.^(mi:ma)./(factorial.(Array{Float64,1}(mi:ma)))
 			PyPlot.plot(mi:ma,z5,"--g",label="Poisson distribution",linewidth=3)
 		end
-	end
-
-	if plots
-		title(journals_code[j]*", max. # articles predicted: $(ceil(Int,max_k))")
-		xlabel("Number of articles")
-		ylabel("Number of authors")
-		axis([.9,max(ma*2,2*max_k),.5/length(num),2.])
-		loglog()
-		legend()
 	end
 
 # if linbins
