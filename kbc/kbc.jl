@@ -55,7 +55,9 @@ end
 
 function inc_ata(n::Int64)
 	if n == 2
-		B = [1;-1]
+		B = zeros(2,1)
+		B[1,1] = 1.
+		B[2,1] = -1.
 	else
 		B = [ones(1,n-1) zeros(1,Int((n-1)*(n-2)/2));-diagm(0 => ones(n-1)) inc_ata(n-1)]
 	end

@@ -29,7 +29,10 @@ _OUTPUT_:
 `p`: Vector of phases of the forcing.
 """
 function run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
-	fh = get_fh_fourier(Xs,dt,Df)
+	nn,T = size(Xs)
+	n = Int(nn/2)
+	
+	fh,amps = get_fh_fourier(Xs,dt,Df)
 	
 	Ah,Lh,dh = get_Ah_correl(Xs,dt,fh)
 
@@ -38,6 +41,77 @@ function run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10,
 	Lm,dm,a,f,ps = optim_chunks(Xs,dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
 
 	p = optim_phase(Xs,dt,Lm,dm,a,f)
+
+	AA = sortslices([abs.(a) 1:n],dims=1,rev=true)
+	PP = AA[:,1]./sum(AA[:,1])
+	id1 = Int(AA[1,2])
+	id2 = Int(AA[2,2])
+	id3 = Int(AA[3,2])
+	
+	@info "========================================================================="
+	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(f[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[id1],digits=3)*100)%)"
+	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(f[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[id2],digits=3)*100)%)"
+	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(f[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[id3],digits=3)*100)%)"
+	@info "========================================================================="
+
+	return Lm,dm,a,f,p
+end
+
+"""
+    run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
+
+Identifies dynamics and forcing for a small network, base only on measurements.
+
+_INPUT_:
+`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
+`dt`: Time step.
+`n_ref`: Number of nodes to use in the reduced network used in the nonlinear optimization.
+`Df`: Radius of data over which the median of neighboring Fourier modes in computed. 
+`n_period`: Number of period considered in each data chunk.
+`mu`: Initial value of the barrier parameter (in IPOPT).
+`bp`: Initial value of the bound_push parameter (in IPOPT).
+`Zro`: Tolerance for zero.
+
+_OUTPUT_:
+`Lm`: Laplacian matrix normalized by the inertias.
+`dm`: Damping over inertia ratios.
+`a`: Vector of amplitudes of the forcing.
+`f`: Vector of frequencies of the forcing.
+`p`: Vector of phases of the forcing.
+"""
+function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=5, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
+	nn,T = size(Xs)
+	n = Int(nn/2)
+	
+	fh,amps = get_fh_fourier(Xs,dt,Df)
+
+	ids = Int.(sortslices([amps 1:n],dims=1,rev=true)[1:min(n_ref,n),2])
+
+	Ah,Lh,dh = get_Ah_correl(Xs[[ids;ids.+n],:],dt,fh)
+
+	ah = get_ah(Xs[[ids;ids.+n],:],dt,fh)
+
+	Lm,dm,a,f,ps = optim_chunks(Xs[[ids;ids.+n],:],dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
+	AA = sortslices([a ids],dims=1,rev=true)
+	fh = f[Int(AA[1,2])]
+	ff = zeros(n)
+	ff[ids] = f
+	
+	Ah,Lh,dh = get_Ah_correl(Xs,dt,fh)
+	
+	a,p = optim_all_lin(Xs,dt,Lh,dh,fh,mu,bp)
+
+	AA = sortslices([abs.(a) 1:n],dims=1,rev=true)
+	PP = AA[:,1]./sum(AA[:,1])
+	id1 = Int(AA[1,2])
+	id2 = Int(AA[2,2])
+	id3 = Int(AA[3,2])
+
+	@info "========================================================================="
+	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(ff[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[id1],digits=3)*100)%)"
+	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(ff[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[id2],digits=3)*100)%)"
+	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(ff[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[id3],digits=3)*100)%)"
+	@info "========================================================================="
 
 	return Lm,dm,a,f,p
 end
@@ -59,7 +133,7 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	nn,T = size(Xs)
 	n = Int(nn/2)
 
-	fX = zeros(Complex{Float64},nn,T)
+	fX = zeros(Complex{Float64},n,T)
 	for i in 1:n
 		fX[i,:] = fft(Xs[n+i,:]).*dt./pi
 	end
@@ -86,11 +160,14 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 
 		if (ma2 > .5*ma) && (abs(id - id2) == 1)
 			push!(freqs,mean([fs[Df+id],fs[Df+id2]]))
+			push!(maxs,ma)
 		elseif (ma2 > .8*ma)
 			push!(freqs,NaN)
+			push!(maxs,NaN)
 			@info "Fourier Transform: inconclusive!"
 		else
 			push!(freqs,fs[Df+id])
+			push!(maxs,ma)
 		end
 	end
 
@@ -100,9 +177,9 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	if tf/n > .05
 		@info "Fourier Transform: no clear result."
 
-		return NaN
+		return NaN,NaN
 	else
-		return fh
+		return fh,maxs
 	end
 end
 
