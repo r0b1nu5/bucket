@@ -92,8 +92,8 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	ah = get_ah(Xs[[ids;ids.+n],:],dt,fh)
 
 	Lm,dm,a,f,ps = optim_chunks(Xs[[ids;ids.+n],:],dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
-	AA = sortslices([a ids],dims=1,rev=true)
-	fh = f[Int(AA[1,2])]
+	AA = sortslices([abs.(a) ids 1:n_ref],dims=1,rev=true)
+	fh = f[Int(AA[1,3])]
 	ff = zeros(n)
 	ff[ids] = f
 	
@@ -137,15 +137,16 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	for i in 1:n
 		fX[i,:] = fft(Xs[n+i,:]).*dt./pi
 	end
-
-	nfX = norm.(fX)
 	
-	mfX = zeros(n,T-2*Df)
+	nfX = [zeros(n) norm.(fX[:,2:end])]
+	
+	mfX = zeros(n,T)
 	for i in 1:n
-		for j in Df+1:T-Df
-			mfX[i,j-Df] = nfX[i,j]/median([nfX[i,j-Df:j-1];nfX[i,j+1:j+Df]])
+		for j in 1:T
+			mfX[i,j] = nfX[i,j]/median([nfX[i,max(j-Df,1):j-2];nfX[i,j+2:min(j+Df,T)]])
 		end
 	end
+	@info "$(mfX[2,100])"
 
 	fs = (0:T-1)./(dt*T)
 	df = fs[2]-fs[1]
@@ -159,14 +160,14 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 		ma2,id2 = findmax([mfX[i,1:id-1];0.;mfX[i,id+1:Int(T/2)]])
 
 		if (ma2 > .5*ma) && (abs(id - id2) == 1)
-			push!(freqs,mean([fs[Df+id],fs[Df+id2]]))
+			push!(freqs,mean([fs[id],fs[id2]]))
 			push!(maxs,ma)
 		elseif (ma2 > .8*ma)
 			push!(freqs,NaN)
 			push!(maxs,NaN)
-			@info "Fourier Transform: inconclusive!"
+			@info "$i Fourier Transform: inconclusive!"
 		else
-			push!(freqs,fs[Df+id])
+			push!(freqs,fs[id])
 			push!(maxs,ma)
 		end
 	end
