@@ -15,7 +15,7 @@ journals_short = ["nature",
 	"siam",
 	"ann_math",
 #
-	"prl",#"prl_58-77","prl_78-97","prl_98-17",
+#	"prl",#"prl_58-77","prl_78-97","prl_98-17",
 # =#
 #journals_short = ["prd",]
 #

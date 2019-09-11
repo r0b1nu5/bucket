@@ -41,14 +41,17 @@ function new_gof_plc(j::String, x::Array{Int64,2}, a0::Float64, l0::Float64, C0:
 #		if (i%100 == 0) || i == n_sample
 			@info "$(now()) -- "*j*", GoF power law with cutoff: $i/$n_sample"
 #		end
-		z = new_rand_plc(rand(n_data), a0, l0, C0, mi)
 # We should do as commented, but due to computation time, we truncate the tail of our synthetic data. Thus the MLE of the parameters is quite bad (at least for small data set, whereas the synthetic data follow correctly our real data set and its fit. We then compute KS with respect to the estimated parameter a0 and s0. In this case it will give more accurate results.
-#= 
+# #= 
+		z = new_rand_plc(rand(n_data), a0, l0, C0, mi, 0.)
 		a,l = new_mle_plc(z)
 		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
 		KS = new_KS_plc(z,a,l,C)
-=#
+# =#
+ #=
+		z = new_rand_plc(rand(n_data), a0, l0, C0, mi)
 		KS = new_KS_plc(z,a0,l0,C0)
+# =#
 		push!(KSs,KS)
 	end
 	

@@ -3,8 +3,7 @@ using DelimitedFiles
 include("journals.jl")
 #journals_shorts = ["prd",]
 
-distri = ["pl","plc","yule","expo","poisson"]
-distri = ["expo","poisson"]
+distri = ["plc",]
 
 n_threads = 25
 n_samp = 100
