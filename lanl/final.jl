@@ -113,7 +113,7 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(ff[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[id3],digits=3)*100)%)"
 	@info "========================================================================="
 
-	return Lm,dm,a,f,p
+	return Lm,dm,a,ff,p
 end
 
 """
