@@ -94,7 +94,7 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	Lm,dm,a,f,ps = optim_chunks(Xs[[ids;ids.+n],:],dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
 	AA = sortslices([abs.(a) ids 1:n_ref],dims=1,rev=true)
 	fh = f[Int(AA[1,3])]
-	ff = zeros(n)
+	ff = fh*ones(n)
 	ff[ids] = f
 	
 	Ah,Lh,dh = get_Ah_correl(Xs,dt,fh)
@@ -108,9 +108,9 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	id3 = Int(AA[3,2])
 
 	@info "========================================================================="
-	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(ff[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[id1],digits=3)*100)%)"
-	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(ff[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[id2],digits=3)*100)%)"
-	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(ff[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[id3],digits=3)*100)%)"
+	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(ff[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[1],digits=3)*100)%)"
+	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(ff[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[2],digits=3)*100)%)"
+	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(ff[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[3],digits=3)*100)%)"
 	@info "========================================================================="
 
 	return Lm,dm,a,ff,p
@@ -146,7 +146,6 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 			mfX[i,j] = nfX[i,j]/median([nfX[i,max(j-Df,1):j-2];nfX[i,j+2:min(j+Df,T)]])
 		end
 	end
-	@info "$(mfX[2,100])"
 
 	fs = (0:T-1)./(dt*T)
 	df = fs[2]-fs[1]
