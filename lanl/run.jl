@@ -1,6 +1,5 @@
 using Distributed
 
-n_thr = 45
 n_thr = 4
 
 if nworkers() < n_thr
@@ -40,8 +39,7 @@ end
 end
 
 tups = Array{Tuple{Int64,Int64,Float64,Float64,Float64,Int64,Float64},1}()
-#for n in [5,10,20]
-for n in [5,]
+for n in [5,10,20]
 	for id in 1:n
 		push!(tups,(id,n,.2,.00945,pi/10,100000,.1))
 	end
