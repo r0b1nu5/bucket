@@ -31,6 +31,11 @@ _OUTPUT_:
 function run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
 	nn,T = size(Xs)
 	n = Int(nn/2)
+
+	if T%2 == 0
+		Xs = Xs[:,1:end-1]
+		nn,T = size(Xs)
+	end
 	
 	fh,amps = get_fh_fourier(Xs,dt,Df)
 	
@@ -83,6 +88,11 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	nn,T = size(Xs)
 	n = Int(nn/2)
 	
+	if T%2 == 0
+		Xs = Xs[:,1:end-1]
+		nn,T = size(Xs)
+	end
+	
 	fh,amps = get_fh_fourier(Xs,dt,Df)
 
 	ids = Int.(sortslices([amps 1:n],dims=1,rev=true)[1:min(n_ref,n),2])
@@ -106,11 +116,15 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	id1 = Int(AA[1,2])
 	id2 = Int(AA[2,2])
 	id3 = Int(AA[3,2])
+	id4 = Int(AA[4,2])
+	id5 = Int(AA[5,2])
 
 	@info "========================================================================="
 	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(ff[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[1],digits=3)*100)%)"
 	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(ff[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[2],digits=3)*100)%)"
 	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(ff[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[3],digits=3)*100)%)"
+	@info "4. Forcing index: $id4, a=$(round(a[id4],digits=3)), f=$(round(ff[id4],digits=3)), φ=$(round(p[id4]/pi,digits=2))*π,  (confidence: $(round(PP[4],digits=3)*100)%)"
+	@info "5. Forcing index: $id5, a=$(round(a[id5],digits=3)), f=$(round(ff[id5],digits=3)), φ=$(round(p[id5]/pi,digits=2))*π,  (confidence: $(round(PP[5],digits=3)*100)%)"
 	@info "========================================================================="
 
 	return Lm,dm,a,ff,p
@@ -154,17 +168,17 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	maxs = Array{Float64,1}()
 
 	for i in 1:n
-		ma,id = findmax(mfX[i,1:Int(T/2)])
+		ma,id = findmax(mfX[i,1:ceil(Int,T/2)])
 
-		ma2,id2 = findmax([mfX[i,1:id-1];0.;mfX[i,id+1:Int(T/2)]])
+		ma2,id2 = findmax([mfX[i,1:id-1];0.;mfX[i,id+1:ceil(Int,T/2)]])
 
 		if (ma2 > .5*ma) && (abs(id - id2) == 1)
 			push!(freqs,mean([fs[id],fs[id2]]))
 			push!(maxs,ma)
-		elseif (ma2 > .8*ma)
-			push!(freqs,NaN)
-			push!(maxs,NaN)
-			@info "$i Fourier Transform: inconclusive!"
+		elseif (ma2 > .5*ma)
+			push!(freqs,fs[id])
+			push!(maxs,ma)
+			@info "WARNING!!! For node $i, the Fourier Transform has more than one large peak!"
 		else
 			push!(freqs,fs[id])
 			push!(maxs,ma)
@@ -279,6 +293,7 @@ _OUPUT_:
 """
 function filter_signal(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 	nn,T = size(Xs)
+	nf = floor(Int,T/2)
 
 	fs = (0:T-1)./(dt*T)
 
@@ -289,11 +304,18 @@ function filter_signal(Xs::Array{Float64,2}, dt::Float64, fh::Float64)
 	fX = zeros(Complex{Float64},nn,T)
 	fXt = zeros(Complex{Float64},nn,T)
 	Xt = zeros(nn,T)
-
+	
 	for i in 1:nn
-		fX[i,:] = fft(Xs[i,:])
-		fXt[i,:] = [fX[i,1:id-ta-1];zeros(2*ta+1);fX[i,id+ta+1:T-id+1-ta];zeros(2*ta+1);fX[i,T-id+3+ta:T]]
-		Xt[i,:] = real.(ifft(fXt[i,:]))
+		fX[i,:] = fftshift(fft(Xs[i,:]))
+		if nf-id-ta >= 0 && nf-id+ta+3 <= nf+id-ta-1
+			fXt[i,:] = [fX[i,1:nf+2-id+ta-2*ta-1];zeros(2*ta+1);fX[i,nf+2-id+ta+1:nf+id-ta-1];zeros(2*ta+1);fX[i,nf+id-ta+2*ta+1:end]]
+		elseif nf-id-ta >= 0
+			fXt[i,:] = [fX[i,1:nf+2-id+ta-2*ta-1];zeros(2*id+2*ta-1);fX[i,nf+id-ta+2*ta+1:end]]
+		else
+			fXt[i,:] = [zeros(Int.((T-2*id+2*ta+3)/2));fX[i,nf+2-id+ta+1:nf+id-ta-1];zeros(Int.((T-2*id+2*ta+3)/2))]
+		end
+
+		Xt[i,:] = real.(ifft(ifftshift(fXt[i,:])))
 	end
 
 	return Xt
