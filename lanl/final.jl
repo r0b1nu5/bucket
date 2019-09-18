@@ -2,11 +2,6 @@ using DelimitedFiles, PyPlot, FFTW, Statistics, LinearAlgebra, JuMP, Ipopt, Dist
 
 
 
-
-################## TODO: run_location_large_ntw ######################################
-
-
-
 """
     run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
 
