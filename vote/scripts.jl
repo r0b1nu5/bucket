@@ -1,9 +1,9 @@
-using Distributions, PyPlot, Statistics, LinearAlgebra
+using Distributions, PyPlot, Statistics, LinearAlgebra, Random
 
 function influence_effort_rand(n::Int64, eps::Float64, Di::Distribution)
 	x0 = rand(Di,n)
 	
-	A = Float64.((0 .< (repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
+	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
 	L = diagm(0 => vec(sum(A,dims=1))) - A
 	
 	xr = zeros(n)
@@ -19,13 +19,15 @@ function influence_effort_rand(n::Int64, eps::Float64, Di::Distribution)
 	ids = Array(1:n)
 
 	while o1 < 0.
-		j = rand(1:length(ids))
-		i = ids[j]
-		xr[i] = 1.
-		ids = [ids[1:j-1];ids[j+1:length(ids)]]
+		ids = randperm(n)
+		c = 0
+		while o1 < 0. && c < n
+			c += 1
+			xr[ids[c]] += 1.
 
-		x = consensus(L,x0,xr,ones(n),ones(n))
-		o1,p1,n1 = outcome(x)
+			x = consensus(L,x0,xr,ones(n),ones(n))
+			o1,p1,n1 = outcome(x)
+		end
 	end
 
 	return sum(xr)
