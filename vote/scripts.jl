@@ -10,30 +10,74 @@ function influence_effort_rand(n::Int64, eps::Float64, Di::Distribution)
 	x = consensus(L,x0,zeros(n),ones(n),ones(n))
 	o0,p0,n0 = outcome(x)
 
+	s = 1.
+
 	if o0 > 0.
-		x = x[n:-1:1]
-		o0,p0,n0 = outcome(x)
+		s = -1.
 	end
 	
 	o1 = o0
 	ids = Array(1:n)
-
-	while o1 < 0.
+	
+	while s*o1 < 0.
 		ids = randperm(n)
 		c = 0
-		while o1 < 0. && c < n
+		while s*o1 < 0. && c < n
 			c += 1
-			xr[ids[c]] += 1.
+			xr[ids[c]] += s
 
 			x = consensus(L,x0,xr,ones(n),ones(n))
 			o1,p1,n1 = outcome(x)
 		end
 	end
 
-	return sum(xr)
+	return sum(xr), o0
 end
 
-function loops(n_run::Int64, n::Int64, epss::Array{Float64,1}, Di::Distribution)
+function influence_effort_rand(n::Int64, eps::Float64, x0::Array{Float64,1})
+	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
+	L = diagm(0 => vec(sum(A,dims=1))) - A
+	
+	xr = zeros(n)
+	x = consensus(L,x0,zeros(n),ones(n),ones(n))
+	o0,p0,n0 = outcome(x)
+
+	s = 1.
+
+	if o0 > 0.
+		s = -1.
+	end
+	
+	o1 = o0
+	ids = Array(1:n)
+cc = 0
+
+	while s*o1 < 0.
+		cc += 1
+#		@info "$(o1)"
+#		@info "$(xr[1])"
+
+		ids = randperm(n)
+		c = 0
+		while s*o1 < 0. && c < n
+			c += 1
+			xr[ids[c]] += s
+#=
+@info "$o1"
+@info "$c"
+@info "$(ids[c])"
+@info "$(xr[ids[c]])"
+@info "-----"
+=#
+			x = consensus(L,x0,xr,ones(n),ones(n))
+			o1,p1,n1 = outcome(x)
+		end
+	end
+
+	return sum(xr), o0
+end
+
+function loops1(n_run::Int64, n::Int64, epss::Array{Float64,1}, Di::Distribution)
 	m = length(epss)
 	
 	effort = zeros(n_run,m)
@@ -41,12 +85,44 @@ function loops(n_run::Int64, n::Int64, epss::Array{Float64,1}, Di::Distribution)
 	for j in 1:m
 		@info "j = $j/$m"
 		for i in 1:n_run
-			effort[i,j] = influence_effort_rand(n,epss[j],Di)
+			effort[i,j] = influence_effort_rand(n,epss[j],Di)[1]
 		end
 	end
 
 	return effort
 end
+
+function loops2(n_run::Int64, n::Int64, epss::Array{Float64,1}, Di::Distribution)
+	m = length(epss)
+
+	effort = zeros(n_run,m)
+
+	x0 = rand(Di,n)
+
+	for j in 1:m
+		@info "j = $j/$m"
+		for i in 1:n_run
+			effort[i,j] = influence_effort_rand(n,epss[j],x0)[1]
+		end
+	end
+
+	return effort,x0
+end
+
+function loops3(n_run::Int64, n::Int64, eps::Float64, Di::Distribution)
+	effort = Array{Float64,1}()
+	oc = Array{Float64,1}()
+
+	for i in 1:n_run
+		@info "i = $i/$n_run"
+		e,o = influence_effort_rand(n,eps,Di)
+		push!(effort,e)
+		push!(oc,o)
+	end
+
+	return effort,oc
+end
+
 
 function quants(effort::Array{Float64,2})
 	n,m = size(effort)
