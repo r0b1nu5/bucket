@@ -124,6 +124,26 @@ function loops3(n_run::Int64, n::Int64, eps::Float64, Di::Distribution)
 end
 
 
+function plot_quartiles(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::String="C0")
+	q0,q25,q50,q75,q00 = quants(effort)
+
+	plot_quants(q0,q25,q50,q75,q00,epss,colo)
+end
+
+function plot_mean(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::String="C0")
+	n,m = size(effort)
+
+	mef = [mean(effort[:,i]) for i in 1:m]
+	sef = [std(effort[:,i]) for i in 1:m]
+
+	for i in 1:m
+		PyPlot.plot([epss[i],epss[i]],[mef[i]-sef[i],mef[i]+sef[i]],color=colo)
+	end
+
+	PyPlot.plot(epss,mef,"o",color=colo)
+end
+	
+
 function quants(effort::Array{Float64,2})
 	n,m = size(effort)
 	
