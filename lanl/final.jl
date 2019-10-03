@@ -151,7 +151,7 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	
 	mfX = zeros(n,T)
 	for i in 1:n
-		for j in 1:T
+		for j in 2:T
 			mfX[i,j] = nfX[i,j]/median([nfX[i,max(j-Df,1):j-2];nfX[i,j+2:min(j+Df,T)]])
 		end
 	end
