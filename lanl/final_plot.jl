@@ -1,9 +1,12 @@
 using PyPlot
 
+include("plot_ntw.jl")
 include("generate_time_series.jl")
 include("final.jl")
 
-ntw = "ntw5"
+#ntw = "ntw5"
+ntw = "ntw10"
+#ntw = "uk"
 
 L = readdlm("data/"*ntw*"_lap_mat.csv",',')
 m = vec(readdlm("data/"*ntw*"_m.csv",','))
@@ -30,6 +33,8 @@ ref = Array{Float64,1}()
 rep = Array{Float64,1}()
 
 for i in 1:n
+	@info "$i/$n"
+
 	a = zeros(n)
 	a[i] = a0
 	f = zeros(n)
@@ -40,13 +45,13 @@ for i in 1:n
 	Xs = generate_forced_time_series(ntw, L, m, d, (a,f,p), T, dt, sig)
 #	Xs = load_data(ntw, i)
 
-#	Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)
-	Lh,dh,ah,fh,ph = run_location_small_ntw(Xs, dt)
+	Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)
+#	Lh,dh,ah,fh,ph = run_location_small_ntw(Xs, dt)
 	
 	dL = Lh - Lm
 	push!(reL, sum(dL.^2)/sum(Lm.^2))
-	da = ah - a
-	push!(rea, norm(da)/norm(a))
+	da = ah[i] - a0
+	push!(rea, abs(da)/a0)
 	am,id = findmax(ah)
 	df = fh[id] - f0
 	push!(ref, abs(df)/f0)
@@ -61,9 +66,10 @@ for i in 1:n
 
 	figure(666)
 	subplot(1,3,3)
-	PyPlot.plot([i,i],[0,abs(ah[id1])],color="C0")
-	PyPlot.plot([i,i],[0,abs(ah[id2])],color="C1")
-	PyPlot.plot([i,i],[0,abs(ah[id3])],color="C2")
+	PyPlot.plot([i,i],[0,abs(ah[id1])/sum(abs.(ah))],color="C0")
+	PyPlot.plot([i,i],[0,abs(ah[id2])/sum(abs.(ah))],color="C1")
+	PyPlot.plot([i,i],[0,abs(ah[id3])/sum(abs.(ah))],color="C2")
+	PyPlot.plot(i,abs(ah[i])/sum(abs.(ah)),"o",color="C3",markersize=4.)
 end
 
 figure(666)
@@ -73,9 +79,9 @@ plot_ntw(ntw)
 
 subplot(1,3,2)
 PyPlot.semilogy(1:n,reL,"o")
-PyPlot.semilogy(n .+ 1:n,rea,"o")
-PyPlot.semilogy(2*n .+ 1:n,ref,"o")
-PyPlot.semilogy(3*n .+ 1:n,rep,"o")
+PyPlot.semilogy(n .+ (1:n),rea,"o")
+PyPlot.semilogy(2*n .+ (1:n),ref,"o")
+PyPlot.semilogy(3*n .+ (1:n),rep,"o")
 
 
 

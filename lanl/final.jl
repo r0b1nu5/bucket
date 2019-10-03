@@ -49,9 +49,9 @@ function run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10,
 	id3 = Int(AA[3,2])
 	
 	@info "========================================================================="
-	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(f[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[id1],digits=3)*100)%)"
-	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(f[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[id2],digits=3)*100)%)"
-	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(f[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[id3],digits=3)*100)%)"
+	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(f[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[1],digits=3)*100)%)"
+	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(f[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[2],digits=3)*100)%)"
+	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(f[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[3],digits=3)*100)%)"
 	@info "========================================================================="
 
 	return Lm,dm,a,f,p
@@ -122,7 +122,7 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	@info "5. Forcing index: $id5, a=$(round(a[id5],digits=3)), f=$(round(ff[id5],digits=3)), φ=$(round(p[id5]/pi,digits=2))*π,  (confidence: $(round(PP[5],digits=3)*100)%)"
 	@info "========================================================================="
 
-	return Lm,dm,a,ff,p
+	return Lh,dh,a,ff,p
 end
 
 """
@@ -596,6 +596,7 @@ _OUTPUT_:
 `p`: Vector of phases of the forcing.
 """
 function optim_phase(Xs::Array{Float64,2}, dt::Float64, Lm::Array{Float64,2}, dm::Array{Float64,1}, a::Array{Float64,1}, f::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
+	nn,T = size(Xs)
 	n = length(dm)
 
 	A = diagm(0 => ones(2*n)) + dt * [zeros(n,n) diagm(0 => ones(n));-Lm -diagm(0 => dm)]
