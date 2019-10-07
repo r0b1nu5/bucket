@@ -186,12 +186,8 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 
 		if tf2/n > .05
 			@info "WARNING: Fourier Transform: no clear result."
-
-			return [freqs[Int(ids[1])],], [maxs[Int(ids[1])],]
 		else
 			@info "WARNING: Fourier Transform: result not completely clear."
-
-			return fh2,maxs[Int.(ids[1:10])]
 		end
 		
 		return fh,maxs
