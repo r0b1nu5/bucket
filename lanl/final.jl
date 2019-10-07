@@ -170,10 +170,6 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 		if (ma2 > .5*ma) && (abs(id - id2) == 1)
 			push!(freqs,mean([fs[id],fs[id2]]))
 			push!(maxs,ma)
-		elseif (ma2 > .5*ma)
-			push!(freqs,fs[id])
-			push!(maxs,ma)
-			@info "WARNING!!! For node $i, the Fourier Transform has more than one large peak!"
 		else
 			push!(freqs,fs[id])
 			push!(maxs,ma)
@@ -184,10 +180,20 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	tf = sum((abs.(freqs .- fh) .> 2*df))
 
 	if tf/n > .05
-		@info "Fourier Transform: no clear result."
+		ids = sortslices([maxs 1:n],dims=1,rev=true)[:,2]
+		fh2 = median(freqs[Int.(ids[1:10])])
+		tf2 = sum((abs.(freqs[Int.(ids[1:10])] .- fh2) .> 2*df))
 
-		return NaN,NaN
-	else
+		if tf2/n > .05
+			@info "WARNING: Fourier Transform: no clear result."
+
+			return [freqs[Int(ids[1])],], [maxs[Int(ids[1])],]
+		else
+			@info "WARNING: Fourier Transform: result not completely clear."
+
+			return fh2,maxs[Int.(ids[1:10])]
+		end
+		
 		return fh,maxs
 	end
 end
