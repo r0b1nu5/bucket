@@ -89,7 +89,7 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	end
 	
 	fh,amps = get_fh_fourier(Xs,dt,Df)
-
+	
 	ids = Int.(sortslices([amps 1:n],dims=1,rev=true)[1:min(n_ref,n),2])
 
 	Ah,Lh,dh = get_Ah_correl(Xs[[ids;ids.+n],:],dt,fh)
@@ -161,7 +161,6 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 
 	freqs = Array{Float64,1}()
 	maxs = Array{Float64,1}()
-
 	for i in 1:n
 		ma,id = findmax(mfX[i,1:ceil(Int,T/2)])
 
@@ -188,10 +187,10 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 			@info "WARNING: Fourier Transform: no clear result."
 		else
 			@info "WARNING: Fourier Transform: result not completely clear."
-		end
-		
-		return fh,maxs
+		end	
 	end
+	
+	return fh,maxs
 end
 
 

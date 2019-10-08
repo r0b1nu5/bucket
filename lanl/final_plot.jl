@@ -5,7 +5,8 @@ include("generate_time_series.jl")
 include("final.jl")
 
 #ntw = "ntw5"
-ntw = "ntw10"
+#ntw = "ntw10"
+ntw = "ntw20"
 #ntw = "uk"
 
 L = readdlm("data/"*ntw*"_lap_mat.csv",',')
