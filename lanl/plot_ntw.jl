@@ -37,6 +37,24 @@ function plot_ntw(ntw::String)
 
 		PyPlot.plot(x,y,"ok")
 
+	elseif ntw == "ntw20"
+		n = 20
+
+		x = cos.(2*pi/20*(0:19))
+		y = sin.(2*pi/20*(0:19))
+
+		L = readdlm("data/ntw20_lap_mat.csv",',')
+
+		for i in 1:19
+			for j in i+1:20
+				if abs(L[i,j]) > 0
+					PyPlot.plot([x[i],x[j]],[y[i],y[j]],"-k")
+				end
+			end
+		end
+
+		PyPlot.plot(x,y,"ok")
+
 	elseif ntw == "uk"
 		n = 120
 

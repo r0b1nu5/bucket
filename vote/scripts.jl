@@ -34,41 +34,31 @@ function influence_effort_rand(n::Int64, eps::Float64, Di::Distribution)
 	return sum(xr), o0
 end
 
-function influence_effort_rand(n::Int64, eps::Float64, x0::Array{Float64,1})
+function influence_effort_rand(x0::Array{Float64,1}, eps::Float64)
+	n = length(x0)
+
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
 	L = diagm(0 => vec(sum(A,dims=1))) - A
 	
 	xr = zeros(n)
 	x = consensus(L,x0,zeros(n),ones(n),ones(n))
 	o0,p0,n0 = outcome(x)
-
-	s = 1.
-
-	if o0 > 0.
-		s = -1.
+	
+	if o0 < 0.
+		x0 = -x0
+		x = consensus(L,x0,zeros(n),ones(n),ones(n))
+		o0,p0,n0 = outcome(x)
 	end
 	
 	o1 = o0
 	ids = Array(1:n)
-cc = 0
 
-	while s*o1 < 0.
-		cc += 1
-#		@info "$(o1)"
-#		@info "$(xr[1])"
-
+	while o1 > 0.
 		ids = randperm(n)
 		c = 0
-		while s*o1 < 0. && c < n
+		while o1 > 0. && c < n
 			c += 1
-			xr[ids[c]] += s
-#=
-@info "$o1"
-@info "$c"
-@info "$(ids[c])"
-@info "$(xr[ids[c]])"
-@info "-----"
-=#
+			xr[ids[c]] -= 1
 			x = consensus(L,x0,xr,ones(n),ones(n))
 			o1,p1,n1 = outcome(x)
 		end
@@ -76,6 +66,40 @@ cc = 0
 
 	return sum(xr), o0
 end
+
+function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
+	n = length(x0)
+
+	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
+	L = diagm(0 => vec(sum(A,dims=1))) - A
+	
+	xr = zeros(n)
+	x = consensus(L,x0,zeros(n),ones(n),ones(n))
+	o0,p0,n0 = outcome(x)
+	
+	if o0 < 0.
+		x0 = -x0
+		x = consensus(L,x0,zeros(n),ones(n),ones(n))
+		o0,p0,n0 = outcome(x)
+	end
+
+	o1 = o0
+	ids = Array(1:n)
+
+	while o1 > 0.
+		ids,uf,t = fiedler_sort(L,x0,a)
+		c = 0
+		while o1 > 0. && c < n
+			c += 1
+			xr[ids[c]] -= 1.
+			x = consensus(L,x0,xr,ones(n),ones(n))
+			o1,p1,n1 = outcome(x)
+		end
+	end
+
+	return sum(xr), o0
+end
+
 
 function loops1(n_run::Int64, n::Int64, epss::Array{Float64,1}, Di::Distribution)
 	m = length(epss)
@@ -123,6 +147,35 @@ function loops3(n_run::Int64, n::Int64, eps::Float64, Di::Distribution)
 	return effort,oc
 end
 
+function loop_rand(n_run::Int64, x0::Array{Float64,1}, epss::Array{Float64,1})
+	m = length(epss)
+
+	effort = zeros(n_run,m)
+
+	for j in 1:m
+		@info "j = $j/$m"
+		for i in 1:n_run
+			effort[i,j] = influence_effort_rand(x0, epss[j])[1]
+		end
+	end
+
+	return effort
+end
+
+function loop_fiedler(x0::Array{Float64,1}, epss::Array{Float64,1}, modes::Array{Int64,1}=[2,])
+	m = length(epss)
+	
+	effort = zeros(length(modes),m)
+
+	for j in 1:m
+		@info "j = $j/$m"
+		for i in 1:length(modes)
+			effort[i,j],o0 =  influence_effort_fiedler(x0, epss[j], modes[i])
+		end
+	end
+
+	return effort
+end
 
 function plot_quartiles(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::String="C0")
 	q0,q25,q50,q75,q00 = quants(effort)
@@ -143,6 +196,22 @@ function plot_mean(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::Strin
 	PyPlot.plot(epss,mef,"o",color=colo)
 end
 	
+function plot_quants(q0::Array{Float64,1}, q25::Array{Float64,1}, q50::Array{Float64,1}, q75::Array{Float64,1}, q00::Array{Float64,1}, epss::Array{Float64,1}, colo::String="C0") 
+	for i in 1:length(epss)
+		PyPlot.plot(epss[i]*[1,1],[q25[i],q75[i]],color=colo)
+	end
+
+	PyPlot.plot(epss,q0,"x",color=colo)
+	PyPlot.plot(epss,q00,"x",color=colo)
+	PyPlot.plot(epss,q50,"o",color=colo)
+end
+
+function plot_fiedler(effort::Array{Float64,2}, epss::Array{Float64,1}, colos::Array{String,1}=["C3",], modes::Array{Int64,1}=[2,])
+	for i in 1:length(modes)
+		PyPlot.plot(epss,effort[i,:],color=colos[i])
+	end
+end
+
 
 function quants(effort::Array{Float64,2})
 	n,m = size(effort)
@@ -172,15 +241,93 @@ function outcome(x::Array{Float64,1})
 	return sum(sign.(x)), sum(x .> 0.), sum(x .< 0.)
 end
 
-function plot_quants(q0::Array{Float64,1}, q25::Array{Float64,1}, q50::Array{Float64,1}, q75::Array{Float64,1}, q00::Array{Float64,1}, epss::Array{Float64,1}, colo::String="C0") 
-	for i in 1:length(epss)
-		PyPlot.plot(epss[i]*[1,1],[q25[i],q75[i]],color=colo)
+
+function fiedler_sort(L::Array{Float64,2}, x0::Array{Float64,1}, a::Int64=2)
+	si = sign.(x0)
+
+	ei = eigen(L)
+	us = ei.vectors
+	lsi = sortslices([ei.values 1:n],dims=1)
+	ls = lsi[:,1]
+	li = Int.(lsi[:,2])
+
+	l = -100.
+	i = 0
+	id = 0
+	f = 2
+
+	while l < 1e-8 && i < length(ls)
+		i += 1
+		l = ls[i]
+	end
+	
+	while f < a && i < length(ls)
+		i += 1
+		f += 1
 	end
 
-	PyPlot.plot(epss,q0,"x",color=colo)
-	PyPlot.plot(epss,q00,"x",color=colo)
-	PyPlot.plot(epss,q50,"o",color=colo)
+	if i == length(ls) && ls[i] < 1e-8
+		@info "WARNING: Graph is highly disconnected, probably no good Fiedler strategy."
+	end
+
+	l = ls[i]
+	id = li[i]
+
+	uf = us[:,id]
+
+	uu = sortslices([si.*abs.(uf) 1:n],dims=1,rev=true)
+
+	test = true
+
+	if uu[1,1] < 1e-8
+		@info "WARNING: no positive component in the signed Fielder mode!"
+		test = false
+	end
+
+	return Int.(uu[:,2]), uf, test
 end
+
+function clusterings(A::Array{Float64,2}, x0::Array{Float64,1})
+	idn = setdiff((x0 .< 0.).*(1:n),[0.,])
+	idp = setdiff((x0 .> 0.).*(1:n),[0.,])
+	
+	nn = length(idn)
+	np = length(idp)
+	n = length(x0)
+
+	An = A[idn,idn]
+	Ap = A[idp,idp]
+	
+	cn = Array{Float64,1}()
+	cp = Array{Float64,1}()
+
+	for i in idn
+		nei = setdiff(Int.(A[:,i].*(1:n)),[0;idp])
+		nnei = length(nei)
+		c = 0
+		if nnei > 1
+			for j in 1:nnei-1
+				for k in j+1:nnei
+					if A[nei[j],nei[k]] == 1.
+						c += 1
+					end
+				end
+			end
+			push!(cn,c/(nnei*(nnei-1)/2))
+		end
+	end
+
+	Cn = mean(cn)
+
+# TODO to be continued...
+
+	Cp = (sum(Ap)/2)/(np*(np-1)/2)
+
+	C0 = (sum(A)/2 - sum(An)/2 - sum(Ap)/2)/(nn*np)
+
+	return Cn,Cp,C0
+end
+
 
 
 
