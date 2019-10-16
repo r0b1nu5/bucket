@@ -6,10 +6,13 @@ include("final.jl")
 
 #ntw = "ntw5"
 #ntw = "ntw10"
-ntw = "ntw20"
-#ntw = "uk"
+#ntw = "ntw20"
+ntw = "uk"
 
 L = readdlm("data/"*ntw*"_lap_mat.csv",',')
+if ntw == "uk"
+	L = 10*L
+end
 m = vec(readdlm("data/"*ntw*"_m.csv",','))
 Mi = diagm(0 => 1 ./ m)
 d = vec(readdlm("data/"*ntw*"_d.csv",','))
@@ -20,7 +23,8 @@ dm = Mi*d
 n = length(d)
 
 a0 = .2
-f0 = .009
+#f0 = .009
+f0 = .001
 p0 = pi/10
 
 T = 100000
