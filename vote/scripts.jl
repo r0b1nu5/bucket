@@ -100,6 +100,39 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, a::Int64=2
 	return sum(xr), o0
 end
 
+function influence_effort_mini(x0::Array{Float64,1}, eps::Float64)
+	n = length(x0)
+
+	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
+	L = diagm(0 => vec(sum(A,dims=1))) - A
+
+	xr = zeros(n)
+	x = consensus(L,x0,zeros(n),ones(n),ones(n))
+	o0,p0,n0 = outcome(x)
+
+	if o0 < 0.
+		x0 = -x0
+		x = consensus(L,x0,zeros(n),ones(n),ones(n))
+		o0,p0,n0 = outcome(x)
+	end
+
+	o1 = o0
+	ids = Array(1:n)
+
+	while o1 > 0.
+		ids = mini_sort(x0)
+		c = 0
+		while o1 > 0. && c < n
+			c += 1
+			xr[ids[c]] -= 1.
+			x = consensus(L,x0,xr,ones(n),ones(n))
+			o1,p1,n1 = outcome(x)
+		end
+	end
+
+	return sum(xr), o0
+end
+
 
 function loops1(n_run::Int64, n::Int64, epss::Array{Float64,1}, Di::Distribution)
 	m = length(epss)
@@ -177,6 +210,19 @@ function loop_fiedler(x0::Array{Float64,1}, epss::Array{Float64,1}, modes::Array
 	return effort
 end
 
+function loop_mini(x0::Array{Float64,1}, epss::Array{Float64,1})
+	m = length(epss)
+
+	effort = Array{Float64,1}()
+
+	for j in 1:m
+		@info "j = $j/$m"
+		push!(effort,influence_effort_mini(x0,epss[j])[1])
+	end
+	
+	return effort
+end
+
 function plot_quartiles(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::String="C0")
 	q0,q25,q50,q75,q00 = quants(effort)
 
@@ -212,7 +258,27 @@ function plot_fiedler(effort::Array{Float64,2}, epss::Array{Float64,1}, colos::A
 	end
 end
 
+function plot_mini(effort::Array{Float64,1}, epss::Array{Float64,1})
+	PyPlot.plot(epss,effort,color="C1")
+end
 
+function eps_connect(x0::Array{Float64,1}, epss::Array{Float64,1})
+	nc = 1000
+	n = length(x0)
+	c = 0
+
+	while nc > 1
+		c += 1
+		eps = epss[c]
+		A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
+		L = diagm(0 => vec(sum(A,dims=1))) - A
+		ls = eigvals(L)
+		nc = Int.(sum(abs.(ls) .< 1e-8))
+	end
+
+	return epss[c]
+end
+		
 function quants(effort::Array{Float64,2})
 	n,m = size(effort)
 	
@@ -244,6 +310,7 @@ end
 
 function fiedler_sort(L::Array{Float64,2}, x0::Array{Float64,1}, a::Int64=2)
 	si = sign.(x0)
+	n = length(x0)
 
 	ei = eigen(L)
 	us = ei.vectors
@@ -286,6 +353,22 @@ function fiedler_sort(L::Array{Float64,2}, x0::Array{Float64,1}, a::Int64=2)
 
 	return Int.(uu[:,2]), uf, test
 end
+
+function mini_sort(x0::Array{Float64,1})
+	n = length(x0)
+
+	ip = setdiff((x0 .> 0).*Array(1:n),[0,])
+	xp = x0[ip]
+
+	it = setdiff((x0 .<= 0).*Array(1:n),[0,])
+	xn = x0[it]
+
+	idp = Int.(sortslices([xp ip],dims=1)[:,2])
+	idn = Int.(sortslices([abs.(xn) it],dims=1)[:,2])
+
+	return [idp;idn]
+end
+
 
 function clusterings(A::Array{Float64,2}, x0::Array{Float64,1})
 	idn = setdiff((x0 .< 0.).*(1:n),[0.,])
