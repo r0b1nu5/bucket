@@ -300,7 +300,7 @@ function quants(effort::Array{Float64,2})
 end
 
 function consensus(L::Array{Float64,2}, x0::Array{Float64,1}, xr::Array{Float64,1}, a::Array{Float64,1}, f::Array{Float64,1})
-	return inv(L + diagm(0 => a))*(diagm(0 => a)*x0 + diagm(0 => f)*xr)
+	return inv(Symmetric(L + diagm(0 => a)))*(diagm(0 => a)*x0 + diagm(0 => f)*xr)
 end
 
 function outcome(x::Array{Float64,1})
