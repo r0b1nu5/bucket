@@ -402,9 +402,23 @@ function clusterings(A::Array{Float64,2}, x0::Array{Float64,1})
 
 	Cn = mean(cn)
 
-# TODO to be continued...
+	for i in idp
+		nei = setdiff(Int.(A[:,i].*(1:n)),[0;idn])
+		nnei = length(nei)
+		c = 0
+		if nnei > 1
+			for j in 1:nnei-1
+				for k in j+1:nnei
+					if A[nei[j],nei[k]] == 1.
+						c += 1
+					end
+				end
+			end
+			push!(cp,c/(nnei*(nnei-1)/2))
+		end
+	end
 
-	Cp = (sum(Ap)/2)/(np*(np-1)/2)
+	Cp = mean(cp)
 
 	C0 = (sum(A)/2 - sum(An)/2 - sum(Ap)/2)/(nn*np)
 

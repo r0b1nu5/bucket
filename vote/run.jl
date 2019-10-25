@@ -3,14 +3,14 @@ include("scripts.jl")
 
 n1 = 1000
 n2 = 1001
-d = 1.
+d = 0.
 sig = .2
 n_rand = 20
 emin = 0.
-emax = 1.
+emax = .4
 ne = 40
 epss = Array(LinRange(emin,emax,ne))
-fignum = 101
+fignum = 100
 
 @info "Run 1"
 x1 = [rand(Normal(-d/2,sig),n1);rand(Normal(d/2,sig),n2)]
