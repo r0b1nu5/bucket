@@ -5,9 +5,10 @@ function influence_effort_rand(n::Int64, eps::Float64, Di::Distribution)
 	
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
 	L = diagm(0 => vec(sum(A,dims=1))) - A
-	
+	LIi = inv(L + diagm(0 => ones(n)))
+
 	xr = zeros(n)
-	x = consensus(L,x0,zeros(n),ones(n),ones(n))
+	x = LIi*(x0 + xr)
 	o0,p0,n0 = outcome(x)
 
 	s = 1.
@@ -26,7 +27,7 @@ function influence_effort_rand(n::Int64, eps::Float64, Di::Distribution)
 			c += 1
 			xr[ids[c]] += s
 
-			x = consensus(L,x0,xr,ones(n),ones(n))
+			x = LIi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
 	end
@@ -39,14 +40,15 @@ function influence_effort_rand(x0::Array{Float64,1}, eps::Float64)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
 	L = diagm(0 => vec(sum(A,dims=1))) - A
-	
+	LIi = inv(L + diagm(0 => ones(n)))
+
 	xr = zeros(n)
-	x = consensus(L,x0,zeros(n),ones(n),ones(n))
+	x = LIi*(x0 + xr)
 	o0,p0,n0 = outcome(x)
 	
 	if o0 < 0.
 		x0 = -x0
-		x = consensus(L,x0,zeros(n),ones(n),ones(n))
+		x = LIi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
 	
@@ -59,7 +61,7 @@ function influence_effort_rand(x0::Array{Float64,1}, eps::Float64)
 		while o1 > 0. && c < n
 			c += 1
 			xr[ids[c]] -= 1
-			x = consensus(L,x0,xr,ones(n),ones(n))
+			x = LIi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
 	end
@@ -72,14 +74,15 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, a::Int64=2
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
 	L = diagm(0 => vec(sum(A,dims=1))) - A
-	
+	LIi = inv(L + diagm(0 => ones(n)))
+
 	xr = zeros(n)
-	x = consensus(L,x0,zeros(n),ones(n),ones(n))
+	x = LIi*(x0 + xr)
 	o0,p0,n0 = outcome(x)
 	
 	if o0 < 0.
 		x0 = -x0
-		x = consensus(L,x0,zeros(n),ones(n),ones(n))
+		x = LIi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
 
@@ -92,7 +95,7 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, a::Int64=2
 		while o1 > 0. && c < n
 			c += 1
 			xr[ids[c]] -= 1.
-			x = consensus(L,x0,xr,ones(n),ones(n))
+			x = LIi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
 	end
@@ -105,14 +108,15 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
 	L = diagm(0 => vec(sum(A,dims=1))) - A
+	LIi = inv(L + diagm(0 => ones(n)))
 
 	xr = zeros(n)
-	x = consensus(L,x0,zeros(n),ones(n),ones(n))
+	x = LIi*(x0 + xr)
 	o0,p0,n0 = outcome(x)
 
 	if o0 < 0.
 		x0 = -x0
-		x = consensus(L,x0,zeros(n),ones(n),ones(n))
+		x = LIi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
 
@@ -125,7 +129,7 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64)
 		while o1 > 0. && c < n
 			c += 1
 			xr[ids[c]] -= 1.
-			x = consensus(L,x0,xr,ones(n),ones(n))
+			x = LIi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
 	end
@@ -370,14 +374,15 @@ function mini_sort(x0::Array{Float64,1})
 end
 
 
-function clusterings(A::Array{Float64,2}, x0::Array{Float64,1})
+function clusterings(L::Array{Float64,2}, x0::Array{Float64,1})
 	idn = setdiff((x0 .< 0.).*(1:n),[0.,])
 	idp = setdiff((x0 .> 0.).*(1:n),[0.,])
 	
 	nn = length(idn)
 	np = length(idp)
 	n = length(x0)
-
+	
+	A = diagm(0 => diag(L)) - L
 	An = A[idn,idn]
 	Ap = A[idp,idp]
 	
