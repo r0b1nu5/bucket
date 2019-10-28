@@ -6,7 +6,7 @@
 %Control: page (0) single
 %Control: year (1) truncated
 %Control: production of eprint (0) enabled
-\begin{thebibliography}{5}%
+\begin{thebibliography}{6}%
 \makeatletter
 \providecommand \@ifxundefined [1]{%
  \@ifx{#1\undefined}
@@ -50,6 +50,29 @@
 \providecommand \BibitemShut  [1]{\csname bibitem#1\endcsname}%
 \let\auto@bib@innerbib\@empty
 %</preamble>
+\bibitem [{\citenamefont {Fortunato}\ \emph {et~al.}(2018)\citenamefont
+  {Fortunato}, \citenamefont {Bergstrom}, \citenamefont {B\"orner},
+  \citenamefont {Evans}, \citenamefont {Helbing}, \citenamefont {Milojevi\'c},
+  \citenamefont {Petersen}, \citenamefont {Radicchi}, \citenamefont {Sinatra},
+  \citenamefont {Uzzi}, \citenamefont {Vespignani}, \citenamefont {Waltman},
+  \citenamefont {Wang},\ and\ \citenamefont {Barab\'asi}}]{For18}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {S.}~\bibnamefont
+  {Fortunato}}, \bibinfo {author} {\bibfnamefont {C.~T.}\ \bibnamefont
+  {Bergstrom}}, \bibinfo {author} {\bibfnamefont {K.}~\bibnamefont {B\"orner}},
+  \bibinfo {author} {\bibfnamefont {J.~A.}\ \bibnamefont {Evans}}, \bibinfo
+  {author} {\bibfnamefont {D.}~\bibnamefont {Helbing}}, \bibinfo {author}
+  {\bibfnamefont {S.}~\bibnamefont {Milojevi\'c}}, \bibinfo {author}
+  {\bibfnamefont {A.~M.}\ \bibnamefont {Petersen}}, \bibinfo {author}
+  {\bibfnamefont {F.}~\bibnamefont {Radicchi}}, \bibinfo {author}
+  {\bibfnamefont {R.}~\bibnamefont {Sinatra}}, \bibinfo {author} {\bibfnamefont
+  {B.}~\bibnamefont {Uzzi}}, \bibinfo {author} {\bibfnamefont {A.}~\bibnamefont
+  {Vespignani}}, \bibinfo {author} {\bibfnamefont {L.}~\bibnamefont {Waltman}},
+  \bibinfo {author} {\bibfnamefont {D.}~\bibnamefont {Wang}}, \ and\ \bibinfo
+  {author} {\bibfnamefont {A.-L.}\ \bibnamefont {Barab\'asi}},\ }\href
+  {\doibase 10.1126/science.aao0185} {\bibfield  {journal} {\bibinfo  {journal}
+  {Science}\ }\textbf {\bibinfo {volume} {359}},\ \bibinfo {pages} {eaao0185}
+  (\bibinfo {year} {2018})}\BibitemShut {NoStop}%
 \bibitem [{\citenamefont {Sekara}\ \emph {et~al.}(2018)\citenamefont {Sekara},
   \citenamefont {Deville}, \citenamefont {Ahnert}, \citenamefont
   {Barab{\'a}si}, \citenamefont {Sinatra},\ and\ \citenamefont

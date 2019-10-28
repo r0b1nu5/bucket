@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.5.12)  11 SEP 2019 22:32
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.10.7)  28 OCT 2019 11:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -820,51 +820,46 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
 ine 57.
-<../figures/ABCDEFGHIJKL.pdf, id=53, 1622.55403pt x 1670.14099pt>
+<../figures/ABCDEFGHIJKL.pdf, id=54, 1622.55403pt x 1670.14099pt>
 File: ../figures/ABCDEFGHIJKL.pdf Graphic file (type pdf)
 <use ../figures/ABCDEFGHIJKL.pdf>
-Package pdftex.def Info: ../figures/ABCDEFGHIJKL.pdf  used on input line 74.
+Package pdftex.def Info: ../figures/ABCDEFGHIJKL.pdf  used on input line 76.
 (pdftex.def)             Requested size: 510.0pt x 524.95041pt.
-LaTeX Font Info:    Try loading font information for U+eus on input line 82.
+LaTeX Font Info:    Try loading font information for U+eus on input line 84.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/ueus.fd
 File: ueus.fd 2013/01/14 v3.01 Euler Script
 ) [1
 Non-PDF special ignored!{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 [2 <../figures/ABCDEFGHIJKL.pdf>]
-<../figures/CHI_correl.pdf, id=3336, 1569.98262pt x 391.18724pt>
+<../figures/CHI_correl.pdf, id=3338, 1569.98262pt x 391.18724pt>
 File: ../figures/CHI_correl.pdf Graphic file (type pdf)
 <use ../figures/CHI_correl.pdf>
-Package pdftex.def Info: ../figures/CHI_correl.pdf  used on input line 206.
+Package pdftex.def Info: ../figures/CHI_correl.pdf  used on input line 208.
 (pdftex.def)             Requested size: 510.0pt x 127.07465pt.
  [3]
-<../figures/prl_prd_log.pdf, id=3357, 610.68152pt x 450.9648pt>
+<../figures/prl_prd_log.pdf, id=3359, 610.68152pt x 450.9648pt>
 File: ../figures/prl_prd_log.pdf Graphic file (type pdf)
 <use ../figures/prl_prd_log.pdf>
-Package pdftex.def Info: ../figures/prl_prd_log.pdf  used on input line 257.
+Package pdftex.def Info: ../figures/prl_prd_log.pdf  used on input line 259.
 (pdftex.def)             Requested size: 196.80075pt x 145.3301pt.
  (./kplayer.bbl [4 <../figures/CHI_correl.pdf> <../figures/prl_prd_log.pdf
 
 pdfTeX warning: pdflatex (file ../figures/prl_prd_log.pdf): PDF inclusion: mult
 iple pdfs with page group included in a single page
 >]) [5]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 269.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 271.
  (./kplayer.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 269.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 269.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 271.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 271.
 Package rerunfilecheck Info: File `kplayer.out' has not changed.
 (rerunfilecheck)             Checksum: 080DB60A7D8918231D52BB5CA46C6F24;681.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right .
-
-
  ) 
 Here is how much of TeX's memory you used:
- 19781 strings out of 494880
- 354852 string characters out of 6179601
- 554301 words of memory out of 5000000
- 22686 multiletter control sequences out of 15000+600000
+ 19788 strings out of 494880
+ 354931 string characters out of 6179601
+ 554510 words of memory out of 5000000
+ 22692 multiletter control sequences out of 15000+600000
  15689 words of font info for 59 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  62i,9n,80p,417b,615s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -885,10 +880,10 @@ xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/share/texlive/t
 exmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/share/texlive/texmf-di
 st/fonts/type1/public/amsfonts/euler/eusm10.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on kplayer.pdf (5 pages, 1605337 bytes).
+Output written on kplayer.pdf (5 pages, 1607049 bytes).
 PDF statistics:
- 10379 PDF objects out of 10688 (max. 8388607)
- 6892 compressed objects within 69 object streams
- 35 named destinations out of 1000 (max. 500000)
+ 10382 PDF objects out of 10688 (max. 8388607)
+ 6895 compressed objects within 69 object streams
+ 36 named destinations out of 1000 (max. 500000)
  116 words of extra memory for PDF output out of 10000 (max. 10000000)
 

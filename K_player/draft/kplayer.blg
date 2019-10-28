@@ -22,45 +22,45 @@ Control: year (1) truncated
 Control: production of eprint (0) enabled
 Warning--empty author in WoS
 Warning--empty year in WoS
-You've used 5 entries,
+You've used 6 entries,
             5847 wiz_defined-function locations,
-            1638 strings with 15285 characters,
-and the built_in function-call counts, 4885 in all, are:
-= -- 295
-> -- 121
-< -- 34
-+ -- 42
-- -- 28
-* -- 769
-:= -- 477
-add.period$ -- 5
-call.type$ -- 5
-change.case$ -- 20
-chr.to.int$ -- 5
-cite$ -- 9
-duplicate$ -- 449
-empty$ -- 348
-format.name$ -- 70
-if$ -- 936
+            1645 strings with 15587 characters,
+and the built_in function-call counts, 6980 in all, are:
+= -- 375
+> -- 224
+< -- 51
++ -- 72
+- -- 56
+* -- 1169
+:= -- 644
+add.period$ -- 6
+call.type$ -- 6
+change.case$ -- 24
+chr.to.int$ -- 6
+cite$ -- 10
+duplicate$ -- 628
+empty$ -- 491
+format.name$ -- 129
+if$ -- 1365
 int.to.chr$ -- 1
-int.to.str$ -- 13
-missing$ -- 56
-newline$ -- 67
-num.names$ -- 12
-pop$ -- 202
+int.to.str$ -- 14
+missing$ -- 79
+newline$ -- 70
+num.names$ -- 15
+pop$ -- 261
 preamble$ -- 1
-purify$ -- 24
+purify$ -- 29
 quote$ -- 0
-skip$ -- 167
+skip$ -- 229
 stack$ -- 0
-substring$ -- 111
-swap$ -- 424
-text.length$ -- 14
+substring$ -- 149
+swap$ -- 632
+text.length$ -- 28
 text.prefix$ -- 0
 top$ -- 8
-type$ -- 69
+type$ -- 94
 warning$ -- 2
-while$ -- 12
+while$ -- 15
 width$ -- 0
-write$ -- 89
+write$ -- 97
 (There were 2 warnings)
