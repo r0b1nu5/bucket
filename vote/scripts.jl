@@ -348,6 +348,14 @@ function fiedler_sort(L::Array{Float64,2}, x0::Array{Float64,1}, a::Int64=2)
 
 	uu = sortslices([si.*abs.(uf) 1:n],dims=1,rev=true)
 
+	sir = sign(uf[Int(uu[1,2])])
+
+	su = sir .* sign.(uf)
+
+	ms = max.(si,su)
+
+	uu = sortslices([ms.*abs.(uf) 1:n],dims=1,rev=true)
+
 	test = true
 
 	if uu[1,1] < 1e-8
