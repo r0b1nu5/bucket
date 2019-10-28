@@ -375,12 +375,13 @@ end
 
 
 function clusterings(L::Array{Float64,2}, x0::Array{Float64,1})
+	n = length(x0)
+	
 	idn = setdiff((x0 .< 0.).*(1:n),[0.,])
 	idp = setdiff((x0 .> 0.).*(1:n),[0.,])
 	
 	nn = length(idn)
 	np = length(idp)
-	n = length(x0)
 	
 	A = diagm(0 => diag(L)) - L
 	An = A[idn,idn]
