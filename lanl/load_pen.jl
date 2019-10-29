@@ -5,18 +5,29 @@ dates = ["2013-01-15_00", "2013-03-10_04", "2013-04-03_02", "2013-04-03_03", "20
 function load_pen(date::String)
 	x = readdir("data_PEN")
 
-	y = Array{Float64,2}(undef,0,9)
 	for f in x
 		if f[1:13] == date
-			y = [y;readdlm("data_PEN/"*f,',')[2:end,2:end]]
+			y = readdlm("data_PEN/"*f,',')[2:end,2:end]
+		end
+	
+		N = Int(maximum(y[:,1])+1)
+		n,m = size(y)
+		nt = Int(n/N)	
+	
+		fs = Array{Float64,2}(undef,N,0)
+		th = Array{Float64,2}(undef,N,0)
+	
+		for i in 1:nt
+			fs = [fs y[(i-1)*nt+1:i*nt,6]]
+			th = [th y[(i-1)*nt+1:i*nt,5]]
+		end
+
+		open("data_PEN//"*date*"_fs.csv","a") do f
+			write(f,fs')
 		end
 	end
 	
-	N = Int(maximum(y[:,1])+1)
-	n,m = size(y)
 
-	fs = Array{Float64,2}(undef,N,0)
-	th = Array{Float64,2}(undef,N,0)
 
 	f = zeros(N)
 	t = zeros(N)
