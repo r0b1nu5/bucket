@@ -1,8 +1,8 @@
-using DelimitedFiles, Distributed
+@everywhere using DelimitedFiles, Distributed
 
-dates = ["2013-01-15_00", "2013-03-10_04", "2013-04-03_02", "2013-04-03_03", "2013-04-03_07", "2013-07-30_01", "2013-07-30_04", "2013-07-30_09"]
+@everywhere dates = ["2013-01-15_00", "2013-03-10_04", "2013-04-03_02", "2013-04-03_03", "2013-04-03_07", "2013-07-30_01", "2013-07-30_04", "2013-07-30_09"]
 
-function load_pen(date::String)
+@everywhere function load_pen(date::String)
 	x = readdir("data_PEN")
 
 	for f in x
@@ -38,13 +38,6 @@ function load_pen(date::String)
 	end
 end
 
-#pmap(load_pen,dates)
-
-
-
-
-
-
-
+pmap(load_pen,dates)
 
 
