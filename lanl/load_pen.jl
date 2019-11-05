@@ -38,7 +38,7 @@
 	end
 end
 
-#pmap(load_pen,dates)
+pmap(load_pen,dates)
 
 
 

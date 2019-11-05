@@ -90,7 +90,7 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, a::Int64=2
 	ids = Array(1:n)
 
 	while o1 > 0.
-		ids,uf,t = fiedler_sort(L,x0,a)
+		ids = fiedler_sort(x0,eps,a)
 		c = 0
 		while o1 > 0. && c < n
 			c += 1
@@ -201,7 +201,8 @@ end
 
 function loop_fiedler(x0::Array{Float64,1}, epss::Array{Float64,1}, modes::Array{Int64,1}=[2,])
 	m = length(epss)
-	
+	x0 = sort(x0)
+
 	effort = zeros(length(modes),m)
 
 	for j in 1:m
@@ -312,58 +313,83 @@ function outcome(x::Array{Float64,1})
 end
 
 
-function fiedler_sort(L::Array{Float64,2}, x0::Array{Float64,1}, a::Int64=2)
+function fiedler_sort(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
 	si = sign.(x0)
 	n = length(x0)
 
-	ei = eigen(L)
-	us = ei.vectors
-	lsi = sortslices([ei.values 1:n],dims=1)
-	ls = lsi[:,1]
-	li = Int.(lsi[:,2])
+	dx = x0[2:end] - x0[1:end-1]
 
-	l = -100.
-	i = 0
-	id = 0
-	f = 2
+	ids = Int.(setdiff((dx .> eps).*(1:n-1),[0,]))
+	clusts = [[1;ids.+1] [ids;n] [ids;n]-[0;ids]]
 
-	while l < 1e-8 && i < length(ls)
-		i += 1
-		l = ls[i]
+	todo = (n+1)*ones(length(ids)+1)
+	order = Array{Int64,1}()
+
+	while maximum(todo) > 0
+		m,j = findmax(min.(todo,si[clusts[:,2]].*clusts[:,3]))
+		todo[j] = -(n+1)
+
+		if clusts[j,3] == 1
+			order = [order;clusts[j,1]]
+		else
+			nn = clusts[j,3]
+			
+			x = x0[clusts[j,1]:clusts[j,2]]
+			A = Float64.((0 .< abs.(repeat(x,1,nn) - repeat(x',nn,1)) .< eps))
+			L = diagm(0 => vec(sum(A,dims=1))) - A
+
+			ssi = sign.(x)
+	
+			ei = eigen(L)
+			us = ei.vectors
+			lsi = sortslices([ei.values 1:nn],dims=1)
+			ls = lsi[:,1]
+			li = Int.(lsi[:,2])
+		
+			l = -100.
+			i = 0
+			id = 0
+			f = 2
+		
+			while l < 1e-8 && i < nn
+				i += 1
+				l = ls[i]
+			end
+			
+			while f < a && i < nn
+				i += 1
+				f += 1
+			end
+		
+			if i == length(ls) && ls[i] < 1e-8
+				@info "WARNING: Graph is highly disconnected, probably no good Fiedler strategy."
+			end
+		
+			l = ls[i]
+			id = li[i]
+	
+			uf = us[:,id]
+		
+			uu = sortslices([ssi.*abs.(uf) 1:nn],dims=1,rev=true)
+		
+			sir = sign(uf[Int(uu[1,2])])
+		
+			su = sir .* sign.(uf)
+		
+			uu = sortslices([su.*abs.(uf) 1:nn],dims=1,rev=true)
+		
+			test = true
+		
+			if uu[1,1] < 1e-8
+				@info "WARNING: no positive component in the signed Fielder mode!"
+				test = false
+			end
+
+			order = [order;uu[:,2] .+ clusts[j,1] .- 1]
+		end
 	end
 	
-	while f < a && i < length(ls)
-		i += 1
-		f += 1
-	end
-
-	if i == length(ls) && ls[i] < 1e-8
-		@info "WARNING: Graph is highly disconnected, probably no good Fiedler strategy."
-	end
-
-	l = ls[i]
-	id = li[i]
-
-	uf = us[:,id]
-
-	uu = sortslices([si.*abs.(uf) 1:n],dims=1,rev=true)
-
-	sir = sign(uf[Int(uu[1,2])])
-
-	su = sir .* sign.(uf)
-
-	ms = max.(si,su)
-
-	uu = sortslices([ms.*abs.(uf) 1:n],dims=1,rev=true)
-
-	test = true
-
-	if uu[1,1] < 1e-8
-		@info "WARNING: no positive component in the signed Fielder mode!"
-		test = false
-	end
-
-	return Int.(uu[:,2]), uf, test
+	return Int.(order)
 end
 
 function mini_sort(x0::Array{Float64,1})
