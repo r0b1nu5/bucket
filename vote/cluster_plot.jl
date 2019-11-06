@@ -2,28 +2,29 @@ using PyPlot, DelimitedFiles
 
 include("scripts.jl")
 
-nx = 4
-n0 = 0
+nx = 3
+n0 = 3
 #n0 = 4
 emi = 0.
-ema = 1.
+ema = .6
 #ema = .4
 ne = 40
 epss = Array(LinRange(emi,ema,ne))
-n_run = 100
+n_run = 20
 d = 1.
 #d = 0.
 sig = .2
-n1 = 1000
-n2 = 1001
+n1 = 500
+n2 = 501
 n = n1 + n2
+n_modes = [2,3,4]
 
 figure(111)
 
 for i in n0+1:n0+nx
-	x0 = vec(readdlm("data/x$i.csv",','))
+	x0 = sort(vec(readdlm("data/x$i.csv",',')))
 	er = Array{Float64,2}(undef,n_run,0)
-	ef = Array{Float64,2}(undef,1,0)
+	ef = Array{Float64,2}(undef,length(n_modes),0)
 	em = Array{Float64,1}()
 	os = Array{Float64,1}()
 	Cns = Array{Float64,1}()
@@ -35,7 +36,7 @@ for i in n0+1:n0+nx
 			push!(e,readdlm("data/eff_x$(i)_rand$(j)_$eps.csv",',')[1])
 		end
 		er = [er e]
-		ef = [ef readdlm("data/eff_x$(i)_fiedler_$eps.csv",',')[1]]
+		ef = [ef vec(readdlm("data/eff_x$(i)_fiedler_$eps.csv",','))]
 		push!(em,readdlm("data/eff_x$(i)_mini_$eps.csv",',')[1])
 		push!(os,readdlm("data/o_x$(i)_$eps.csv",',')[1])
 
@@ -50,11 +51,12 @@ for i in n0+1:n0+nx
 	
 	ee = eps_connect(x0,epss)
 	xima = max(maximum(abs.(er)),maximum(abs.(ef)),maximum(abs.(em)))
-	
+	m = size(ef)[1]
+
 	subplot(3,nx,i-n0)
 	PyPlot.plot([ee,ee],[0,1.1*xima],"--k")
 	plot_mean(abs.(er),epss)
-	plot_fiedler(abs.(ef),epss)
+	plot_fiedler(abs.(ef),epss,["C2","C3","C4","C5","C6","C7","C8"],Array(1:m))
 	plot_mini(abs.(em),epss)
 	xlabel("ε")
 	ylabel("ξ")

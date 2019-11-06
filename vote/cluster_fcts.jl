@@ -9,7 +9,11 @@ function eff(xes::Tuple{Array{Float64,1},Float64,String,Int64})
 	strat = xes[3]
 	thr_id = xes[4]
 	if strat == "fiedler"
-		ef,o = influence_effort_fiedler(x0,eps)
+		ef = Array{Float64,1}()
+		for m in [2,3,4]
+			eeff,o = influence_effort_fiedler(x0,eps,m)
+			push!(ef,eeff)
+		end
 	elseif strat == "mini"
 		ef,o = influence_effort_mini(x0,eps)
 	else

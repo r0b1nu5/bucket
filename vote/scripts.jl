@@ -267,21 +267,14 @@ function plot_mini(effort::Array{Float64,1}, epss::Array{Float64,1})
 	PyPlot.plot(epss,effort,color="C1")
 end
 
-function eps_connect(x0::Array{Float64,1}, epss::Array{Float64,1})
-	nc = 1000
+function eps_connect(x0::Array{Float64,1}, epss::Array{Float64,1}, thr::Float64=.95)
 	n = length(x0)
-	c = 0
 
-	while nc > 1
-		c += 1
-		eps = epss[c]
-		A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
-		L = diagm(0 => vec(sum(A,dims=1))) - A
-		ls = eigvals(L)
-		nc = Int.(sum(abs.(ls) .< 1e-8))
-	end
+	dx = x0[2:end] - x0[1:end-1]
+	ig = [minimum([1.;abs.(2*(setdiff((dx .> eps).*(1:n-1),[0,]) .- n/2)./n)]) for eps in epss]
+	epi = minimum(setdiff((ig .> thr).*(1:length(epss)),[0,]))
 
-	return epss[c]
+	return epss[epi]
 end
 		
 function quants(effort::Array{Float64,2})

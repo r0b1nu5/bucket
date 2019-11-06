@@ -1,9 +1,9 @@
 include("scripts.jl")
 
 
-n1 = 100
-n2 = 101
-d = 1.
+n1 = 500
+n2 = 501
+d = .6
 #d = 0.
 sig = .2
 n_rand = 20
@@ -14,6 +14,7 @@ ne = 40
 epss = Array(LinRange(emin,emax,ne))
 fignum = 101
 ns_modes = [2,3,4]
+colos = ["C3","C2","C4"]
 
 @info "Run 1"
 x1 = [rand(Normal(-d/2,sig),n1);rand(Normal(d/2,sig),n2)]
@@ -47,7 +48,7 @@ e1 = eps_connect(x1,epss)
 xima = max(maximum(abs.(es1)),maximum(abs.(ef1)),maximum(abs.(em1)))
 PyPlot.plot([e1,e1],[0,1.1*xima],"--k")
 plot_mean(abs.(es1),epss)
-plot_fiedler(abs.(ef1),epss,["C3","C4","C5"],ns_modes)
+plot_fiedler(abs.(ef1),epss,colos,ns_modes)
 plot_mini(abs.(em1),epss)
 xlabel("ε")
 ylabel("ξ")
@@ -57,7 +58,7 @@ e2 = eps_connect(x2,epss)
 xima = max(maximum(abs.(es2)),maximum(abs.(ef2)),maximum(abs.(em2)))
 PyPlot.plot([e2,e2],[0,1.1*xima],"--k")
 plot_mean(abs.(es2),epss)
-plot_fiedler(abs.(ef2),epss,["C3","C4","C5"],ns_modes)
+plot_fiedler(abs.(ef2),epss,colos,ns_modes)
 plot_mini(abs.(em2),epss)
 xlabel("ε")
 ylabel("ξ")
@@ -67,7 +68,7 @@ e3 = eps_connect(x3,epss)
 xima = max(maximum(abs.(es3)),maximum(abs.(ef3)),maximum(abs.(em3)))
 PyPlot.plot([e3,e3],[0,1.1*xima],"--k")
 plot_mean(abs.(es3),epss)
-plot_fiedler(abs.(ef3),epss,["C3","C4","C5"],ns_modes)
+plot_fiedler(abs.(ef3),epss,colos,ns_modes)
 plot_mini(abs.(em3),epss)
 xlabel("ε")
 ylabel("ξ")
@@ -77,7 +78,7 @@ e4 = eps_connect(x4,epss)
 xima = max(maximum(abs.(es4)),maximum(abs.(ef4)),maximum(abs.(em4)))
 PyPlot.plot([e4,e4],[0,1.1*xima],"--k")
 plot_mean(abs.(es4),epss)
-plot_fiedler(abs.(ef4),epss,["C3","C4","C5"],ns_modes)
+plot_fiedler(abs.(ef4),epss,colos,ns_modes)
 plot_mini(abs.(em4),epss)
 xlabel("ε")
 ylabel("ξ")
