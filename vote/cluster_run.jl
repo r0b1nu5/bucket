@@ -6,12 +6,12 @@ include("big_rand.jl")
 @everywhere include("cluster_fcts.jl")
 
 nx = 3
-n0 = 3
+n0 = 8
 #n0 = 4
-emi = 0.
+emi = .05
 ema = .6
 #ema = .4
-ne = 40
+ne = 30
 epss = Array(LinRange(emi,ema,ne))
 n_run = 20
 d = 1.

@@ -1,41 +1,7 @@
 using Distributions, PyPlot, Statistics, LinearAlgebra, Random
 
-function influence_effort_rand(n::Int64, eps::Float64, Di::Distribution)
-	x0 = rand(Di,n)
-	
-	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
-	L = diagm(0 => vec(sum(A,dims=1))) - A
-	LIi = inv(L + diagm(0 => ones(n)))
 
-	xr = zeros(n)
-	x = LIi*(x0 + xr)
-	o0,p0,n0 = outcome(x)
-
-	s = 1.
-
-	if o0 > 0.
-		s = -1.
-	end
-	
-	o1 = o0
-	ids = Array(1:n)
-	
-	while s*o1 < 0.
-		ids = randperm(n)
-		c = 0
-		while s*o1 < 0. && c < n
-			c += 1
-			xr[ids[c]] += s
-
-			x = LIi*(x0 + xr)
-			o1,p1,n1 = outcome(x)
-		end
-	end
-
-	return sum(xr), o0
-end
-
-function influence_effort_rand(x0::Array{Float64,1}, eps::Float64)
+function influence_effort_rand(x0::Array{Float64,1}, eps::Float64, w0::Float64=1.)
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
@@ -60,7 +26,7 @@ function influence_effort_rand(x0::Array{Float64,1}, eps::Float64)
 		c = 0
 		while o1 > 0. && c < n
 			c += 1
-			xr[ids[c]] -= 1
+			xr[ids[c]] -= w0
 			x = LIi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
@@ -69,7 +35,7 @@ function influence_effort_rand(x0::Array{Float64,1}, eps::Float64)
 	return sum(xr), o0
 end
 
-function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
+function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, w0::Float64=1., a::Int64=2)
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
@@ -94,7 +60,7 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, a::Int64=2
 		c = 0
 		while o1 > 0. && c < n
 			c += 1
-			xr[ids[c]] -= 1.
+			xr[ids[c]] -= w0
 			x = LIi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
@@ -103,7 +69,7 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, a::Int64=2
 	return sum(xr), o0
 end
 
-function influence_effort_mini(x0::Array{Float64,1}, eps::Float64)
+function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1.)
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
@@ -128,7 +94,7 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64)
 		c = 0
 		while o1 > 0. && c < n
 			c += 1
-			xr[ids[c]] -= 1.
+			xr[ids[c]] -= w0
 			x = LIi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
