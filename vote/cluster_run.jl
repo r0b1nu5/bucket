@@ -6,7 +6,7 @@ include("big_rand.jl")
 @everywhere include("cluster_fcts.jl")
 
 nx = 3
-n0 = 8
+n0 = 14
 #n0 = 4
 emi = .05
 ema = .6
@@ -17,8 +17,8 @@ n_run = 20
 d = 1.
 #d = 0.
 sig = .2
-n1 = 500
-n2 = 501
+n1 = 50
+n2 = 51
 n_modes = [2,3,4]
 
 xess = Array{Tuple{Array{Float64,1},Float64,String,Int64},1}()

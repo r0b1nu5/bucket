@@ -3,23 +3,23 @@ using PyPlot, DelimitedFiles
 include("scripts.jl")
 
 nx = 3
-n0 = 3
+n0 = 14
 #n0 = 4
-emi = 0.
+emi = .05
 ema = .6
 #ema = .4
-ne = 40
+ne = 30
 epss = Array(LinRange(emi,ema,ne))
 n_run = 20
 d = 1.
 #d = 0.
 sig = .2
-n1 = 500
-n2 = 501
+n1 = 50
+n2 = 51
 n = n1 + n2
 n_modes = [2,3,4]
 
-figure(111)
+figure(110)
 
 for i in n0+1:n0+nx
 	x0 = sort(vec(readdlm("data/x$i.csv",',')))
