@@ -5,16 +5,19 @@ function influence_effort_rand(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
-	L = diagm(0 => vec(sum(A,dims=1))) - A
-	LIi = inv(L + diagm(0 => ones(n)))
+	D = diagm(0 => vec(sum(A,dims=1)))
+	L = D - A
+	Di = diagm(0 => 1 ./ diag(D))
+	LDi = inv(Di*L + diagm(0 => ones(n)))
+#	LIi = inv(L + diagm(0 => ones(n)))
 
 	xr = zeros(n)
-	x = LIi*(x0 + xr)
+	x = LDi*(x0 + xr)
 	o0,p0,n0 = outcome(x)
 	
 	if o0 < 0.
 		x0 = -x0
-		x = LIi*(x0 + xr)
+		x = LDi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
 	
@@ -27,7 +30,7 @@ function influence_effort_rand(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		while o1 > 0. && c < n
 			c += 1
 			xr[ids[c]] -= w0
-			x = LIi*(x0 + xr)
+			x = LDi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
 	end
@@ -39,16 +42,19 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, w0::Float6
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
-	L = diagm(0 => vec(sum(A,dims=1))) - A
-	LIi = inv(L + diagm(0 => ones(n)))
+	D = diagm(0 => vec(sum(A,dims=1)))
+	L = D - A
+	Di = diagm(0 => 1 ./ diag(D))
+	LDi = inv(Di*L + diagm(0 => ones(n)))
+#	LIi = inv(L + diagm(0 => ones(n)))
 
 	xr = zeros(n)
-	x = LIi*(x0 + xr)
+	x = LDi*(x0 + xr)
 	o0,p0,n0 = outcome(x)
 	
 	if o0 < 0.
 		x0 = -x0
-		x = LIi*(x0 + xr)
+		x = LDi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
 
@@ -61,7 +67,7 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, w0::Float6
 		while o1 > 0. && c < n
 			c += 1
 			xr[ids[c]] -= w0
-			x = LIi*(x0 + xr)
+			x = LDi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
 	end
@@ -73,16 +79,19 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
-	L = diagm(0 => vec(sum(A,dims=1))) - A
-	LIi = inv(L + diagm(0 => ones(n)))
+	D = diagm(0 => vec(sum(A,dims=1)))
+	L = D - A
+	Di = diagm(0 => 1 ./ diag(D))
+	LDi = inv(Di*L + diagm(0 => ones(n)))
+#	LIi = inv(L + diagm(0 => ones(n)))
 
 	xr = zeros(n)
-	x = LIi*(x0 + xr)
+	x = LDi*(x0 + xr)
 	o0,p0,n0 = outcome(x)
 
 	if o0 < 0.
 		x0 = -x0
-		x = LIi*(x0 + xr)
+		x = LDi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
 
@@ -95,7 +104,7 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		while o1 > 0. && c < n
 			c += 1
 			xr[ids[c]] -= w0
-			x = LIi*(x0 + xr)
+			x = LDi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
 		end
 	end

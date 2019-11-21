@@ -2,22 +2,22 @@ using PyPlot, DelimitedFiles
 
 include("scripts.jl")
 
-nx = 3
-n0 = 14
+nx = 4
+n0 = 4
 #n0 = 4
-emi = .05
-ema = .6
+emi = .0
+ema = .4
 #ema = .4
-ne = 30
+ne = 40
 epss = Array(LinRange(emi,ema,ne))
-n_run = 20
-d = 1.
+n_run = 100
+d = 0.
 #d = 0.
 sig = .2
-n1 = 50
-n2 = 51
+n1 = 1000
+n2 = 1001
 n = n1 + n2
-n_modes = [2,3,4]
+n_modes = [2,]
 
 figure(110)
 
