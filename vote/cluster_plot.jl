@@ -2,24 +2,24 @@ using PyPlot, DelimitedFiles
 
 include("scripts.jl")
 
-nx = 4
-n0 = 4
+nx = 3
+n0 = 20
 #n0 = 4
-emi = .0
-ema = .4
+emi = .05
+ema = .6
 #ema = .4
-ne = 40
+ne = 30
 epss = Array(LinRange(emi,ema,ne))
-n_run = 100
-d = 0.
+n_run = 20
+d = 1.
 #d = 0.
 sig = .2
 n1 = 1000
 n2 = 1001
 n = n1 + n2
-n_modes = [2,]
+n_modes = [2,3,4]
 
-figure(110)
+figure(111)
 
 for i in n0+1:n0+nx
 	x0 = sort(vec(readdlm("data/x$i.csv",',')))
