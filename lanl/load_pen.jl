@@ -1,8 +1,40 @@
-@everywhere using DelimitedFiles, Distributed
+using Distributed
+
+@everywhere using DelimitedFiles
 
 @everywhere dates = ["2013-01-15_00", "2013-03-10_04", "2013-04-03_02", "2013-04-03_03", "2013-04-03_07", "2013-07-30_01", "2013-07-30_04", "2013-07-30_09"]
 
-@everywhere function load_pen(date::String)
+
+# Loads the data of Pennsylvania as a 2nxT matrix, ready to use in our algorithm.
+# Missing data are interpolated.
+# Angles are converted from degrees to radians.
+# Last oscillator is considered as the reference node.
+
+function load_pen(date::String)
+	th = readdlm("data_PEN/"*date*"_th.csv",',')' * pi/180
+	fs = readdlm("data_PEN/"*date*"_fs.csv",',')'
+
+	N = size(fs)[1]
+
+	zt = setdiff((sum(th .!= 0,dims=2) .== 0).*(1:N),[0,])
+	zf = setdiff((sum(fs .!= 0,dims=2) .== 0).*(1:N),[0,])
+	z = sort(union(zf,zt))
+	zc = setdiff((1:N),z)
+
+	th = mod.(th - repeat(th[end,:]',N,1),2pi)
+	fs = fs - repeat(fs[end,:]',N,1)
+
+	Xs = [th[zc,:];fs[zc,:]]
+
+	return Xs
+end
+
+
+
+
+# Extracts phases and frequencies from the raw data of Pennsylvania.
+
+@everywhere function treat_pen(date::String)
 	x = readdir("data_PEN")
 
 	for f in x
@@ -38,7 +70,7 @@
 	end
 end
 
-pmap(load_pen,dates)
+#pmap(treat_pen,dates)
 
 
 
