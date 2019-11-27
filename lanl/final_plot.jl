@@ -4,10 +4,10 @@ include("plot_ntw.jl")
 include("generate_time_series.jl")
 include("final.jl")
 
-#ntw = "ntw5"
+ntw = "ntw5"
 #ntw = "ntw10"
 #ntw = "ntw20"
-ntw = "uk"
+#ntw = "uk"
 
 L = readdlm("data/"*ntw*"_lap_mat.csv",',')
 if ntw == "uk"
@@ -23,8 +23,8 @@ dm = Mi*d
 n = length(d)
 
 a0 = .2
-#f0 = .009
-f0 = .001
+f0 = .009
+#f0 = .001
 p0 = pi/10
 
 T = 100000
@@ -50,8 +50,8 @@ for i in 1:n
 	Xs = generate_forced_time_series(ntw, L, m, d, (a,f,p), T, dt, sig)
 #	Xs = load_data(ntw, i)
 
-	Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)
-#	Lh,dh,ah,fh,ph = run_location_small_ntw(Xs, dt)
+#	Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)
+	Lh,dh,ah,fh,ph = run_location_small_ntw(Xs, dt)
 	
 	dL = Lh - Lm
 	push!(reL, sum(dL.^2)/sum(Lm.^2))

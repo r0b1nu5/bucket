@@ -1,4 +1,4 @@
-using PyPlot, LinearAlgebra, Statistics, FFTW
+using PyPlot, LinearAlgebra, Statistics, FFTW, DelimitedFiles
 
 figure(69)
 
@@ -16,6 +16,10 @@ Xs = readdlm("data2/backup2_ntw_forced_0.009_100000_0.1.csv",',')
 X = Xs[6,:] .- mean(Xs[6,:])
 co = "C0"
 sty = "-"
+
+nn,T = size(Xs)
+n = Int(nn/2)
+dt = .1
 
 subplot(221)
 PyPlot.plot(dt*(1:T),X,sty,color=co)
