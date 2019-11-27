@@ -67,6 +67,11 @@ function plt(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1
 	writedlm("data/"*ntw*"_rep_$(i).csv",abs(dp)/p0,',')
 
 	writedlm("data/"*ntw*"_ah_$(i).csv",ah,',')
+
+	aa = sort(abs.(ah),rev=true)
+	if aa[1]/aa[2] < 2.
+		writedlm("data/failed_"*ntw*"_$(i).csv",Xs,',')
+	end
 end
 
 
