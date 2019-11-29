@@ -2,17 +2,19 @@ using PyPlot, DelimitedFiles
 
 include("scripts.jl")
 
+# Generates plots, based on the data obtained with "cluster_run.jl". 
+# (1) effort vs. eps
+# (2) initial outcome vs. eps
+# (3) clusterings vs. eps
+
 nx = 3
 n0 = 20
-#n0 = 4
 emi = .05
 ema = .6
-#ema = .4
 ne = 30
 epss = Array(LinRange(emi,ema,ne))
 n_run = 20
 d = 1.
-#d = 0.
 sig = .2
 n1 = 1000
 n2 = 1001

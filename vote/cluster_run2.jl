@@ -5,13 +5,13 @@ include("big_rand.jl")
 
 @everywhere include("cluster_fcts.jl")
 
-# Generate the tuples in order to compute effort wrt eps (\in [emi,ema]), and run the computation in parallel.
+# Generate the tuples in order to compute effort wrt initial outcome, and run the computation in parallel.
 
-nx = 3 # Number of natural opinion to consider
-n0 = 23 # Index of the realization
-emi = .05 # Minimal eps value
-ema = .6 # Maximal eps value
-ne = 30 # Resolution of eps values
+nx = 100 # Number of natural opinion to consider
+n0 = 99 # Index of the realization
+emi = .15 # Minimal eps value
+ema = .35 # Maximal eps value
+ne = 3 # Resolution of eps values
 epss = Array(LinRange(emi,ema,ne)) # List of eps values
 n_run = 20 # Number of runs for the random strategy
 d = 0. # Distance between the modes in the distribution of x0

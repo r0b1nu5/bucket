@@ -20,7 +20,8 @@ function influence_effort_rand(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		x = LDi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
-	
+	xx = copy(x)
+
 	o1 = o0
 	ids = Array(1:n)
 
@@ -35,7 +36,7 @@ function influence_effort_rand(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		end
 	end
 
-	return sum(xr), o0
+	return sum(xr), o0, xx
 end
 
 function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, w0::Float64=1., a::Int64=2)
@@ -57,6 +58,7 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, w0::Float6
 		x = LDi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
+	xx = copy(x)
 
 	o1 = o0
 	ids = Array(1:n)
@@ -72,7 +74,7 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, w0::Float6
 		end
 	end
 
-	return sum(xr), o0
+	return sum(xr), o0, xx
 end
 
 function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1.)
@@ -94,6 +96,7 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		x = LDi*(x0 + xr)
 		o0,p0,n0 = outcome(x)
 	end
+	xx = copy(x)
 
 	o1 = o0
 	ids = Array(1:n)
@@ -109,7 +112,7 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		end
 	end
 
-	return sum(xr), o0
+	return sum(xr), o0, xx
 end
 
 
@@ -304,13 +307,15 @@ function fiedler_sort(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
 			
 			x = x0[clusts[j,1]:clusts[j,2]]
 			A = Float64.((0 .< abs.(repeat(x,1,nn) - repeat(x',nn,1)) .< eps))
-			L = diagm(0 => vec(sum(A,dims=1))) - A
+			D = diagm(0 => vec(sum(A,dims=1)))
+			L = Symmetric(D - A)
+			Di = diagm(0 => 1 ./ diag(D))
 
 			ssi = sign.(x)
 	
-			ei = eigen(L)
+			ei = eigen(Di*L + diagm(0 => ones(n)))
 			us = ei.vectors
-			lsi = sortslices([ei.values 1:nn],dims=1)
+			lsi = sortslices([real.(ei.values) 1:nn],dims=1)
 			ls = lsi[:,1]
 			li = Int.(lsi[:,2])
 		
@@ -319,7 +324,7 @@ function fiedler_sort(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
 			id = 0
 			f = 2
 		
-			while l < 1e-8 && i < nn
+			while l < 1 + 1e-8 && i < nn
 				i += 1
 				l = ls[i]
 			end
@@ -335,15 +340,15 @@ function fiedler_sort(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
 		
 			l = ls[i]
 			id = li[i]
-	
-			uf = us[:,id]
+			
+			uf = norm.(us[:,id])
 		
 			uu = sortslices([ssi.*abs.(uf) 1:nn],dims=1,rev=true)
 		
 			sir = sign(uf[Int(uu[1,2])])
 		
 			su = sir .* sign.(uf)
-		
+			
 			uu = sortslices([su.*abs.(uf) 1:nn],dims=1,rev=true)
 		
 			test = true
