@@ -3,34 +3,36 @@ using Distributed
 include("generate_time_series.jl")
 include("final.jl")
 
-#ntw = "ntw5"
-#ntw = "ntw10"
-#ntw = "ntw20"
-ntw = "uk"
-
-L = readdlm("data/"*ntw*"_lap_mat.csv",',')
-m = vec(readdlm("data/"*ntw*"_m.csv",','))
-Mi = diagm(0 => 1 ./ m)
-d = vec(readdlm("data/"*ntw*"_d.csv",','))
-
-Lm = Mi*L
-dm = Mi*d
-
-n = length(d)
-
-a0 = .2
-f0 = .009
-p0 = pi/10
-
-T = 100000
-dt = .1
-
-sig = mean(m)*ones(n)
 
 tups = Array{Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64},1}()
 
-for i in 1:n
-	push!(tups,(ntw,L,m,d,a0,f0,p0,T,dt,sig,i))
+for ntw in ["ntw5","ntw10","ntw20","uk10"]
+	L = readdlm("data/"*ntw*"_lap_mat.csv",',')
+	m = vec(readdlm("data/"*ntw*"_m.csv",','))
+	Mi = diagm(0 => 1 ./ m)
+	d = vec(readdlm("data/"*ntw*"_d.csv",','))
+	
+	Lm = Mi*L
+	dm = Mi*d
+	
+	n = length(d)
+	
+	a0 = .2
+	if ntw == "uk10"
+		f0 = .001
+	else
+		f0 = .009
+	end
+	p0 = pi/10
+	
+	T = 100000
+	dt = .1
+	
+	sig = mean(m)*ones(n)
+
+	for i in 1:n
+		push!(tups,(ntw,L,m,d,a0,f0,p0,T,dt,sig,i))
+	end
 end
 
 function plt(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64})
@@ -49,9 +51,12 @@ function plt(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1
 
 	Xs = generate_forced_time_series(ntw, L, m, d, (a,f,p), T, dt, sig)
 #	Xs = load_data(ntw, i)
-
-	Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)
-#	Lh,dh,ah,fh,ph = run_location_small_ntw(Xs, dt)
+	
+	if n < 10
+		Lh,dh,ah,fh,ph = run_location_small_ntw(Xs,dt)
+	else
+		Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)
+	end
 	
 	dL = Lh - Lm
 	writedlm("data/"*ntw*"_reL_$(i).csv",sum(dL.^2)/sum(Lm.^2),',')
