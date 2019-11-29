@@ -20,6 +20,8 @@ function load_pen(date::String)
 	zf = setdiff((sum(fs .!= 0,dims=2) .== 0).*(1:N),[0,])
 	z = sort(union(zf,zt))
 	zc = setdiff((1:N),z)
+	
+	writedlm("data_PEN/pen_"*date*"_ids.csv",zc,',')
 
 	th = mod.(th - repeat(th[end,:]',N,1),2pi)
 	fs = fs - repeat(fs[end,:]',N,1)

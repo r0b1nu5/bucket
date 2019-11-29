@@ -9,11 +9,11 @@ function loc_pen(date::String)
 
 	Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)
 
-	writedlm("data/pen_"*date*"_Lh.csv",Lh,',')
-	writedlm("data/pen_"*date*"_dh.csv",dh,',')
-	writedlm("data/pen_"*date*"_ah.csv",ah,',')
-	writedlm("data/pen_"*date*"_fh.csv",fh,',')
-	writedlm("data/pen_"*date*"_ph.csv",ph,',')
+	writedlm("data_PEN/pen_"*date*"_Lh.csv",Lh,',')
+	writedlm("data_PEN/pen_"*date*"_dh.csv",dh,',')
+	writedlm("data_PEN/pen_"*date*"_ah.csv",ah,',')
+	writedlm("data_PEN/pen_"*date*"_fh.csv",fh,',')
+	writedlm("data_PEN/pen_"*date*"_ph.csv",ph,',')
 end
 
 
