@@ -8,13 +8,13 @@ include("big_rand.jl")
 # Generate the tuples in order to compute effort wrt initial outcome, and run the computation in parallel.
 
 nx = 100 # Number of natural opinion to consider
-n0 = 99 # Index of the realization
+n0 = 199 # Index of the realization
 emi = .15 # Minimal eps value
 ema = .35 # Maximal eps value
 ne = 3 # Resolution of eps values
 epss = Array(LinRange(emi,ema,ne)) # List of eps values
 n_run = 20 # Number of runs for the random strategy
-d = 0. # Distance between the modes in the distribution of x0
+d = 1. # Distance between the modes in the distribution of x0
 sig = .2 # Standard deviation in the distribution of x0
 n1 = 1000 # Number of agents in the left mode
 n2 = 1001 # Number of agents in the right mode

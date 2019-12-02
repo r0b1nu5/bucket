@@ -7,13 +7,13 @@ include("scripts.jl")
 # (2) effort vs. sum of comps in final state
 
 nx = 100
-n0 = 99
+n0 = 199
 emi = .15
 ema = .35
 ne = 3
 epss = Array(LinRange(emi,ema,ne))
 n_run = 20
-d = 0.
+d = 1.
 sig = .2
 n1 = 1000
 n2 = 1001
@@ -67,32 +67,40 @@ for j in 1:ne
 end
 
 figure(222)
+
 subplot(2,3,1)
 xlabel("initial outcome")
 ylabel("ξ")
 legend()
+title("Random")
+
 subplot(2,3,2)
 xlabel("initial outcome")
 ylabel("ξ")
 legend()
+title("Fiedler")
+
 subplot(2,3,3)
 xlabel("initial outcome")
 ylabel("ξ")
 legend()
+title("Minimum")
+
 subplot(2,3,4)
 xlabel("Σx")
 ylabel("ξ")
 legend()
+
 subplot(2,3,5)
 xlabel("Σx")
 ylabel("ξ")
 legend()
+
 subplot(2,3,6)
 xlabel("Σx")
 ylabel("ξ")
 legend()
 
-		
 
 
 
