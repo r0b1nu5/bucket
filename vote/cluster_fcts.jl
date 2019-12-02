@@ -21,6 +21,8 @@ function eff(xes::Tuple{Array{Float64,1},Float64,String,Int64})
 		end
 	elseif strat == "mini"
 		ef,o,x = influence_effort_mini(x0,eps,w0)
+	elseif strat == "cent"
+		ef,o,x = influence_effort_cent(x0,eps,w0)
 	else
 		ef,o,x = influence_effort_rand(x0,eps,w0)
 	end

@@ -32,7 +32,7 @@ for i in n0+1:n0+nx
 	writedlm("data/x$i.csv",x0,',')
 	for j in 1:ne
 		eps = epss[j]
-		for st in ["rand","fiedler","mini"]
+		for st in ["rand","fiedler","mini","cent"]
 			if st == "rand"
 				for k in 1:n_run
 					push!(xess,(x0,eps,"rand$k",i))

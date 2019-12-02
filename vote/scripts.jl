@@ -1,5 +1,6 @@
 using Distributions, PyPlot, Statistics, LinearAlgebra, Random
 
+include("res_dist.jl")
 
 function influence_effort_rand(x0::Array{Float64,1}, eps::Float64, w0::Float64=1.)
 	n = length(x0)
@@ -106,6 +107,42 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		c = 0
 		while o1 > 0. && c < n
 			c += 1
+			xr[ids[c]] -= w0
+			x = LDi*(x0 + xr)
+			o1,p1,n1 = outcome(x)
+		end
+	end
+
+	return sum(xr), o0, xx
+end
+
+function influence_effort_cent(x0::Array{Float64,1}, eps::Float64, w0::Float64=1.)
+	n = length(x0)
+
+	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
+	D = diagm(0 => 1 ./ vec(sum(A,dims=1)))
+	L = D - A
+	Di = diagm(0 => 1 ./ diag(D))
+	LDi = inv(Di*L + diagm(0 => ones(n)))
+
+	xr = zeros(n)
+	x = LDi*(x0 + xr)
+	o0,p0,n0 = outcome(x)
+
+	if o0 < 0.
+		x0 = -x0
+		x = LDi*(x0 + xr)
+		o0,p0,n0 = outcome(x)
+	end
+	xx = copy(x)
+
+	o1 = o0
+	ids = Array(1:n)
+
+	while o1 > 0.
+		ids = res_centrality_sort(x0,eps)
+		c = 0
+		while o1 > 0. && c < n
 			xr[ids[c]] -= w0
 			x = LDi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
@@ -284,6 +321,7 @@ function outcome(x::Array{Float64,1})
 end
 
 
+
 function fiedler_sort(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
 	si = sign.(x0)
 	n = length(x0)
@@ -368,6 +406,49 @@ function fiedler_sort(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
 	
 	return Int.(order)
 end
+
+# Sort the nodes according to the resistance centrality of order p.
+
+function res_centrality_sort(x0::Array{Float64,1}, eps::Float64, p::Int64=1)
+	si = sign.(x0)
+	n = length(x0)
+	
+	dx = x0[2:end] - x0[1:end-1]
+
+	ids = Int.(setdiff((dx .> eps).*(1:n-1),[0,]))
+	clusts = [[1;ids.+1] [ids;n] [ids;n]-[0;ids]]
+
+	todo = (n+1)*ones(length(ids)+1)
+	order = Array{Int64,1}()
+
+	while maximum(todo) > 0
+		m,j = findmax(min.(todo,si[clusts[:,2]].*clusts[:,3]))
+		todo[j] = -(n+1)
+
+		if clusts[j,3] == 1
+			order = [order;clusts[j,1]]
+		else
+			nn = clusts[j,3]
+
+			x = x0[clusts[j,1]:clusts[j,2]]
+			A = Float64.((0 .< abs.(repeat(x,1,nn) - repeat(x',nn,1)) .< eps))
+			D = diagm(0 => vec(sum(A,dims=1)))
+			L = Symmetric(D - A)
+
+			ssi = ssi = sign.(x)
+
+			Om = res_dist(L)
+			C = n ./ vec(sum(Om,dims=1))
+
+			c = sortslices([ssi.*C 1:nn],dims=1,rev=true)
+			
+			order = [order;Int.(c[:,2]) .+ clusts[j,1] .- 1]
+		end
+	end
+
+	return order
+end
+
 
 function mini_sort(x0::Array{Float64,1})
 	n = length(x0)
