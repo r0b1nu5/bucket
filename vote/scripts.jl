@@ -342,9 +342,13 @@ function fiedler_sort(x0::Array{Float64,1}, eps::Float64, a::Int64=2)
 			id = li[i]
 			
 			uf = norm.(us[:,id])
-		
-			uu = sortslices([ssi.*abs.(uf) 1:nn],dims=1,rev=true)
-		
+
+# Brute version
+#			uu = sortslices([ssi.*uf 1:nn],dims=1,rev=true)
+# Normalized version (in order to discard extremes
+			uu = sortslices([(ssi.*uf)./(abs.((1:nn) .- nn/2)) 1:nn],dims=1,rev=true)
+ 			
+			
 			sir = sign(uf[Int(uu[1,2])])
 		
 			su = sir .* sign.(uf)
