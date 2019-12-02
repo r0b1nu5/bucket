@@ -143,6 +143,7 @@ function influence_effort_cent(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		ids = res_centrality_sort(x0,eps)
 		c = 0
 		while o1 > 0. && c < n
+			c += 1
 			xr[ids[c]] -= w0
 			x = LDi*(x0 + xr)
 			o1,p1,n1 = outcome(x)
@@ -274,12 +275,16 @@ end
 
 function plot_fiedler(effort::Array{Float64,2}, epss::Array{Float64,1}, colos::Array{String,1}=["C3",], modes::Array{Int64,1}=[2,])
 	for i in 1:length(modes)
-		PyPlot.plot(epss,effort[i,:],color=colos[i])
+		PyPlot.plot(epss,effort[i,:],color=colos[i],label="mode $(modes[i])")
 	end
 end
 
 function plot_mini(effort::Array{Float64,1}, epss::Array{Float64,1})
-	PyPlot.plot(epss,effort,color="C1")
+	PyPlot.plot(epss,effort,color="C1",label="minimum")
+end
+
+function plot_cent(effort::Array{Float64,1}, epss::Array{Float64,1})
+	PyPlot.plot(epss,effort,color="C2",label="centrality")
 end
 
 function eps_connect(x0::Array{Float64,1}, epss::Array{Float64,1}, thr::Float64=.95)
@@ -433,7 +438,7 @@ function res_centrality_sort(x0::Array{Float64,1}, eps::Float64, p::Int64=1)
 			x = x0[clusts[j,1]:clusts[j,2]]
 			A = Float64.((0 .< abs.(repeat(x,1,nn) - repeat(x',nn,1)) .< eps))
 			D = diagm(0 => vec(sum(A,dims=1)))
-			L = Symmetric(D - A)
+			L = D - A
 
 			ssi = ssi = sign.(x)
 

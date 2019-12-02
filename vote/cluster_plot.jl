@@ -28,6 +28,7 @@ for i in n0+1:n0+nx
 	er = Array{Float64,2}(undef,n_run,0)
 	ef = Array{Float64,2}(undef,length(n_modes),0)
 	em = Array{Float64,1}()
+	ec = Array{Float64,1}()
 	os = Array{Float64,1}()
 	Cns = Array{Float64,1}()
 	Cps = Array{Float64,1}()
@@ -40,6 +41,7 @@ for i in n0+1:n0+nx
 		er = [er e]
 		ef = [ef vec(readdlm("data/eff_x$(i)_fiedler_$eps.csv",','))]
 		push!(em,readdlm("data/eff_x$(i)_mini_$eps.csv",',')[1])
+		push!(ec,readdlm("data/eff_x$(i)_cent_$eps.csv",',')[1])
 		push!(os,readdlm("data/o_x$(i)_$eps.csv",',')[1])
 
 		A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
@@ -60,6 +62,7 @@ for i in n0+1:n0+nx
 	plot_mean(abs.(er),epss)
 	plot_fiedler(abs.(ef),epss,["C2","C3","C4","C5","C6","C7","C8"],Array(1:m))
 	plot_mini(abs.(em),epss)
+	plot_cent(abs.(ec),epss)
 	xlabel("ε")
 	ylabel("ξ")
 

@@ -8,7 +8,7 @@ include("big_rand.jl")
 # Generate the tuples in order to compute effort wrt initial outcome, and run the computation in parallel.
 
 nx = 100 # Number of natural opinion to consider
-n0 = 199 # Index of the realization
+n0 = 299 # Index of the realization
 emi = .15 # Minimal eps value
 ema = .35 # Maximal eps value
 ne = 3 # Resolution of eps values

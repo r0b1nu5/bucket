@@ -7,7 +7,7 @@ include("scripts.jl")
 # (2) effort vs. sum of comps in final state
 
 nx = 100
-n0 = 199
+n0 = 299
 emi = .15
 ema = .35
 ne = 3
