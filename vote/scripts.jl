@@ -62,10 +62,10 @@ function influence_effort_fiedler(x0::Array{Float64,1}, eps::Float64, w0::Float6
 	xx = copy(x)
 
 	o1 = o0
-	ids = Array(1:n)
-
+@info "Fiedler: computing..."
+	ids = fiedler_sort(x0,eps,a)
+@info "Fiedler: computed."
 	while o1 > 0.
-		ids = fiedler_sort(x0,eps,a)
 		c = 0
 		while o1 > 0. && c < n
 			c += 1
@@ -100,10 +100,10 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 	xx = copy(x)
 
 	o1 = o0
-	ids = Array(1:n)
-
+@info "Mini: computing..."
+	ids = mini_sort(x0)
+@info "Mini: computed."
 	while o1 > 0.
-		ids = mini_sort(x0)
 		c = 0
 		while o1 > 0. && c < n
 			c += 1
@@ -120,7 +120,7 @@ function influence_effort_cent(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
-	D = diagm(0 => 1 ./ vec(sum(A,dims=1)))
+	D = diagm(0 => vec(sum(A,dims=1)))
 	L = D - A
 	Di = diagm(0 => 1 ./ diag(D))
 	LDi = inv(Di*L + diagm(0 => ones(n)))
@@ -137,10 +137,10 @@ function influence_effort_cent(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 	xx = copy(x)
 
 	o1 = o0
-	ids = Array(1:n)
-
+	
+	ids = res_centrality_sort(x0,eps)
+	
 	while o1 > 0.
-		ids = res_centrality_sort(x0,eps)
 		c = 0
 		while o1 > 0. && c < n
 			c += 1
@@ -149,7 +149,7 @@ function influence_effort_cent(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 			o1,p1,n1 = outcome(x)
 		end
 	end
-
+	
 	return sum(xr), o0, xx
 end
 
@@ -450,7 +450,6 @@ function res_centrality_sort(x0::Array{Float64,1}, eps::Float64, p::Int64=1)
 			order = [order;Int.(c[:,2]) .+ clusts[j,1] .- 1]
 		end
 	end
-
 	return order
 end
 

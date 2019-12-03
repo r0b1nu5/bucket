@@ -3,7 +3,18 @@ using LinearAlgebra,SparseArrays
 function res_dist(L::Union{Array{Float64,2},SparseMatrixCSC{Float64,Int},Symmetric{Float64,Array{Float64,2}}})
 	n = size(L)[1]
 	
-	Gai = pinv(Array(L))
+	ei = eigen(L)
+	lsi = Array{Float64,1}()
+	for i in 1:n
+		if abs(ei.values[i]) < 1e-8
+			push!(lsi,0)
+		else
+			push!(lsi,1/ei.values[i])
+		end
+	end
+
+	Gai = ei.vectors'*diagm(0 => lsi)*ei.vectors
+#	Gai = pinv(Array(L))
 	
 	Om = zeros(n,n)
 	for i in 1:n-1

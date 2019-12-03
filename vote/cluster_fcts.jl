@@ -10,6 +10,7 @@ function eff(xes::Tuple{Array{Float64,1},Float64,String,Int64})
 	eps = xes[2]
 	strat = xes[3]
 	thr_id = xes[4]
+	@info "Run id: $thr_id, ε = $eps, strategy: ["*start*" ]"
 
 	w0 = .1
 
