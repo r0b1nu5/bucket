@@ -6,7 +6,7 @@ include("final.jl")
 
 tups = Array{Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64},1}()
 
-for ntw in ["ntw5","ntw10","ntw20","uk10"]
+for ntw in ["uk10",] #["ntw5","ntw10","ntw20","uk10"]
 	L = readdlm("data/"*ntw*"_lap_mat.csv",',')
 	m = vec(readdlm("data/"*ntw*"_m.csv",','))
 	Mi = diagm(0 => 1 ./ m)
