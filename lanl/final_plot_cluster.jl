@@ -35,7 +35,7 @@ for ntw in ["ntw5","ntw10","ntw20","uk10"]
 	end
 end
 
-function plt(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64})
+function plts(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64})
 	ntw,L,m,d,a0,f0,p0,T,dt,sig,i = tup
 	
 	n = length(m)

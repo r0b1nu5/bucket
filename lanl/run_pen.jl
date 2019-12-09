@@ -6,6 +6,19 @@ using Distributed
 @everywhere function loc_pen(date::String)
 	Xs = load_pen(date)
 
+	n = Int(size(Xs)[1]/2)
+	ii = Array{Int64,1}()
+	for i in 1:n-1
+		for j in i+1:n
+			if Xs[i,:] == Xs[j,:] || Xs[i+n,:] == Xs[j+n,:]
+				push!(ii,j)
+			end
+		end
+	end
+	jj = setdiff(1:n,ii)
+	
+	Xs = Xs[[jj;jj.+n],:]
+
 	dt = 1/30
 
 	Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)

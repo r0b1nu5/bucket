@@ -60,7 +60,7 @@ for i in n0+1:n0+nx
 	subplot(3,nx,i-n0)
 	PyPlot.plot([ee,ee],[0,1.1*xima],"--k")
 	plot_mean(abs.(er),epss)
-	plot_fiedler(abs.(ef),epss,["C2","C3","C4","C5","C6","C7","C8"],Array(1:m))
+	plot_fiedler(abs.(ef),epss,["C3","C4","C5","C6","C7","C8","C9"],Array(1:m))
 	plot_mini(abs.(em),epss)
 	plot_cent(abs.(ec),epss)
 	xlabel("ε")
