@@ -7,6 +7,8 @@ using Distributed
 	Xs = load_pen(date)
 
 	n = Int(size(Xs)[1]/2)
+	Xs = Xs[[1:n-1;n+1:2*n-1],:]
+	n = n-1
 	ii = Array{Int64,1}()
 	for i in 1:n-1
 		for j in i+1:n
@@ -20,7 +22,7 @@ using Distributed
 	Xs = Xs[[jj;jj.+n],:]
 
 	dt = 1/30
-
+	
 	Lh,dh,ah,fh,ph = run_location_large_ntw(Xs, dt, 5)
 
 	writedlm("data_PEN/pen_"*date*"_Lh.csv",Lh,',')

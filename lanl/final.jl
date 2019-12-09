@@ -106,18 +106,16 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	end
 
 	#ids = Int.(sortslices([amps 1:n],dims=1,rev=true)[1:min(n_ref,n),2])
-	test = 
 
 	Ah,Lh,dh = get_Ah_correl(Xs[[ids;ids.+n],:],dt,fh)
 
 	ah = get_ah(Xs[[ids;ids.+n],:],dt,fh)
-
 	Lm,dm,a,f,ps = optim_chunks(Xs[[ids;ids.+n],:],dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
 	AA = sortslices([abs.(a) ids 1:n_ref],dims=1,rev=true)
 	fh = f[Int(AA[1,3])]
 	ff = fh*ones(n)
 	ff[ids] = f
-	
+
 	Ah,Lh,dh = get_Ah_correl(Xs,dt,fh)
 	
 	a,p = optim_all_lin(Xs,dt,Lh,dh,fh,mu,bp)
