@@ -1,8 +1,9 @@
 using Distributed
 
 @everywhere include("load_pen.jl")
+@everywhere include("final.jl")
 
-function loc_pen(date::String)
+@everywhere function loc_pen(date::String)
 	Xs = load_pen(date)
 
 	dt = 1/30
@@ -16,6 +17,6 @@ function loc_pen(date::String)
 	writedlm("data_PEN/pen_"*date*"_ph.csv",ph,',')
 end
 
-
+pmap(loc_pen,dates)
 
 

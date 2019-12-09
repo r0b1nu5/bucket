@@ -37,8 +37,8 @@ end
 
 function plt(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64})
 	ntw,L,m,d,a0,f0,p0,T,dt,sig,i = tup
-
-	n = length(dm)
+	
+	n = length(m)
 
 	@info "$i/$n"
 
@@ -48,6 +48,9 @@ function plt(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1
 	f[i] = f0
 	p = zeros(n)
 	p[i] = p0
+
+	Mi = diagm(0 => 1 ./ m)
+	Lm = Mi*L
 
 	Xs = generate_forced_time_series(ntw, L, m, d, (a,f,p), T, dt, sig)
 #	Xs = load_data(ntw, i)
