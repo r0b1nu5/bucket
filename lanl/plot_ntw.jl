@@ -55,7 +55,7 @@ function plot_ntw(ntw::String)
 
 		PyPlot.plot(x,y,"ok")
 
-	elseif ntw == "uk"
+	elseif ntw == "uk" || ntw == "uk10"
 		n = 120
 
 		xy = readdlm("uk/uk_grid_coord.csv",',')

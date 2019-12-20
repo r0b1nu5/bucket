@@ -90,18 +90,32 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 	
 	fh,amps = get_fh_fourier(Xs,dt,Df)
 	
-	ids = Int.(sortslices([amps 1:n],dims=1,rev=true)[1:min(n_ref,n),2])
+	iids = Int.(sortslices([amps 1:n],dims=1,rev=true)[:,2])
+	ids = [iids[1],]
+	ri = 1
+	while length(ids) < n_ref
+		tryy = true
+		while tryy
+			tryy = false
+			ri += 1
+			for k in 1:length(ids)
+				tryy = tryy || Xs[ids[k],:] == Xs[iids[ri],:] || Xs[ids[k]+n,:] == Xs[iids[ri]+n,:]
+			end
+		end
+		push!(ids,iids[ri])
+	end
+
+	#ids = Int.(sortslices([amps 1:n],dims=1,rev=true)[1:min(n_ref,n),2])
 
 	Ah,Lh,dh = get_Ah_correl(Xs[[ids;ids.+n],:],dt,fh)
 
 	ah = get_ah(Xs[[ids;ids.+n],:],dt,fh)
-
 	Lm,dm,a,f,ps = optim_chunks(Xs[[ids;ids.+n],:],dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
 	AA = sortslices([abs.(a) ids 1:n_ref],dims=1,rev=true)
 	fh = f[Int(AA[1,3])]
 	ff = fh*ones(n)
 	ff[ids] = f
-	
+
 	Ah,Lh,dh = get_Ah_correl(Xs,dt,fh)
 	
 	a,p = optim_all_lin(Xs,dt,Lh,dh,fh,mu,bp)
@@ -152,7 +166,7 @@ function get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
 	mfX = zeros(n,T)
 	for i in 1:n
 		for j in 2:T
-			mfX[i,j] = nfX[i,j]/median([nfX[i,max(j-Df,1):j-2];nfX[i,j+2:min(j+Df,T)]])
+			mfX[i,j] = nfX[i,j]/max(1e-10,median([nfX[i,max(j-Df,1):j-2];nfX[i,j+2:min(j+Df,T)]]))
 		end
 	end
 

@@ -6,7 +6,7 @@ include("final.jl")
 
 tups = Array{Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64},1}()
 
-for ntw in ["ntw5","ntw10","ntw20","uk10"]
+for ntw in ["uk10",] #["ntw5","ntw10","ntw20","uk10"]
 	L = readdlm("data/"*ntw*"_lap_mat.csv",',')
 	m = vec(readdlm("data/"*ntw*"_m.csv",','))
 	Mi = diagm(0 => 1 ./ m)
@@ -35,10 +35,10 @@ for ntw in ["ntw5","ntw10","ntw20","uk10"]
 	end
 end
 
-function plt(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64})
+function plts(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64})
 	ntw,L,m,d,a0,f0,p0,T,dt,sig,i = tup
-
-	n = length(dm)
+	
+	n = length(m)
 
 	@info "$i/$n"
 
@@ -48,6 +48,9 @@ function plt(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1
 	f[i] = f0
 	p = zeros(n)
 	p[i] = p0
+
+	Mi = diagm(0 => 1 ./ m)
+	Lm = Mi*L
 
 	Xs = generate_forced_time_series(ntw, L, m, d, (a,f,p), T, dt, sig)
 #	Xs = load_data(ntw, i)

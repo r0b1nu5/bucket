@@ -1,9 +1,12 @@
 using PyPlot, DelimitedFiles
 
-dates = ["2013-01-15_00", "2013-03-10_04", "2013-04-03_02", "2013-04-03_03", "2013-04-03_07", "2013-07-30_01", "2013-07-30_04", "2013-07-30_09"]
+include("plot_ntw.jl")
 
-ntw = "uk" # ["ntw5", "ntw10", "ntw20", "uk10", "pen"] 
-n = 120 # [5, 10, 20, 120, ???]
+dates = ["2013-01-15_00", "2013-03-10_04", "2013-04-03_02", "2013-04-03_03", "2013-04-03_07", "2013-07-30_01", "2013-07-30_04", "2013-07-30_09"]
+ns = Dict{String,Int64}("ntw5" => 5, "ntw10" => 10, "ntw20" => 20, "uk10" => 120, "pen" => 200)
+
+ntw = "uk10" # ["ntw5", "ntw10", "ntw20", "uk10", "pen"] 
+n = ns[ntw]
 
 if ntw == "pen"
 	AA = Array{Float64,2}(undef,3,0)
@@ -39,17 +42,18 @@ else
 	ref = Array{Float64,1}()
 	rep = Array{Float64,1}()
 	
-	ah = Array{Float64,2}(undef,120,0)
-	
+#	ah = Array{Float64,2}(undef,n,0)
+	ah = zeros(n,n)
 	for i in 1:n
 		push!(reL,readdlm("data/"*ntw*"_reL_$(i).csv",',')[1])
 		push!(rea,readdlm("data/"*ntw*"_rea_$(i).csv",',')[1])
 		push!(ref,readdlm("data/"*ntw*"_ref_$(i).csv",',')[1])
 		push!(rep,readdlm("data/"*ntw*"_rep_$(i).csv",',')[1])
 	
-		ah = [ah vec(readdlm("data/"*ntw*"ah_$(i).csv",','))]
-	
-		AA = sortslices([abs.(ah[:,end]) 1:n],dims=1,rev=true)
+#		ah = [ah vec(readdlm("data/"*ntw*"_ah_$(i).csv",','))]
+		ah[:,i] = vec(readdlm("data/"*ntw*"_ah_$(i).csv",','))
+
+		AA = sortslices([abs.(ah[:,i]) 1:n],dims=1,rev=true)
 	        PP = AA[:,1]./sum(AA[:,1])
 	        id1 = Int(AA[1,2])
 	        id2 = Int(AA[2,2])
@@ -57,10 +61,10 @@ else
 	
 	        figure(666)
 	        subplot(1,3,3)
-	        PyPlot.plot([i,i],[0,abs(ah[id1])/sum(abs.(ah))],color="C0")
-	        PyPlot.plot([i,i],[0,abs(ah[id2])/sum(abs.(ah))],color="C1")
-	        PyPlot.plot([i,i],[0,abs(ah[id3])/sum(abs.(ah))],color="C2")
-	        PyPlot.plot(i,abs(ah[i])/sum(abs.(ah)),"o",color="C3",markersize=4.)
+		PyPlot.plot([i,i],[0,PP[1]],color="C0")
+		PyPlot.plot([i,i],[0,PP[2]],color="C1")
+		PyPlot.plot([i,i],[0,PP[3]],color="C2")
+		PyPlot.plot(i,abs(ah[i,i])/sum(abs.(ah[:,i])),"o",color="C3",markersize=4.)
 	end
 	
 	figure(666)
