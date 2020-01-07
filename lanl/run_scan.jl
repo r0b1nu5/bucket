@@ -15,10 +15,10 @@ end
 n_run = 100
 id = 76
 
-param = "amp" # ["amp","fre","pha","tim","ste","noi"]
-pmin = .01
-pmax = .31
-np = 21
+param = "fre" # ["amp","fre","pha","tim","ste","noi"]
+pmin = .0005
+pmax = .007
+np = 14
 
 ntw = "uk10"
 L = readdlm("data/"*ntw*"_lap_mat.csv",',')

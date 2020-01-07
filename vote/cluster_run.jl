@@ -1,6 +1,5 @@
 using Distributed, DelimitedFiles, Distributions
 
-
 include("scripts.jl")
 include("big_rand.jl")
 
@@ -8,18 +7,20 @@ include("big_rand.jl")
 
 # Generate the tuples in order to compute effort wrt eps (\in [emi,ema]), and run the computation in parallel.
 
-nx = 3 # Number of natural opinion to consider
-n0 = 23 # Index of the realization
+ttt = time()
+
+nx = 1 # Number of natural opinion to consider
+n0 = 50 # Index of the realization
 emi = .05 # Minimal eps value
-ema = .6 # Maximal eps value
+ema = .7 # Maximal eps value
 ne = 30 # Resolution of eps values
 epss = Array(LinRange(emi,ema,ne)) # List of eps values
-n_run = 20 # Number of runs for the random strategy
-d = 0. # Distance between the modes in the distribution of x0
+n_run = 50 # Number of runs for the random strategy
+d = 1. # Distance between the modes in the distribution of x0
 sig = .2 # Standard deviation in the distribution of x0
 n1 = 1000 # Number of agents in the left mode
 n2 = 1001 # Number of agents in the right mode
-n_modes = [2,3,4] # Eigenmodes to consider in the Fiedler strategy
+n_modes = [2,3,4,5] # Eigenmodes to consider in the Fiedler strategy
 
 xess = Array{Tuple{Array{Float64,1},Float64,String,Int64},1}()
 
@@ -49,7 +50,7 @@ end
 
 pmap(eff,xess)
 				    
-
+@info "Elapsed time: $((time() - ttt)/60) minutes"
 
 
 
