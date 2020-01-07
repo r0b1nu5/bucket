@@ -1,4 +1,4 @@
-using LinearAlgebra, Distribution
+using LinearAlgebra, Distributions, DelimitedFiles
 
 include("L2B.jl")
 
@@ -23,6 +23,9 @@ function kuramoto_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Flo
 
 	while err > eps && iter < max_iter
 		iter += 1
+		if iter%1000 == 0
+			@info "$iter"
+		end
 
 		xi = dP0^2*rand(Normal(0.,1.),n)
 
@@ -37,7 +40,12 @@ function kuramoto_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Flo
 
 		th2 = th1 + h*dth
 
-		if store
+		if store && iter%1000 == 0
+			c += 1
+			writedlm("data1/ths_$c.csv",ths[:,1:end],',')
+			ths = Array{Float64,2}(undef,n,0)
+			ths = [ths th2]
+		elseif store
 			ths = [ths th2]
 		else
 			ths = copy(th2)
@@ -46,7 +54,12 @@ function kuramoto_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Flo
 		err = maximum(abs.(dth))
 	end
 
-	return ths
+	Ths = Array{Float64,2}(undef,n,0)
+	for i in 1:c
+		Ths = [Ths readdlm("data1/ths_$i.csv",',')]
+	end
+
+	return Ths
 end
 
 
@@ -68,9 +81,14 @@ function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Floa
 	else
 		ths = Array{Float64,1}()
 	end
+	
+	c = 0
 
 	while err > eps && iter < max_iter
 		iter += 1
+		if iter%1000 == 0
+			@info "$iter"
+		end
 
 		xi = a0.*cos.(w0.*h.*iter + p0)
 
@@ -85,7 +103,12 @@ function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Floa
 
 		th2 = th1 + h*dth
 
-		if store
+		if store && iter%1000 == 0
+			c += 1
+			writedlm("data1/ths_$c.csv",ths[:,1:end],',')
+			ths = Array{Float64,2}(undef,n,0)
+			ths = [ths th2]
+		elseif store
 			ths = [ths th2]
 		else
 			ths = copy(th2)
@@ -94,7 +117,12 @@ function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Floa
 		err = maximum(abs.(dth))
 	end
 
-	return ths
+	Ths = Array{Float64,2}(undef,n,0)
+	for i in 1:c
+		Ths = [Ths readdlm("data1/ths_$i.csv",',')]
+	end
+
+	return Ths
 end
 
 
