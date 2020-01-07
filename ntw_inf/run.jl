@@ -39,13 +39,14 @@ elseif run == "sine"
 		p = zeros(n)
 		p[i] = p0
 
-		push!(ths,kuramoto_sine(L,P,zeros(n),a,w,p,true,10000))
+		writedlm("data1/ths_p$i.csv",kuramoto_sine(L,P,zeros(n),a,w,p,true,10000),',')
 	end
 
 	Ldh = zeros(n,n)
 	for i in 1:n
+		ths = readdlm("data1/ths_p$i.csv",',')
 		for j in 1:n
-			Ldh[i,j] = ntw_inf_sine(ths[i][j,:],n,a,w,p)
+			Ldh[i,j] = ntw_inf_sine(ths[j,:],n,a,w,p)
 		end
 	end
 
