@@ -8,7 +8,7 @@ include("L2B.jl")
 # th0: initial angles
 # store_history: if "true", then returns all angles' time evolution
 # verb: displays info along the simulation
-function kuramoto(L::Array{Float64,2},P::Array{Float64,1},th0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=100000,eps::Float64=1e-6,h::Float64=0.1)
+function kuramoto(L::Array{Float64,2},P::Array{Float64,1},th0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=10000,eps::Float64=1e-6,h::Float64=0.1)
 	n = size(L)[1]
 	
 	B,w = L2B(L)
@@ -24,10 +24,11 @@ function kuramoto(L::Array{Float64,2},P::Array{Float64,1},th0::Array{Float64,1},
 	ths = Array{Float64,2}(undef,n,0)
 	ths = [ths th0]
 	dths = Array{Float64,2}(undef,n,0)
-	
+	dth = Array{Float64,1}()
+
 	while iter < max_iter && error > eps
 		iter += 1
-		if iter%1000 == 0 || iter == max_iter
+		if (iter%1000 == 0 || iter == max_iter) && verb
 			@info "$(now()) -- iter = $iter, err = $error"
 		end
 		
