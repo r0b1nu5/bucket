@@ -62,9 +62,6 @@ end
 
 
 
-end
-
-
 
 
 # generate time series with noise
