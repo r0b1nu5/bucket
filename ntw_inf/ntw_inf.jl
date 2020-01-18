@@ -18,8 +18,9 @@ end
 
 function ntw_inf_sine(th_ij::Array{Float64,1}, n::Int64, a0::Float64, w0::Float64, p0::Float64, h::Float64=.1)
 	t = round(Int64,(pi - 2*p0)/(2*w0*h))
-	th_ij = th_ij .- mean(th_ij[:,t+1]) .+ a0*sin(w0*h*(t+1) + p0)/(n*w0)
-	
+#	th_ij = th_ij .- mean(th_ij[:,t+1]) .+ a0*sin(w0*h*(t+1) + p0)/(n*w0)
+	th_ij = th_ij .- th_ij[t+1] .+ a0*(n*w0)*sin(w0*h*(t+1) + p0)
+
 	num = (th_ij - a0*sin.(w0*h*Array(0:(length(th_ij)-1)) .+ p0)./(n*w0))
 	denom = a0*cos.(w0*h*Array(0:(length(th_ij)-1)) .+ p0)
 	ids = setdiff((1:length(denom)).*(abs.(denom) .> 1e-4),[0,])
