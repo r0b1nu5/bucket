@@ -4,7 +4,7 @@ include("kuramoto.jl")
 include("ntw_inf.jl")
 
 ntw = "uk_w"
-co = "C1"
+co = "C0"
 
 a0,w0,p0 = readdlm("ntws_data/"*ntw*"_probe.csv",',')
 @info "a0 = $a0, w0 = $w0, ψ0 = $p0"
