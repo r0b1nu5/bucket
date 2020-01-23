@@ -4,7 +4,7 @@ include("kuramoto.jl")
 include("ntw_inf.jl")
 
 ntw = "uk_w"
-co = "C0"
+co = "C3"
 
 a0,w0,p0 = readdlm("ntws_data/"*ntw*"_probe.csv",',')
 @info "a0 = $a0, w0 = $w0, ψ0 = $p0"
@@ -14,6 +14,7 @@ L = sparse(Lsp[:,1],Lsp[:,2],Lsp[:,3])
 
 T = 1000
 Ttot = 20000
+Ttot = 20100
 h = .1
 ep = 1e-8
 
@@ -40,11 +41,20 @@ end
 
 Lh = pinv(Ldh)
 
+Id = diagm(0 => ones(n))
+
+figure(33,(5,5))
+PyPlot.plot([minimum(L.*(1 .- Id))-.1,maximum(L.*(1 .- Id))+.1],[minimum(L.*(1 .- Id))-.1,maximum(L.*(1 .- Id))+.1],"--k")
+
 for i in 1:n
 	for j in i+1:n
-		PyPlot.plot(L[i,j],Lh[i,j],".",color=co)
+		figure(33)
+		PyPlot.plot(L[i,j],Lh[i,j],"o",color=co)
 	end
 end
 
+xlabel("Real value")
+ylabel("Inferred value")
+title("Network: "*ntw)
 
 
