@@ -1,10 +1,61 @@
-using PyPlot
-
+using PyPlot, SparseArrays
 
 include("kuramoto.jl")
 include("ntw_inf.jl")
 
+figure()
 
-ws = 
+PyPlot.plot([1,1],[-.1,60],"--k")
+
+for (ntw,co) in [("uk_w","C0"),("er_w","C1"),("sw_w","C2")]
+	
+	Lsp = readdlm("ntws_data/"*ntw*"_lap_mat_sp.csv",',')
+	L = sparse(Lsp[:,1],Lsp[:,2],Lsp[:,3])
+	
+	ls = eigvals(Array(L))
+	l2 = ls[2]
+	
+	a0 = .2
+	ws = LinRange(.001,l2,50)
+	p0 = 0.
+	
+	T = 1000
+	Ttot = 10000
+	
+	nJ = Array{Float64,1}()
+	
+	for w0 in ws
+		@info "a0 = $a0, w0 = $w0, p0 = $p0"
+		
+		Ldh = zeros(n,n)
+	
+		for i in 1:n
+			@info "i = $i"
+	
+			a = zeros(n)
+			a[i] = a0
+			w = zeros(n)
+			w[i] = w0
+			p = zeros(n)
+			p[i] = p0
+	
+			t = 500
+	
+			thij = kuramoto_sine(L,zeros(n),zeros(n),a,w,p,T,Ttot)
+			for j in i:n
+				Ldh[i,j] = ntw_inf_sine(thij[j,t],t,n,a0,w0,p0)
+				Ldh[j,i] = Ldh[i,j]
+			end
+		end
+		
+		Lh = pinv(Ldh)
+	
+		push!(nJ, norm(Array(L) - Lh))
+	end
+	
+	PyPlot.plot(ws./l2,nJ,color=co)
+	
+end
+
 
 
