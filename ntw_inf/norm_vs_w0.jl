@@ -5,13 +5,15 @@ include("ntw_inf.jl")
 
 figure()
 
-PyPlot.plot([1,1],[-.1,60],"--k")
 
 for (ntw,co) in [("uk_w","C0"),("er_w","C1"),("sw_w","C2")]
-	
+	@info ntw
+
 	Lsp = readdlm("ntws_data/"*ntw*"_lap_mat_sp.csv",',')
 	L = sparse(Lsp[:,1],Lsp[:,2],Lsp[:,3])
 	
+	n = size(L)[1]
+
 	ls = eigvals(Array(L))
 	l2 = ls[2]
 	
@@ -21,11 +23,15 @@ for (ntw,co) in [("uk_w","C0"),("er_w","C1"),("sw_w","C2")]
 	
 	T = 1000
 	Ttot = 10000
+	h = .1
 	
 	nJ = Array{Float64,1}()
 	
+	c = 0 
+
 	for w0 in ws
-		@info "a0 = $a0, w0 = $w0, p0 = $p0"
+		c += 1
+		@info "c = $c, a0 = $a0, w0 = $w0, p0 = $p0"
 		
 		Ldh = zeros(n,n)
 	
@@ -39,7 +45,7 @@ for (ntw,co) in [("uk_w","C0"),("er_w","C1"),("sw_w","C2")]
 			p = zeros(n)
 			p[i] = p0
 	
-			t = 500
+			t = min(T,round(Int,pi/(2*w0*h)))
 	
 			thij = kuramoto_sine(L,zeros(n),zeros(n),a,w,p,T,Ttot)
 			for j in i:n
@@ -48,9 +54,12 @@ for (ntw,co) in [("uk_w","C0"),("er_w","C1"),("sw_w","C2")]
 			end
 		end
 		
-		Lh = pinv(Ldh)
+		Ldhh = Ldh - Ldh*ones(n)*ones(1,n)
+		Lh = pinv(Ldhh)
 	
-		push!(nJ, norm(Array(L) - Lh))
+		push!(nJ, norm(Array(L) - Lh)/norm(Array(L)))
+
+		writedlm("data1/"*ntw*"_$(c)_Ldh.csv",Ldhh,',')
 	end
 	
 	PyPlot.plot(ws./l2,nJ,color=co)

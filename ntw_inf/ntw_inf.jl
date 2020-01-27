@@ -16,7 +16,7 @@ end
 
 # th_ij: angle time series at node j when node i is submitted to a sine perturbation.
 
-function ntw_inf_sine(th_ij::Array{Float64,1}, t::Int64, n::Int64, a0::Float64, w0::Float64, p0::Float64, h::Float64=.1)
+function ntw_inf_sine(th_ij::Array{Float64,1}, n::Int64, a0::Float64, w0::Float64, p0::Float64, h::Float64=.1)
 #	t = round(Int64,(-2*p0)/(2*w0*h))
 #	th_ij = th_ij .- mean(th_ij[:,t+1]) .+ a0*cos(w0*h*(t+1) + p0)/(n*w0)
 #	th_ij = th_ij .- th_ij[t+1] .- a0/(n*w0)*(1 - cos(w0*h*(t+1) + p0))
