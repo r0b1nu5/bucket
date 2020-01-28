@@ -3,8 +3,6 @@ using PyPlot, SparseArrays
 include("kuramoto.jl")
 include("ntw_inf.jl")
 
-figure()
-
 
 for (ntw,co) in [("uk_w","C0"),("er_w","C1"),("sw_w","C2")]
 	@info ntw
@@ -47,14 +45,14 @@ for (ntw,co) in [("uk_w","C0"),("er_w","C1"),("sw_w","C2")]
 	
 			t = min(T,round(Int,pi/(2*w0*h)))
 	
-			thij = kuramoto_sine(L,zeros(n),zeros(n),a,w,p,T,Ttot)
+			thij = kuramoto_sine(L,zeros(n),zeros(n),a,w,p,t,Ttot)
 			for j in i:n
 				Ldh[i,j] = ntw_inf_sine(thij[j,t],t,n,a0,w0,p0)
 				Ldh[j,i] = Ldh[i,j]
 			end
 		end
 		
-		Ldhh = Ldh - Ldh*ones(n)*ones(1,n)
+		Ldhh = Ldh - Ldh*ones(n)*ones(1,n)/n
 		Lh = pinv(Ldhh)
 	
 		push!(nJ, norm(Array(L) - Lh)/norm(Array(L)))
@@ -62,7 +60,8 @@ for (ntw,co) in [("uk_w","C0"),("er_w","C1"),("sw_w","C2")]
 		writedlm("data1/"*ntw*"_$(c)_Ldh.csv",Ldhh,',')
 	end
 	
-	PyPlot.plot(ws./l2,nJ,color=co)
+	figure(1)
+	PyPlot.plot(ws./l2,nJ,color=co,"o")
 	
 end
 

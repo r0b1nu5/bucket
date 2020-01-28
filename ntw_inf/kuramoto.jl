@@ -188,7 +188,7 @@ function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Floa
 	return Ths
 end
 
-function kuramoto_sine(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::Array{Float64,1}, a0::Array{Float64,1}, w0::Array{Float64,1}, p0::Array{Float64,1}, store::Int64=1, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.1)
+function kuramoto_sine(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::Array{Float64,1}, a0::Array{Float64,1}, w0::Array{Float64,1}, p0::Array{Float64,1}, store::Int64=1, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.1, file_name::String="data1")
 	B,W,Bt = L2B(L)
 	W = spdiagm(0 => W)
 
@@ -250,7 +250,7 @@ function kuramoto_sine(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, t
 
 		if store > 1 && iter%1000 == 0
 			c += 1
-			writedlm("data1/ths_$c.csv",ths[:,1:end],',')
+			writedlm(file_name*"/ths_$c.csv",ths[:,1:end],',')
 			ths = Array{Float64,2}(undef,n,0)
 			ths = [ths th2]
 		elseif store > 1
@@ -262,8 +262,9 @@ function kuramoto_sine(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, t
 
 	Ths = Array{Float64,2}(undef,n,0)
 	for i in 1:c
-		Ths = [Ths readdlm("data1/ths_$i.csv",',')]
+		Ths = [Ths readdlm(file_name*"/ths_$i.csv",',')]
 	end
+	Ths = [Ths ths]
 
 	return Ths
 end
