@@ -4,8 +4,7 @@ include("kuramoto.jl")
 include("ntw_inf.jl")
 
 
-#for (ntw,co) in [("uk_w","C0"),("er2_w","C1"),("sw2_w","C2")]
-for (ntw,co) in [("er2_w","C1"),("sw2_w","C2")]
+for (ntw,co) in [("uk_w","C0"),("er2_w","C1"),("sw_w","C2")]
 	@info ntw
 
 	Lsp = readdlm("ntws_data/"*ntw*"_lap_mat_sp.csv",',')
@@ -21,7 +20,7 @@ for (ntw,co) in [("er2_w","C1"),("sw2_w","C2")]
 	p0 = 0.
 	
 	T = 1000
-	Ttot = 1000
+	Ttot = 2000
 	h = .1
 	
 	nJ = Array{Float64,1}()
