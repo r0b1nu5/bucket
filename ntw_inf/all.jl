@@ -3,7 +3,7 @@ using PyPlot, DelimitedFiles, LinearAlgebra, SparseArrays
 include("kuramoto.jl")
 include("ntw_inf.jl")
 
-ntw = "sw_w"
+ntw = "sw2_w"
 co = "C2"
 
 a0,w0,p0 = readdlm("ntws_data/"*ntw*"_probe.csv",',')
