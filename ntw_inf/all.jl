@@ -3,8 +3,8 @@ using PyPlot, DelimitedFiles, LinearAlgebra, SparseArrays
 include("kuramoto.jl")
 include("ntw_inf.jl")
 
-ntw = "sw2_w"
-co = "C2"
+ntw = "uk_w"
+co = "C0"
 
 a0,w0,p0 = readdlm("ntws_data/"*ntw*"_probe.csv",',')
 @info "a0 = $a0, w0 = $w0, ψ0 = $p0"
@@ -13,7 +13,7 @@ Lsp = readdlm("ntws_data/"*ntw*"_lap_mat_sp.csv",',')
 L = sparse(Lsp[:,1],Lsp[:,2],Lsp[:,3])
 
 T = 1000
-Ttot = 10000
+Ttot = 2000
 h = .1
 ep = 1e-8
 
@@ -22,6 +22,8 @@ t = min(T,round(Int,pi/(2*w0*h)))
 n = size(L)[1]
 
 Ldh = zeros(n,n)
+
+a0 = a0
 
 for i in 1:n
 	@info "i = $i"
@@ -49,10 +51,20 @@ Id = diagm(0 => ones(n))
 figure(33,(5,5))
 PyPlot.plot([minimum(L.*(1 .- Id))-.1,maximum(L.*(1 .- Id))+.1],[minimum(L.*(1 .- Id))-.1,maximum(L.*(1 .- Id))+.1],"--k")
 
+c = 0
 for i in 1:n
+	global c
 	for j in i+1:n
-		figure(33)
-		PyPlot.plot(L[i,j],Lh[i,j],"o",color=co)
+		if abs(Lh[i,j]) < 1e-2
+			c += 1
+			if c < 10
+				figure(33)
+				PyPlot.plot(L[i,j],Lh[i,j],"o",color=co)
+			end
+		else
+			figure(33)
+			PyPlot.plot(L[i,j],Lh[i,j],"o",color=co)
+		end
 	end
 end
 

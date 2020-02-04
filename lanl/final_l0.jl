@@ -1,99 +1,45 @@
 using DelimitedFiles, PyPlot, FFTW, Statistics, LinearAlgebra, JuMP, Ipopt, Distributed
 
 
-
 """
-    run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
+   run_location_large_ntw_l0(Xs::Array{Float64,2}, dt::Float64, i0::Int64, n_ref::Int64=5, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
 
-Identifies dynamics and forcing for a small network, base only on measurements.
+Indentifies dynamics of the system and forcing parameters assuming that the forcing source is at node i0.
 
 _INPUT_:
 `Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
 `dt`: Time step.
-`Df`: Radius of data over which the median of neighboring Fourier modes in computed. 
-`n_period`: Number of period considered in each data chunk.
-`mu`: Initial value of the barrier parameter (in IPOPT).
-`bp`: Initial value of the bound_push parameter (in IPOPT).
-`Zro`: Tolerance for zero.
-
-_OUTPUT_:
-`Lm`: Laplacian matrix normalized by the inertias.
-`dm`: Damping over inertia ratios.
-`a`: Vector of amplitudes of the forcing.
-`f`: Vector of frequencies of the forcing.
-`p`: Vector of phases of the forcing.
-"""
-function run_location_small_ntw(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
-	nn,T = size(Xs)
-	n = Int(nn/2)
-
-	if T%2 == 0
-		Xs = Xs[:,1:end-1]
-		nn,T = size(Xs)
-	end
-	
-	fh,amps = get_fh_fourier(Xs,dt,Df)
-	
-	Ah,Lh,dh = get_Ah_correl(Xs,dt,fh)
-
-	ah = get_ah(Xs,dt,fh)
-
-	Lm,dm,a,f,ps = optim_chunks(Xs,dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
-
-	p = optim_phase(Xs,dt,Lm,dm,a,f)
-
-	AA = sortslices([abs.(a) 1:n],dims=1,rev=true)
-	PP = AA[:,1]./sum(AA[:,1])
-	id1 = Int(AA[1,2])
-	id2 = Int(AA[2,2])
-	id3 = Int(AA[3,2])
-	
-	@info "========================================================================="
-	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(f[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[1],digits=3)*100)%)"
-	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(f[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[2],digits=3)*100)%)"
-	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(f[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[3],digits=3)*100)%)"
-	@info "========================================================================="
-
-	return Lm,dm,a,f,p
-end
-
-"""
-    run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
-
-Identifies dynamics and forcing for a small network, base only on measurements.
-
-_INPUT_:
-`Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
-`dt`: Time step.
+`i0`: Assumed location of the forcing source.
 `n_ref`: Number of nodes to use in the reduced network used in the nonlinear optimization.
-`Df`: Radius of data over which the median of neighboring Fourier modes in computed. 
-`n_period`: Number of period considered in each data chunk.
+`Df`: Radius of data over which the median of neighboring Fourier modes is computed. 
+`n_period`: Number of period considered in each data chunk. 
 `mu`: Initial value of the barrier parameter (in IPOPT).
-`bp`: Initial value of the bound_push parameter (in IPOPT).
+`bp`: Initial value bound_push parameter (in IPOPT).
 `Zro`: Tolerance for zero.
 
 _OUTPUT_:
-`Lm`: Laplacian matrix normalized by the inertias.
+`Lm`: Laplacian matrix normalized by the inertias. 
 `dm`: Damping over inertia ratios.
-`a`: Vector of amplitudes of the forcing.
-`f`: Vector of frequencies of the forcing.
-`p`: Vector of phases of the forcing.
+`a`: Amplitude of the forcing.
+`f`: Frequency of the forcing.
+`p`: Phase of the forcing.
+`obj`: Value of the objective in the final optimization.
 """
-function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=5, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
+function run_location_large_ntw_l0(Xs::Array{Float64,2}, dt = Float64, i0::Int64, n_ref::Int64=5, Df::Int64=10, n_period::Float64=1., mu::Float64=1e-5, bp::Float64=1e-5, Zro::Float64=1e-5)
 	nn,T = size(Xs)
 	n = Int(nn/2)
-	
+
 	if T%2 == 0
 		Xs = Xs[:,1:end-1]
 		nn,T = size(Xs)
 	end
-	
-	fh,amps = get_fh_fourier(Xs,dt,Df)
-	
+
+	fh,amps = get_fh_fourier_l0(Xs[[i0,i0+n],:],dt,i0,Df)
+
 	iids = Int.(sortslices([amps 1:n],dims=1,rev=true)[:,2])
-	ids = [iids[1],]
-	ri = 1
-	while length(ids) < n_ref
+	ids = [iids[i0],]
+	ri = 0
+	while length(ids < n_ref)
 		tryy = true
 		while tryy
 			tryy = false
@@ -105,42 +51,27 @@ function run_location_large_ntw(Xs::Array{Float64,2}, dt::Float64, n_ref::Int64=
 		push!(ids,iids[ri])
 	end
 
-	#ids = Int.(sortslices([amps 1:n],dims=1,rev=true)[1:min(n_ref,n),2])
-
 	Ah,Lh,dh = get_Ah_correl(Xs[[ids;ids.+n],:],dt,fh)
 
-	ah = get_ah(Xs[[ids;ids.+n],:],dt,fh)
-	Lm,dm,a,f,ps = optim_chunks(Xs[[ids;ids.+n],:],dt,Lh,dh,ah,fh,n_period,mu,bp,Zro)
-	AA = sortslices([abs.(a) ids 1:n_ref],dims=1,rev=true)
-	fh = f[Int(AA[1,3])]
-	ff = fh*ones(n)
-	ff[ids] = f
-
-	Ah,Lh,dh = get_Ah_correl(Xs,dt,fh)
+	ah = get_ah_l0(Xs[[i0,i0+n],:],dt,fh)
+	Lm,dm,a,f,ps = optim_chunks_l0(Xs[[ids;ids.+n],:],dt,i0,Lh,dh,ah,fh,n_period,mu,bp,Zro)
 	
-	a,p = optim_all_lin(Xs,dt,Lh,dh,fh,mu,bp)
+	Ah,Lh,dh = get_Ah_correl(Xs,dt,f)
 
-	AA = sortslices([abs.(a) 1:n],dims=1,rev=true)
-	PP = AA[:,1]./sum(AA[:,1])
-	id1 = Int(AA[1,2])
-	id2 = Int(AA[2,2])
-	id3 = Int(AA[3,2])
-	id4 = Int(AA[4,2])
-	id5 = Int(AA[5,2])
+	a,p,obj = optim_all_lin_l0(Xs,dt,Lh,f,mu,bp)
 
-	@info "========================================================================="
-	@info "1. Forcing index: $id1, a=$(round(a[id1],digits=3)), f=$(round(ff[id1],digits=3)), φ=$(round(p[id1]/pi,digits=2))*π,  (confidence: $(round(PP[1],digits=3)*100)%)"
-	@info "2. Forcing index: $id2, a=$(round(a[id2],digits=3)), f=$(round(ff[id2],digits=3)), φ=$(round(p[id2]/pi,digits=2))*π,  (confidence: $(round(PP[2],digits=3)*100)%)"
-	@info "3. Forcing index: $id3, a=$(round(a[id3],digits=3)), f=$(round(ff[id3],digits=3)), φ=$(round(p[id3]/pi,digits=2))*π,  (confidence: $(round(PP[3],digits=3)*100)%)"
-	@info "4. Forcing index: $id4, a=$(round(a[id4],digits=3)), f=$(round(ff[id4],digits=3)), φ=$(round(p[id4]/pi,digits=2))*π,  (confidence: $(round(PP[4],digits=3)*100)%)"
-	@info "5. Forcing index: $id5, a=$(round(a[id5],digits=3)), f=$(round(ff[id5],digits=3)), φ=$(round(p[id5]/pi,digits=2))*π,  (confidence: $(round(PP[5],digits=3)*100)%)"
-	@info "========================================================================="
+	@info "======================================================================="
+	@info "Assuming forcing at node $i0: a=$(round(a,digits=3)), f=$(round(f,digits=3)), φ=$(round(p,digits=2))*π, Objective = $obj."
+	@info "======================================================================="
 
-	return Lh,dh,a,ff,p
+	return Lh,dh,a,f,p,obj
 end
 
+
+# TODO
+
 """
-    get_fh_fourier(Xs::Array{Float64,2}, dt::Float64, Df::Int64=10)
+    get_fh_fourier_l0(Xs::Array{Float64,2}, dt::Float64, i0::Int64, Df::Int64=10)
 
 Estimates the forcings frequency, based on the Fourier Transform of the times series of the phase frequencies. A peak is identified by dividing the value of each Fourier mode by the median value of its 2*Df neighbors.
 
