@@ -70,9 +70,7 @@ function influence_effort_mini_repr(x0::Array{Float64,1}, eps::Float64, n_repr::
 	xx = copy(x)
 
 	o1 = o0
-@info "Mini: computing..."
 	ids = mini_sort(x0, true)
-@info "Mini: computed."
 	while o1 > 0.
 		c = 0
 		while o1 > 0. && c < n
