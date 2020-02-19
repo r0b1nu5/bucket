@@ -3,7 +3,7 @@ using PyPlot
 include("cnoise.jl")
 include("L2B.jl")
 
-function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::Array{Float64,1}, dP0::Float64, tau0::Float64, measured_iter::Int64, max_iter::Int64, eps::Float64=1e-8, h::Float64=.1)
+function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::Array{Float64,1}, dP0::Float64, tau0::Float64, measured_iter::Int64, max_iter::Int64, d_meas::Int64, eps::Float64=1e-8, h::Float64=.1, history::Bool=false)
 	B,w,Bt = L2B(L)
 	W = spdiagm(0 => w)
 
@@ -17,16 +17,21 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 	c = 0
 
 	wiwj = zeros(n,n)
+	
+	dP = randn(n)
+	xi = dP0*dP
 
-	xi = dP0*randn(n)
+	dth = zeros(n)
 
 	while iter < max_iter - measured_iter
 		iter += 1
 		if iter%1000 == 0
 			@info "$iter"
 		end
-
-		xi = [dP0*cnoise(xi[i],tau0) for i in 1:n]
+		
+		dP = [cnoise(dP[i],tau0/h) for i in 1:n]
+		xi = dP0*dP
+#		xi = dP0*randn(n)
 
 		th1 = copy(th2)
 
@@ -38,13 +43,22 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		dth = (k1+2*k2+2*k3+k4)/6
 		th2 = th1 + h*dth
 	end
+	
+	dth0 = copy(dth)
+	ths = Array{Float64,2}(undef,n,0)
+	dths = Array{Float64,2}(undef,n,0)
+	c = 0
+	cm = 0
+
 	while iter < max_iter
 		iter += 1
 		if iter%1000 == 0
 			@info "$iter"
 		end
-
-		xi = [dP0*cnoise(xi[i],tau0) for i in 1:n]
+		
+		dP = [cnoise(dP[i],tau0/h) for i in 1:n]
+		xi = dP0*dP
+#		xi = dP0*randn(n)
 
 		th1 = copy(th2)
 
@@ -56,13 +70,21 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		dth = (k1+2*k2+2*k3+k4)/6
 		th2 = th1 + h*dth
 
-		wiwj += dth*dth'
+		c += 1
+		if c%d_meas == 0
+			cm += 1
+#			wiwj += dth0*dth'
+			wiwj += dth*dth'
+		end
+
+		dth0 = copy(dth)
+		if history
+			ths = [ths th2]
+			dths = [dths dth]
+		end
 	end
 
-#	wiwj ./= measured_iter*dP0^2
-	
-	return wiwj
-#	return (-wiwj + diagm(0 => ones(n)))/tau0
+	return wiwj./cm, cm, ths, dths
 end
 
 

@@ -81,6 +81,8 @@ function kuramoto_white_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Arr
 	else
 		ths = Array{Float64,1}()
 	end
+	
+	c = 0
 
 	while err > eps && iter < max_iter
 		iter += 1
