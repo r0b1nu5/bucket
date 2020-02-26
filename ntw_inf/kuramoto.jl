@@ -236,7 +236,6 @@ function kuramoto_sine(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, t
 			@info "$iter"
 		end
 		
-
 		xi = a0.*sin.(w0.*h.*iter + p0)
 
 		th1 = copy(th2)
