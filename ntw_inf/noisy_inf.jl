@@ -1,4 +1,4 @@
-using PyPlot
+using PyPlot, DelimitedFiles, SparseArrays
 
 include("cnoise.jl")
 include("L2B.jl")
@@ -69,12 +69,14 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 
 		dth = (k1+2*k2+2*k3+k4)/6
 		th2 = th1 + h*dth
+		
+		ddth = dth .- mean(dth)
 
 		c += 1
 		if c%d_meas == 0
 			cm += 1
 #			wiwj += dth0*dth'
-			wiwj += dth*dth'
+			wiwj += ddth*ddth'
 		end
 
 		dth0 = copy(dth)
