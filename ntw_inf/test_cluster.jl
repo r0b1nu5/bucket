@@ -16,17 +16,10 @@ dm = 1
 function test_cluster(L,n,P,th0,dP0,tau0,h,t,T,dm)
 	ti = time()
 
-	x = noise_inf(L,P,th0,dP0,tau0,t,T,dm,1e-8,h,true)
+	x = noise_inf_prerand(L,P,th0,dP0,tau0,t,T,dm,1e-8,h,true)
 
 	return time() - ti
 end
 
-function test_cluster(L,n,P,th0,dP0,tau0,h,t,T,dm)
-	ti = time()
-
-	x = noise_inf(L,P,th0,dP0,tau0,t,T,dm,1e-8,h,true)
-
-	return time() - ti
-end
 
 

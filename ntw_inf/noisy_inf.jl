@@ -90,6 +90,46 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 end
 
 
+function noise_inf_prerand(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::Array{Float64,1}, dP0::Float64, dPs::Array{Float64,2}, eps::Float64=1e-8, h::Float64=.1,history::Bool=false)
+	B,w,Bt = L2B(L)
+	W = spdiagm(0 => w)
+
+	n = length(th0)
+
+	iter = 0
+
+	th1 = copy(th0)
+	th2 = copy(th0)
+
+	c = 0
+
+	wiwj = zeros(n,n)
+	
+	xis = dP0*dPs
+	max_iter = size(dPs)[2]
+
+	dth = zeros(n)
+
+	while iter < max_iter
+		iter += 1
+		if iter%1000 == 0
+			@info "$iter"
+		end
+		
+		xi = xis[:,iter]
+		th1 = copy(th2)
+
+		k1 = P - B*W*sin.(Bt*th1) + xi
+		k2 = P - B*W*sin.(Bt*(th1+h/2*k1)) + xi
+		k3 = P - B*W*sin.(Bt*(th1+h/2*k2)) + xi
+		k4 = P - B*W*sin.(Bt*(th1+h*k3)) + xi
+
+		dth = (k1+2*k2+2*k3+k4)/6
+		th2 = th1 + h*dth
+	end
+	
+	return iter, th2, dth
+end
 
 
 
