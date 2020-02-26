@@ -1,6 +1,6 @@
 include("noisy_inf.jl")
 
-Lsp = readdlm("ntws_data/ntw20_lap_mat_sp.jl")
+Lsp = readdlm("ntws_data/ntw20_lap_mat_sp.csv")
 L = sparse(Lsp[:,1],Lsp[:,2],Lsp[:,3])
 
 n = size(L)[1]
