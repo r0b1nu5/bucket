@@ -49,7 +49,7 @@ function kuramoto_transfo(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{F
 
 	while iter < T
 		iter += 1
-		if iter%=1000 == 0
+		if iter%1000 == 0
 			@info "$iter"
 		end
 
