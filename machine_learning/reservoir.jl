@@ -1,4 +1,4 @@
-using PyPlot,LinearAlgebra
+using PyPlot,LinearAlgebra, DelimitedFiles
 
 
 function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,2}},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64,beta::Float64=.01)
@@ -15,8 +15,8 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 	@info "Computing optimal post-treatment..."
 	rb = sum(rt,dims=2)./T
 	sb = sum(st,dims=2)./T
-	
-	dR = rt[:,2:end] - repeat(rb,1,T)
+
+	dR = rt[:,1:end] - repeat(rb,1,T)
 	dS = st - repeat(sb,1,T)
 	
 	Wout = dS*transpose(dR)*inv(dR*transpose(dR) + beta*diagm(0 => ones(size(A)[1])))
@@ -47,10 +47,23 @@ function reservoir_tanh(r0::Array{Float64,1},us::Array{Float64,2},A::Array{Float
 	
 	rs = copy(r0)
 	for t in 1:T
+		if t%1000 == 0
+			@info "$t/$T"
+			writedlm("data1/rs_$(t).csv",rs,',')
+			rs = rs[:,end]
+		end
+
 		rs = [rs ((1-a)*rs[:,end] + a*tanh.(A*rs[:,end] + Win*us[:,t] .+ xi))]
 	end
+
+	RS = Array{Float64,2}(undef,length(r0),0)
+	for t in 1000:1000:T
+		RS = [RS readdlm("data1/rs_$(t).csv",',')[:,2:end]]
+		rm("data1/rs_$(t).csv")
+	end
+	RS = [RS rs[:,2:end]]
 	
-	return rs
+	return RS
 end
 
 #= 
