@@ -2,9 +2,9 @@ using DelimitedFiles,PyPlot,Statistics
 
 include("reservoir.jl")
 
-T_train = 3000
+T_train = 30
 T_simu = 200 
-res = 50
+res = 5
 
 #x = readdlm("test/lorentz_100000.csv",',')
 
@@ -18,7 +18,7 @@ Win = Win_gen(1,N,sig)
 a = 1.
 xi = 1.
 beta = .01
-T0 = 20000
+T0 = 200
 
 ut = x[[1,],T0.+res*(1:T_train)]
 mut = mean(ut)
