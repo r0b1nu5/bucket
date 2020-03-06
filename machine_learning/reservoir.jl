@@ -1,7 +1,7 @@
 using PyPlot,LinearAlgebra, DelimitedFiles
 
 
-function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,2}},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64,beta::Float64=.01)
+function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,2}},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64,dT::Int64=1,beta::Float64=.01)
 	ut = training_data[1]
 	st = training_data[2]
 	
@@ -13,13 +13,13 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 #	rt = rt1(reservoir_tanh(r0,ut,A,Win,a,xi))
 	
 	@info "Computing optimal post-treatment..."
-	rb = sum(rt,dims=2)./T
-	sb = sum(st,dims=2)./T
+	rb = sum(rt[:,1:dT:T],dims=2)./length(1:dT:T)
+	sb = sum(st[:,1:dT:T],dims=2)./length(1:dT:T)
 
-	dR = rt[:,1:end] - repeat(rb,1,T)
-	dS = st - repeat(sb,1,T)
+	dR = rt[:,1:dT:T] - repeat(rb,1,length(1:dT:T))
+	dS = st[:,1:dT:T] - repeat(sb,1,length(1:dT:T))
 	
-	Wout = dS*transpose(dR)*inv(dR*transpose(dR) + beta*diagm(0 => ones(size(A)[1])))
+	Wout = dS*transpose(dR)*inv(Symmetric(dR*transpose(dR) + beta*diagm(0 => ones(size(A)[1]))))
 	c = -vec(Wout*rb - sb)
 	
 	return Wout,c,rt
