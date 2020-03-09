@@ -1,4 +1,4 @@
-function lorentz(x0::Array{Float64,1},n_iter::Int64=1000,h::Float64=.01,sig::Float64=10.,beta::Float64=8/3,rho::Float64=28.)
+function lorenz(x0::Array{Float64,1},n_iter::Int64=1000,h::Float64=.01,sig::Float64=10.,beta::Float64=8/3,rho::Float64=28.)
 	xs = Array{Float64,2}(undef,3,0)
 	xs = [xs x0]
 	

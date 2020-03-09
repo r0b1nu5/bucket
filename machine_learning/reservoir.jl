@@ -8,18 +8,24 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 	T = size(ut)[2]
 	
 	@info "Computing reservoir states..."
-	r0 = rand(size(A)[1])
+	N = size(A)[1]
+	r0 = rand(N)
 	rt = reservoir_tanh(r0,ut,A,Win,a,xi)
 #	rt = rt1(reservoir_tanh(r0,ut,A,Win,a,xi))
 	
 	@info "Computing optimal post-treatment..."
 	rb = sum(rt[:,1:dT:T],dims=2)./length(1:dT:T)
+	rb2 = sum(rt[:,1:dT:T].^2,dims=2)./length(1:dT:T)
 	sb = sum(st[:,1:dT:T],dims=2)./length(1:dT:T)
 
 	dR = rt[:,1:dT:T] - repeat(rb,1,length(1:dT:T))
+	dRR = [rt[1:Int(N/2),1:dT:T] - repeat(rb[1:Int(N/2)],1,length(1:dT:T)); rt[Int(N/2)+1:N,1:dT:T].^2 - repeat(rb2[Int(N/2)+1:N],1,length(1:dT:T))]
 	dS = st[:,1:dT:T] - repeat(sb,1,length(1:dT:T))
-	
-	Wout = dS*transpose(dR)*inv(Symmetric(dR*transpose(dR) + beta*diagm(0 => ones(size(A)[1]))))
+
+	Wout = dS*transpose(dR)*inv(Symmetric(dR*transpose(dR) + beta*diagm(0 => ones(N))))
+#	Wout12 = dS[1:2,:]*transpose(dR)*inv(Symmetric(dR*transpose(dR) + beta*diagm(0 => ones(size(A)[1]))))
+#	Wout3 = dS[[3,],:]*transpose(dRR)*inv(Symmetric(dRR*transpose(dRR) + beta*diagm(0 => ones(size(A)[1]))))
+#	Wout = [Wout12;Wout3]
 	c = -vec(Wout*rb - sb)
 	
 	return Wout,c,rt
@@ -28,10 +34,10 @@ end
 function reservoir_prediction(us::Array{Float64,2},Wout::Array{Float64,2},c::Array{Float64,1},r0::Array{Float64,1},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64)
 	T = size(us)[2]
 
-	@info "Predicting trajectory..."	
+#	@info "Predicting trajectory..."	
 	rs = reservoir_tanh(r0,us,A,Win,a,xi)
 #	rs = rt1(reservoir_tanh(r0,us,A,Win,a,xi))
-	ss = Wout*rs[:,2:end] + repeat(c,1,T)
+	ss = Wout*rs + repeat(c,1,T)
 	
 	return ss,rs
 end
