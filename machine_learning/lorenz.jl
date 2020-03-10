@@ -10,21 +10,13 @@ function lorenz(x0::Array{Float64,1},n_iter::Int64=1000,h::Float64=.01,sig::Floa
 			@info "$i/$n_iter"
 		end
 		
-		x,y,z = xs[:,end]
+		xyz = xs[:,end]
 		
-		k1 = [sig*(y-x), 
-		      x*(rho-z)-y, 
-		      x*y-beta*z]
-		k2 = [sig*((y+h/2*k1[2])-(x+h/2*k1[1])), 
-		      (x+h/2*k1[1])*(rho-(z+h/2*k1[3]))-(y+h/2*k1[2]), 
-		      (x+h/2*k1[1])*(y+h/2*k1[2])-beta*(z+h/2*k1[3])]
-		k3 = [sig*((y+h/2*k2[2])-(x+h/2*k2[1])), 
-		      (x+h/2*k2[1])*(rho-(z+h/2*k2[3]))-(y+h/2*k2[2]), 
-		      (x+h/2*k2[1])*(y+h/2*k2[2])-beta*(z+h/2*k2[3])]
-		k4 = [sig*((y+h*k3[2])-(x+h*k3[1])), 
-		      (x+h*k3[1])*(rho-(z+h*k3[3]))-(y+h*k3[2]), 
-		      (x+h*k3[1])*(y+h*k3[2])-beta*(z+h*k3[3])]
-		
+		k1 = f_lorenz(xyz,sig,beta,rho)
+		k2 = f_lorenz(xyz + h/2*k1,sig,beta,rho)
+		k3 = f_lorenz(xyz + h/2*k2,sig,beta,rho)
+		k4 = f_lorenz(xyz + h*k3,sig,beta,rho)
+	
 		dx = (k1+2*k2+2*k3+k4)/6
 		
 		xs = [xs xs[:,end]+h*dx]
@@ -33,7 +25,11 @@ function lorenz(x0::Array{Float64,1},n_iter::Int64=1000,h::Float64=.01,sig::Floa
 	return xs
 end
 
+function f_lorenz(xyz::Array{Float64,1},s::Float64=10.,b::Float64=8/3,r::Float64=28.)
+	x,y,z = xyz
 
+	return [s*(x - y), x*(r - z) - y, x*y - b*z]
+end
 
 
 

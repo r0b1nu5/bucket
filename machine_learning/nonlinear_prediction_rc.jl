@@ -1,10 +1,11 @@
 using DelimitedFiles, PyPlot
 
 include("lorenz.jl")
+include("henon-heiles.jl")
 include("reservoir.jl")
 
-model = "lorenz"
-new_reservoir = false
+model = "hh"
+new_reservoir = true
 
 if model == "lorenz"
 # #=
@@ -13,16 +14,24 @@ if model == "lorenz"
 	xs3 = readdlm("data1/xs3.csv",',')
 # =#
 	n = 3
+elseif model == "hh"
+#	xs1 = readdlm("data1/hh_xys0_chaos.csv",',')
+#	xs1 = readdlm("data1/hh_xys0_periodic.csv",',')
+#	xs1 = readdlm("data1/hh_xys1_periodic.csv",',')
+	
+	xs1 = xys2
+
+	n = 4
 end
 
 T = 4001
-Tp = 200
-DT = 0
+Tp = 1000
+DT = 1000
 
 if new_reservoir
 	N = 1000
 	m = 10*N
-	rho = 1.
+	rho = 1.5
 	A = A_gen(N,m,rho)
 	dT = 1
 
@@ -55,14 +64,10 @@ for t in 1:Tp
 end
 
 figure()
-subplot(3,1,1)
-PyPlot.plot(T+DT:(T+DT+Tp),xs1[1,T+DT:(T+DT+Tp)])
-PyPlot.plot(T+DT:(T+DT+Tp),ss[1,:],"--")
-subplot(3,1,2)
-PyPlot.plot(T+DT:(T+DT+Tp),xs1[2,T+DT:(T+DT+Tp)])
-PyPlot.plot(T+DT:(T+DT+Tp),ss[2,:],"--")
-subplot(3,1,3)
-PyPlot.plot(T+DT:(T+DT+Tp),xs1[3,T+DT:(T+DT+Tp)])
-PyPlot.plot(T+DT:(T+DT+Tp),ss[3,:],"--")
+for i in 1:n
+	subplot(n,1,i)
+	PyPlot.plot(T+DT:(T+DT+Tp),xs1[i,T+DT:(T+DT+Tp)])
+	PyPlot.plot(T+DT:(T+DT+Tp),ss[i,:],"--")
+end
 
 

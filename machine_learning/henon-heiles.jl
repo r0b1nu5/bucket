@@ -2,7 +2,7 @@ using PyPlot, DelimitedFiles
 
 # State of the system in encoded as xy = (x,\dot{x},y,\dot{y})
 
-function hh(xy0::Array{Float64,1},n_iter::Int64=1000,h::Float64=.001,lambda::Float64=1.,do_the_plot::Bool=false)
+function hh(xy0::Array{Float64,1},do_the_plot::Bool=false,n_iter::Int64=1000,h::Float64=.01,lambda::Float64=1.)
 	x0,xd0,y0,yd0 = xy0
 
 	E = E_hh(xy0,lambda)
@@ -44,7 +44,7 @@ function hh(xy0::Array{Float64,1},n_iter::Int64=1000,h::Float64=.001,lambda::Flo
 	XYs = Array{Float64,2}(undef,4,0)
 	for i in 1:c
 		xy = readdlm("data1/xys$i.csv",',')
-		XYs = [XYs xy]
+		XYs = [XYs xy[:,1:end-1]]
 	end
 	XYs = [XYs xys]
 	xys = XYs
