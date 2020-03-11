@@ -1,4 +1,4 @@
-using PyPlot, LinearAlgebra, DelimitedFiles
+using PyPlot, LinearAlgebra, DelimitedFiles, Statistics
 
 include("../L2B.jl")
 

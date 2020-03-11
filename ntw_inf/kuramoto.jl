@@ -155,7 +155,7 @@ function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Floa
 			@info "$iter"
 		end
 
-		xi = a0.*cos.(w0.*h.*iter + p0)
+		xi = a0.*sin.(w0.*h.*iter + p0)
 
 		th1 = copy(th2)
 		
@@ -186,6 +186,7 @@ function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Floa
 	for i in 1:c
 		Ths = [Ths readdlm("data1/ths_$i.csv",',')]
 	end
+	Ths = [Ths ths]
 
 	return Ths
 end
