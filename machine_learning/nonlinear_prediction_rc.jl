@@ -4,8 +4,8 @@ include("lorenz.jl")
 include("henon-heiles.jl")
 include("reservoir.jl")
 
-model = "hh"
-new_reservoir = true
+model = "lorenz"
+new_reservoir = false
 
 if model == "lorenz"
 # #=
@@ -24,9 +24,14 @@ elseif model == "hh"
 	n = 4
 end
 
-T = 4001
-Tp = 1000
-DT = 1000
+#=
+T0 = 1 # starting time
+Tt = 8001 # training time
+=#
+Tp = 1000 # time between training and prediction
+DT = 1000 # prediction time
+
+thr = 1e-1
 
 if new_reservoir
 	N = 1000
@@ -43,16 +48,16 @@ if new_reservoir
 	beta = .01
 end
 
-Wout,c,r = reservoir_training((xs1[:,1:T-1],xs1[:,2:T]),A,Win,a,xi,dT,beta)
+Wout,c,r = reservoir_training((xs1[:,T0:T0+Tt-1],xs1[:,T0+1:T0+Tt]),A,Win,a,xi,dT,beta)
 
-if T > 0
-	rr = reservoir_tanh(r[:,end],xs1[:,T:T+DT],A,Win,a,xi)
+if DT > 0
+	rr = reservoir_tanh(r[:,end],xs1[:,T0+Tt:T0+Tt+DT],A,Win,a,xi)
 else
 	rr = r
 end
 
-ss = Array{Float64,2}(undef,length(xs1[:,T]),0)
-ss = [ss xs1[:,T+DT]]
+ss = Array{Float64,2}(undef,length(xs1[:,T0+Tt]),0)
+ss = [ss xs1[:,T0+Tt+DT]]
 rs = Array{Float64,2}(undef,length(r[:,end]),0)
 rs = [rs rr[:,end]]
 
@@ -63,11 +68,34 @@ for t in 1:Tp
 	rs = [rs r]
 end
 
-figure()
+mas = maximum(xs1[:,(T0+Tt+DT):(T0+Tt+DT+Tp)],dims=2) 
+mis = minimum(xs1[:,(T0+Tt+DT):(T0+Tt+DT+Tp)],dims=2)
+amps = mas - mis
+diff = xs1[:,(T0+Tt+DT):(T0+Tt+DT+Tp)] - ss
+errs = abs.(diff)./repeat(amps,1,Tp+1)
+merr = [maximum(errs[:,1:i]) for i in 1:Tp+1]
+
+Tb = minimum(setdiff((1:Tp+1).*(merr .> thr),[0,]))
+
+#=
+fignum = rand(1000:9999)
 for i in 1:n
-	subplot(n,1,i)
-	PyPlot.plot(T+DT:(T+DT+Tp),xs1[i,T+DT:(T+DT+Tp)])
-	PyPlot.plot(T+DT:(T+DT+Tp),ss[i,:],"--")
+	figure(fignum)
+	subplot(n+1,1,i)
+	PyPlot.plot((T0+Tt+DT):(T0+Tt+DT+Tp),xs1[i,(T0+Tt+DT):(T0+Tt+DT+Tp)])
+	PyPlot.plot((T0+Tt+DT):(T0+Tt+DT+Tp),ss[i,:],"--")
+	PyPlot.plot([T0+Tt+DT+Tb,T0+Tt+DT+Tb],[minimum(xs1[i,(T0+Tt+DT):(T0+Tt+DT+Tp)]),maximum(xs1[i,(T0+Tt+DT):(T0+Tt+DT+Tp)])],"--k")
+	axis([T0+Tt+DT-100,T0+Tt+DT+Tp+100,mis[i],mas[i]])
+	subplot(n+1,1,n+1)
+	PyPlot.semilogy((T0+Tt+DT):(T0+Tt+DT+Tp),errs[i,:],color="C$(i+1)")
 end
+figure(fignum)
+subplot(n+1,1,n+1)
+PyPlot.semilogy((T0+Tt+DT):(T0+Tt+DT+Tp),merr,"--k")
+PyPlot.plot([T0+Tt+DT+Tb,T0+Tt+DT+Tb],[1e-3,1.1],"--k")
+axis([T0+Tt+DT-100,T0+Tt+DT+Tp+100,1e-3,1.1])
+=#
+
+
 
 

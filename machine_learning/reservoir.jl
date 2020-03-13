@@ -113,7 +113,7 @@ function reservoir_training3(training_data::Tuple{Array{Float64,2},Array{Float64
 	Wout_xdi = st[xdi,:]*transpose(rt)*inv(Symmetric(rt*transpose(rt) + beta*diagm(0 => ones(size(A)[1]))))
 	Wout_idx = st[[idx,],:]*transpose(rrt)*inv(Symmetric(rrt*transpose(rrt) + beta*diagm(0 => ones(size(A)[1]))))
 	Wout = [Wout_xdi[1:idx-1,:] zeros(idx-1,N);
-		Wout_idx[[1,],1:Int(N/2)] zeros(1,N) Wout_idx[[1,],,1+Int(N/2):N];
+		Wout_idx[[1,],1:Int(N/2)] zeros(1,N) Wout_idx[[1,],1+Int(N/2):N];
 		Wout_xdi[idx+1:n,:] zeros(n-idx,N)]
 	
 	return Wout,rt
