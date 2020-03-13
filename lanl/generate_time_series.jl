@@ -46,7 +46,7 @@ function generate_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64
 end
 
 
-function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, forcing::Tuple{Array{Float64,1}, Array{Float64,1}, Array{Float64,1}}, T::Int64, dt::Float64, sig::Array{Float64,1},verb::Bool = false)
+function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, forcing::Tuple{Array{Float64,1}, Array{Float64,1}, Array{Float64,1}}, T::Int64, dt::Float64, sig::Array{Float64,1},save::Bool = true)
 	n = size(L)[1]
 	script_id = rand(1:1000)
 	
@@ -70,9 +70,6 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 	surcount = -1
 	
 	while t < T
-		if verb
-			@info "t/T = $(t)/$(T)"
-		end
 		surcount += 1
 		subcount = 0
 		while subcount < 1000 && t < T
@@ -96,8 +93,10 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 		Xf = [Xf X]
 		rm("data/temp_$(script_id)_$(i).csv")
 	end
-
-	writedlm("data/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv",Xf,',')
+	
+	if save
+		writedlm("data/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv",Xf,',')
+	end
 # =#
 		
  #=	

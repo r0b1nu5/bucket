@@ -1,11 +1,13 @@
+include("new_run.jl")
+
 # Runs the algorithm n_run times for a forcing located at each node of the network.
 
 using Distributed
 
-include("generate_time_series.jl")
-include("final.jl")
+@everywhere include("generate_time_series.jl")
+@everywhere include("final.jl")
 
-go = false
+go = true
 if go
 	@info "Computation will run."
 else
@@ -38,7 +40,7 @@ for i in 1:n_run
 	end
 end
 
-function plts_success_rate(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64,Int64})
+@everywhere function plts_success_rate(tup::Tuple{String,Array{Float64,2},Array{Float64,1},Array{Float64,1},Float64,Float64,Float64,Int64,Float64,Array{Float64,1},Int64,Int64})
 	ntw,L,m,d,a0,f0,p0,T,dt,sig,node,run = tup
 	
 	n = length(m)
@@ -55,7 +57,7 @@ function plts_success_rate(tup::Tuple{String,Array{Float64,2},Array{Float64,1},A
 	Mi = diagm(0 => 1 ./ m)
 	Lm = Mi*L
 	
-	Xs = generate_forced_time_series(ntw*"_node$(node)_run$(run)", L, m, d, (a,f,p), T, dt, sig)
+	Xs = generate_forced_time_series(ntw*"_node$(node)_run$(run)", L, m, d, (a,f,p), T, dt, sig, false)
 #	Xs = load_data(ntw, i)
 	
 	if n < 10
