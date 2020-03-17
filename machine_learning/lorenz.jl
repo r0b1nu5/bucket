@@ -28,7 +28,7 @@ end
 function f_lorenz(xyz::Array{Float64,1},s::Float64=10.,b::Float64=8/3,r::Float64=28.)
 	x,y,z = xyz
 
-	return [s*(x - y), x*(r - z) - y, x*y - b*z]
+	return [s*(y - x), x*(r - z) - y, x*y - b*z]
 end
 
 

@@ -1,4 +1,4 @@
-Tts = Array(101:10:4001)
+Tts = Array(101:100:4001)
 N = 1000
 
 for i in 1:length(Tts)
@@ -15,7 +15,7 @@ Tt = 4001
 T0 = 8002 - Tt
 Ns = [100,200,500,1000,1500,2000]
 
-for i in 1:lenght(Ns)
+for i in 1:length(Ns)
 	global N = Ns[i]
 	include("nonlinear_prediction_rc.jl")
 	writedlm("data1/Wout$(i)_vs_N.csv",Wout,',')

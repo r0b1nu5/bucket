@@ -9,9 +9,10 @@ new_reservoir = false
 
 if model == "lorenz"
 # #=
-	xs1 = readdlm("data1/xs1.csv",',')
-	xs2 = readdlm("data1/xs2.csv",',')
-	xs3 = readdlm("data1/xs3.csv",',')
+#	xs1 = readdlm("data1/xs1.csv",',')
+#	xs2 = readdlm("data1/xs2.csv",',')
+#	xs3 = readdlm("data1/xs3.csv",',')
+	xs1 = readdlm("data1/xs4.csv",',')
 # =#
 	n = 3
 elseif model == "hh"
@@ -33,19 +34,20 @@ DT = 1000 # prediction time
 
 thr = 1e-1
 
+N = 1000
+m = 10*N
+rho = 1.5
+dT = 1
+
+sig = 1.
+
+a = 1.
+xi = 1.
+beta = .01
+
 if new_reservoir
-	N = 1000
-	m = 10*N
-	rho = 1.5
 	A = A_gen(N,m,rho)
-	dT = 1
-
-	sig = 1.
 	Win = Win_gen(n,N,sig)
-
-	a = 1.
-	xi = 1.
-	beta = .01
 end
 
 Wout,c,r = reservoir_training((xs1[:,T0:T0+Tt-1],xs1[:,T0+1:T0+Tt]),A,Win,a,xi,dT,beta)
@@ -77,7 +79,7 @@ merr = [maximum(errs[:,1:i]) for i in 1:Tp+1]
 
 Tb = minimum(setdiff((1:Tp+1).*(merr .> thr),[0,]))
 
-#=
+ #=
 fignum = rand(1000:9999)
 for i in 1:n
 	figure(fignum)
@@ -94,7 +96,7 @@ subplot(n+1,1,n+1)
 PyPlot.semilogy((T0+Tt+DT):(T0+Tt+DT+Tp),merr,"--k")
 PyPlot.plot([T0+Tt+DT+Tb,T0+Tt+DT+Tb],[1e-3,1.1],"--k")
 axis([T0+Tt+DT-100,T0+Tt+DT+Tp+100,1e-3,1.1])
-=#
+# =#
 
 
 
