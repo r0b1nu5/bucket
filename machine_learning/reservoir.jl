@@ -38,6 +38,26 @@ function reservoir_prediction(us::Array{Float64,2},Wout::Array{Float64,2},c::Arr
 	return ss,rs
 end
 
+function reservoir_prediction_self(s0::Array{Float64,1}, r0::Array{Float64,1}, Tp::Int64, Wout::Array{Float64,2}, c::Array{Float64,1}, A::Array{Float64,2}, Win::Array{Float64,2}, a::Float64, xi::Float64)
+	n = length(s0)
+	N = length(r0)
+
+	ss = Array{Float64,2}(undef,n,0)
+	ss = [ss s0]
+	rs = Array{Float64,2}(undef,N,0)
+	rs = [rs r0]
+
+	for t in 1:Tp
+		r = reservoir_tanh(rs[:,end],ss[:,[size(ss)[2],]],A,Win,a,xi)
+		s = Wout*r + c
+		rs = [rs r]
+		ss = [ss s]
+	end
+
+	return ss,rs
+end
+
+
 # Uses the square of the reservoir components N/2:N for the prediction of the idx-th component of the system.
 
 function reservoir_training2(training_data::Tuple{Array{Float64,2},Array{Float64,2}},idx::Int64,A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64,dT::Int64=1,beta::Float64=.01)
@@ -266,5 +286,20 @@ function Win_gen(n::Int64,N::Int64,sig::Float64)
 	return Win
 end
 
+
+function breaktime(thr::Float64, xs::Array{Float64,2}, ss::Array{Float64,2})
+	Tp = size(ss)[2]
+
+	mas = maximum(xs,dims=2)
+	mis = minimum(xs,dims=2)
+	amps = mas - mis
+	diff = xs[:,1:Tp] - ss
+	errs = abs.(diff)./repeat(amps,1,Tp)
+	merr = [maximum(errs[:,1:i]) for i in 1:Tp]
+
+	Tb = minimum([1;setdiff((2:Tp).*(merr[2:end] .> thr),[0,])])
+
+	return Tb
+end
 
 
