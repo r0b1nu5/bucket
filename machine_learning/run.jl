@@ -5,6 +5,8 @@ xs = readdlm("data1/xs4.csv",',')
 Tp = 1000 # predition time
 DT = 1000 # time between training and prediction
 
+N = 2000 # reservoir size
+
 n = 3
 m = 10*N
 rho = 1.5
@@ -14,13 +16,14 @@ xi = 1.
 dT = 1
 beta = .01
 
+thr = .1
+
 A = A_gen(N,m,rho)
 Win = Win_gen(n,N,sig)
 
 # Compute Wout and breaktime with respect to training time.
-# #=
+ #=
 Tts = Array(101:100:4001) # training times
-N = 2000 # reservoir size
 
 for i in 1:length(Tts)
 	global Tt = Tts[i]
@@ -44,13 +47,13 @@ for i in 1:length(Tts)
 end
 # =#
 
-Tt = 4001
+Tt = 1001
 T0 = 8002 - Tt
 Ns = Array(200:200:4000)
 
 # #=
-for k in 1:100
 for i in 1:length(Ns)
+for k in 1:50
 	global N = Ns[i]
 	m = 10*N
 	
