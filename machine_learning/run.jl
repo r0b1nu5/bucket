@@ -22,7 +22,7 @@ A = A_gen(N,m,rho)
 Win = Win_gen(n,N,sig)
 
 # Compute Wout and breaktime with respect to training time.
- #=
+# #=
 Tts = Array(101:100:4001) # training times
 
 for i in 1:length(Tts)

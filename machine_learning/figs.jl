@@ -1,8 +1,8 @@
-using PyPlot, LinearAlgebra, DelimitedFiles
+using PyPlot, LinearAlgebra, DelimitedFiles, Statistics
 
 Tts = Array(101:100:4001)
-T0 = 4001 
-Ns = Array(100:100:2000)
+T0 = 1001 
+Ns = Array(200:200:4000)
 N0 = 1000
 
 Tbs = Array{Float64,1}()
@@ -11,8 +11,8 @@ svds = Array{Float64,2}(undef,n,0)
 
 for i in 1:length(Tts)
 	global Tbs,Wouts,svds
-	push!(Tbs,readdlm("data1/Tb$(i)_vs_Tt.csv",',')[1])
-	push!(Wouts,readdlm("data1/Wout$(i)_vs_Tt.csv",','))
+	push!(Tbs,readdlm("data1/Tb$(i)_vs_Tt_N2000.csv",',')[1])
+	push!(Wouts,readdlm("data1/Wout$(i)_vs_Tt_N2000.csv",','))
 	svds = [svds svd(Wouts[end]).S]
 end
 
@@ -48,9 +48,15 @@ Tbs = Array{Float64,1}()
 Wouts = Array{Array{Float64,2},1}()
 
 for i in 1:length(Ns)
-	global Tbs,Wouts
-	push!(Tbs,readdlm("data1/Tb$(i)_vs_N.csv",',')[1])
-	push!(Wouts,readdlm("data1/Wout$(i)_vs_N.csv",','))
+	Tb = Array{Float64,1}()
+#	Wout = Array{Array{Float64,2},1}()
+	for k in 1:50
+		push!(Tb,readdlm("data1/Tb$(k).$(i)_vs_N_Tt1001.csv",',')[1])
+#		push!(Wout,readdlm("data1/Wout$(k).$(i)_vs_N_Tt1001.csv",','))
+	end
+	global Tbs
+	push!(Tbs,mean(Tb))
+#	push!(Wouts,sum(Wout)./50)
 end
 
 figure(369)

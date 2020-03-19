@@ -296,8 +296,13 @@ function breaktime(thr::Float64, xs::Array{Float64,2}, ss::Array{Float64,2})
 	diff = xs[:,1:Tp] - ss
 	errs = abs.(diff)./repeat(amps,1,Tp)
 	merr = [maximum(errs[:,1:i]) for i in 1:Tp]
-
-	Tb = minimum([1;setdiff((2:Tp).*(merr[2:end] .> thr),[0,])])
+	
+	test = (1:Tp).*(merr[1:end] .> thr)
+	if maximum(test) > 0
+		Tb = minimum(setdiff(test,,[0,]))
+	else
+		Tb = 1
+	end
 
 	return Tb
 end
