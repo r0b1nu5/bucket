@@ -144,7 +144,7 @@ function sir(N::Int64, R0s_data::Tuple{Float64,Float64,Int64,Int64,Int64}, d::Fl
 
 	while reti > 0
 		reti -= 1
-		R0 = R0s[1]
+		R0 = R0i
 
 		ris1 = copy(ris2)
 

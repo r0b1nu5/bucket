@@ -31,7 +31,7 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		
 		dP = [cnoise(dP[i],tau0/h) for i in 1:n]
 		xi = dP0*dP
-#		xi = dP0*randn(n)
+		xi = dP0*randn(n)
 
 		th1 = copy(th2)
 
@@ -58,7 +58,7 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		
 		dP = [cnoise(dP[i],tau0/h) for i in 1:n]
 		xi = dP0*dP
-#		xi = dP0*randn(n)
+		xi = dP0*randn(n)
 
 		th1 = copy(th2)
 
@@ -75,7 +75,7 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		c += 1
 		if c%d_meas == 0
 			cm += 1
-#			wiwj += dth0*dth'
+#			wiwj += dth*dth'
 			wiwj += ddth*ddth'
 		end
 

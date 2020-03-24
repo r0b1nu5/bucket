@@ -5,6 +5,8 @@ T0 = 1001
 Ns = Array(200:200:4000)
 N0 = 1000
 
+n = 3
+
 Tbs = Array{Float64,1}()
 Wouts = Array{Array{Float64,2},1}()
 svds = Array{Float64,2}(undef,n,0)
@@ -44,24 +46,32 @@ xlabel("Training time [iterations]")
 ylabel("|μ(T+100) - μ(T)|/|μ(T)|")
 legend()
 
-Tbs = Array{Float64,1}()
-Wouts = Array{Array{Float64,2},1}()
+Tb00 = Array{Float64,1}()
+Tb25 = Array{Float64,1}()
+Tb50 = Array{Float64,1}()
+Tb75 = Array{Float64,1}()
+Tb100 = Array{Float64,1}()
 
 for i in 1:length(Ns)
 	Tb = Array{Float64,1}()
-#	Wout = Array{Array{Float64,2},1}()
 	for k in 1:50
 		push!(Tb,readdlm("data1/Tb$(k).$(i)_vs_N_Tt1001.csv",',')[1])
-#		push!(Wout,readdlm("data1/Wout$(k).$(i)_vs_N_Tt1001.csv",','))
 	end
-	global Tbs
-	push!(Tbs,mean(Tb))
-#	push!(Wouts,sum(Wout)./50)
+	global Tb00,Tb25,Tb50,Tb75,Tb100
+	push!(Tb00,minimum(Tb))
+	push!(Tb25,quantile(Tb,.25))
+	push!(Tb50,median(Tb))
+	push!(Tb75,quantile(Tb,.75))
+	push!(Tb100,maximum(Tb))
 end
 
 figure(369)
 
-PyPlot.plot(Ns,Tbs,"-o")
+PyPlot.plot(Ns,Tb00,"x",color="C0")
+PyPlot.plot(Ns,Tb100,"x",color="C0")
+PyPlot.plot(Ns,Tb25,"--",color="C0")
+PyPlot.plot(Ns,Tb75,"--",color="C0")
+PyPlot.plot(Ns,Tb50,"-o",color="C0")
 xlabel("Reservoir size")
 ylabel("Breaktime [iterations]")
 title("Lorenz system, training time Tt = 4001 [iterations]")

@@ -16,14 +16,14 @@ xi = 1.
 dT = 1
 beta = .01
 
-thr = .1
+thrs = [.05,.02,.01]
 
 A = A_gen(N,m,rho)
 Win = Win_gen(n,N,sig)
 
 # Compute Wout and breaktime with respect to training time.
 # #=
-Tts = Array(101:100:4001) # training times
+Tts = Array(101:100:2001) # training times
 
 for i in 1:length(Tts)
 	global Tt = Tts[i]
@@ -39,9 +39,10 @@ for i in 1:length(Tts)
 
 	ss,rs = reservoir_prediction_self(xs[:,T0+Tt+DT],rr[:,end],Tp,Wout,c,A,Win,a,xi)
 
-
-	Tb = breaktime(thr,xs[:,T0+Tt+DT:end],ss)
-	writedlm("data1/Tb$(i)_vs_Tt_N$N.csv",Tb,',')
+	for thr in thrs
+		Tb = breaktime(thr,xs[:,T0+Tt+DT:end],ss)
+		writedlm("data1/Tb$(i)_vs_Tt_N$(N)_thr$(thr).csv",Tb,',')
+	end
 
 	@info "Tt = $Tt, i = $i done."
 end
@@ -49,7 +50,7 @@ end
 
 Tt = 1001
 T0 = 8002 - Tt
-Ns = Array(200:200:4000)
+Ns = Array(200:200:2000)
 
 # #=
 for i in 1:length(Ns)
@@ -71,8 +72,10 @@ for k in 1:50
 
 	ss,rs = reservoir_prediction_self(xs[:,T0+Tt+DT],rr[:,end],Tp,Wout,c,A,Win,a,xi)
 
-	Tb = breaktime(thr,xs[:,T0+Tt+DT:end],ss)
-	writedlm("data1/Tb$(k).$(i)_vs_N_Tt$(Tt).csv",Tb,',')
+	for thr in thrs
+		Tb = breaktime(thr,xs[:,T0+Tt+DT:end],ss)
+		writedlm("data1/Tb$(k).$(i)_vs_N_Tt$(Tt)_thr$(thr).csv",Tb,',')
+	end
 	
 	@info "N = $N, i = $i done."
 end
