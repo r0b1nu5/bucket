@@ -1,6 +1,6 @@
 include("reservoir.jl")
 
-xs = readdlm("data1/xs4.csv",',')
+xs = readdlm("data1/xs1.csv",',')
 
 Tp = 1000 # predition time
 DT = 1000 # time between training and prediction
@@ -16,14 +16,14 @@ xi = 1.
 dT = 1
 beta = .01
 
-thrs = [.05,.02,.01]
+thrs = [.1,.05,.02]
 
 A = A_gen(N,m,rho)
 Win = Win_gen(n,N,sig)
 
 # Compute Wout and breaktime with respect to training time.
 # #=
-Tts = Array(101:100:2001) # training times
+Tts = Array(51:50:2001) # training times
 
 for i in 1:length(Tts)
 	global Tt = Tts[i]
