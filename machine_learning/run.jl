@@ -1,11 +1,14 @@
 include("reservoir.jl")
 
-xs = readdlm("data1/xs1.csv",',')
+xs_file = 1
+writedlm("data1/last_run_xs_file.csv",xs_file,',')
+
+xs = readdlm("data1/xs$(xs_file).csv",',')
 
 Tp = 1000 # predition time
 DT = 1000 # time between training and prediction
 
-N = 2000 # reservoir size
+N = N0 # reservoir size
 
 n = 3
 m = 10*N
@@ -21,9 +24,13 @@ thrs = [.1,.05,.02]
 A = A_gen(N,m,rho)
 Win = Win_gen(n,N,sig)
 
+ #=
 # Compute Wout and breaktime with respect to training time.
-# #=
-Tts = Array(51:50:2001) # training times
+
+Tts = Array(51:50:2001)
+N0 = 2000
+writedlm("data1/last_run_Tts.csv",Tts,',')
+writedlm("data1/last_run_N0.csv",N0,',')
 
 for i in 1:length(Tts)
 	global Tt = Tts[i]
@@ -48,11 +55,17 @@ for i in 1:length(Tts)
 end
 # =#
 
-Tt = 1001
-T0 = 8002 - Tt
-Ns = Array(200:200:2000)
-
 # #=
+# Compute breaktime with respect to reservoir size.
+
+Ns = Array(2200:200:4000)
+Tt0 = 1001
+writedlm("data1/last_run_Ns.csv",Ns,',')
+writedlm("data1/last_run_Tt0.csv",Tt0,',')
+
+Tt = Tt0
+T0 = 8002 - Tt
+
 for i in 1:length(Ns)
 for k in 1:50
 	global N = Ns[i]

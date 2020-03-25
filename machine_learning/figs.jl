@@ -26,9 +26,9 @@ end
 figure(246)
 
 subplot(3,1,1)
-PyPlot.plot(Tts,Tbs5,"-o",label="$(thrs[1]*100)% deviation")
+PyPlot.plot(Tts,Tbs1,"-o",label="$(thrs[1]*100)% deviation")
 PyPlot.plot(Tts,Tbs2,"-o",label="$(thrs[2]*100)% deviation")
-PyPlot.plot(Tts,Tbs1,"-o",label="$(thrs[3]*100)% deviation")
+PyPlot.plot(Tts,Tbs3,"-o",label="$(thrs[3]*100)% deviation")
 xlabel("Training time [iterations]")
 ylabel("Breaktime [iterations]")
 title("Lorenz system, reservoir size N = $N0")
@@ -36,7 +36,7 @@ legend()
 
 for d in [1,2,5,10]
 	subplot(3,1,2)
-	PyPlot.semilogy(Tts[1:end-d],norm.(Wouts[1+d:end]-Wouts[1:end-d])./norm.(Wouts[1:end-d]),"-o",label="δT = $(100*d)")
+	PyPlot.semilogy(Tts[1:end-d],norm.(Wouts[1+d:end]-Wouts[1:end-d])./norm.(Wouts[1:end-d]),"-o",label="δT = $(50*d)")
 end
 
 subplot(3,1,2)
