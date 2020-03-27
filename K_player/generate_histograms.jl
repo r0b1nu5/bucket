@@ -14,8 +14,8 @@ precision = 1e-4
 #js = [used_journals[parse(Int,ARGS[1])],]
 #js = [used_journals[jn],]
 #js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
-#js = journals_short
-js = ["prl", "prd"]
+js = journals_short
+#js = ["prl", "prd"]
 #js = ["prl_reduced", "prd_reduced"]
 
 ################ DO / DON'T LIST #######################################

@@ -6,8 +6,8 @@ ref_year = "00"
 #ref_year = "80"
 
 #journal = "science"
-#journal = "prl"
-journal = "lancet"
+journal = "prl"
+#journal = "lancet"
 
 yi = 99
 ny = 10

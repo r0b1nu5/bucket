@@ -34,9 +34,9 @@ function new_mle_plc(x::Array{Int64,2})
 	mi = minimum(x[1,:])
 	ma = maximum(x[1,:])
 	
-	side = 2.99
-	atemp = 3.
-	ltemp = 3.
+	side = 1.99
+	atemp = 2.
+	ltemp = 2.
 	
 	L = zeros(100,100)
 	
