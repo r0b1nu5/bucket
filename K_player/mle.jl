@@ -1,5 +1,5 @@
 # We fit the data with a Maximum-Likelihood Estimator (MLE)
-
+include("distributions.jl")
 
 function new_mle_pl(x::Array{Int64,2})
 	mi = minimum(x[1,:])
@@ -16,7 +16,7 @@ function new_mle_pl(x::Array{Int64,2})
 	
 	while error > 1e-5
 		ss = LinRange(l,u,100)
-		L = -n*log.([zeta(si,mi) for si in ss]) - ss.*sum_data
+		L = n*log.([C_pl(si,mi,ma) for si in ss]) - ss.*sum_data
 		id = findmax(L)[2]
 		l = max(l,ss[max(id-1,1)])
 		u = min(u,ss[min(id+1,100)])
@@ -30,6 +30,10 @@ end
 
 
 function new_mle_plc(x::Array{Int64,2})
+	n = sum(x[2,:])
+	mi = minimum(x[1,:])
+	ma = maximum(x[1,:])
+	
 	side = 2.99
 	atemp = 3.
 	ltemp = 3.
@@ -42,7 +46,7 @@ function new_mle_plc(x::Array{Int64,2})
 		
 		for i in 1:100
 			for j in 1:100
-				L[i,j] = -sum(x[2,:])*log(real(polylog(as[i],Complex(exp(-ls[j]))))) - sum(x[2,:].*(as[i].*log.(x[1,:]) + ls[j].*x[1,:]))
+				L[i,j] = n*log(C_plc(as[i],ls[j],mi,ma)) - sum(x[2,:].*(as[i].*log.(x[1,:]) + ls[j].*x[1,:]))
 			end
 		end
 		
@@ -54,10 +58,13 @@ function new_mle_plc(x::Array{Int64,2})
 	return atemp,ltemp
 end
 
-function new_mle_yule(x::Array{Int64,2}, xmin::Int64)
+function new_mle_yule(x::Array{Int64,2})
+	n = sum(x[2,:])
+	mi = minimum(x[1,:])
+	ma = maximum(x[1,:])
+
 	side = 4.99
 	atemp = 6.
-	n = sum(x[2,:])
 	
 	L = zeros(100)
 	
@@ -65,7 +72,7 @@ function new_mle_yule(x::Array{Int64,2}, xmin::Int64)
 		as = LinRange(max(atemp-side,1+side/100),atemp+side,100)
 		
 		for i in 1:100
-			L[i] = -n*log(1-(as[i]-1)*sum(beta.(1:(xmin-1),as[i]))) + n*log(as[i]-1) + sum(x[2,:].*log.(beta.(x[1,:],as[i])))
+			L[i] = n*log(C_ys(as[i],mi,ma)) + n*log(as[i]-1) + sum(x[2,:].*log.(beta.(x[1,:],as[i])))
 		end
 		
 		atemp = as[findmax(L)[2]]
@@ -77,9 +84,12 @@ end
 
 
 function new_mle_exp(x::Array{Int64,2}, xmin::Int64)
+	n = sum(x[2,:])
+	mi = minimum(x[1,:])
+	ma = maximum(x[1,:])
+
 	side = 4.99
 	btemp = 5.
-	n = sum(x[2,:])
 
 	L = zeros(100)
 
@@ -87,7 +97,7 @@ function new_mle_exp(x::Array{Int64,2}, xmin::Int64)
 		bs = LinRange(max(btemp-side,side/100),btemp+side,100)
 		
 		for i in 1:100
-			L[i] = n*(log(1-exp(-bs[i])) + bs[i]*xmin) - bs[i]*sum(x[2,:].*x[1,:])
+			L[i] = n*log(C_exp(bs[i],mi,ma)) - bs[i]*sum(x[2,:].*x[1,:])
 		end
 
 		btemp = bs[findmax(L)[2]]

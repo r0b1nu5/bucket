@@ -1,6 +1,7 @@
 using SpecialFunctions
 
 include("mle.jl")
+include("distributions.jl")
 
 # Our goodness-of-fit test follows the recommandation of Clauset09. Namely, using the fitted paramters for each law, we generate some synthetic data and then compare the real data to the synthetic data. Our p-value is the proportion of synthetic data whose Kolmogorov-Smirnov statistic is larger than the one of our real data. If p > 0.1, we assume that the distribution if good.
 
@@ -10,15 +11,17 @@ include("mle.jl")
 function new_gof_pl(j::String, x::Array{Int64,2}, s0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
 	KS0 = new_KS_pl(x,s0,C0)
 	n_data = sum(x[2,:])
+	mi = minimum(x[1,:])
+	ma = maximum(x[1,:])
 	
 	KSs = Array{Float64,1}()
 	for i in 1:n_sample
-#		if (i%100 == 0) || i == n_sample
+		if (i%100 == 0) || i == n_sample
 			@info "$(now()) -- "*j*", GoF power law: $i/$n_sample"
-#		end
-		z = new_rand_pl(rand(n_data), s0, C0, mi)
+		end
+		z = new_rand_pl(rand(n_data), s0, C0, mi)[:,1:end-1]
 		s = new_mle_pl(z)
-		C = 1/zeta(s,mi)
+		C = C_pl(s,mi,ma)
 		KS = new_KS_pl(z,s,C)
 		push!(KSs,KS)
 	end
@@ -35,17 +38,19 @@ end
 function new_gof_plc(j::String, x::Array{Int64,2}, a0::Float64, l0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
 	KS0 = new_KS_plc(x,a0,l0,C0)
 	n_data = sum(x[2,:])
+	mi = minimum(x[1,:])
+	ma = maximum(x[1,:])
 	
 	KSs = Array{Float64,1}()
 	for i in 1:n_sample
-#		if (i%100 == 0) || i == n_sample
+		if (i%100 == 0) || i == n_sample
 			@info "$(now()) -- "*j*", GoF power law with cutoff: $i/$n_sample"
-#		end
+		end
 # We should do as commented, but due to computation time, we truncate the tail of our synthetic data. Thus the MLE of the parameters is quite bad (at least for small data set, whereas the synthetic data follow correctly our real data set and its fit. We then compute KS with respect to the estimated parameter a0 and s0. In this case it will give more accurate results.
 # #= 
 		z = new_rand_plc(rand(n_data), a0, l0, C0, mi, 0.)
 		a,l = new_mle_plc(z)
-		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
+		C = C_plc(a,l,mi,ma)
 		KS = new_KS_plc(z,a,l,C)
 # =#
  #=
@@ -67,15 +72,17 @@ end
 function new_gof_yule(j::String, x::Array{Int64,2}, a0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
 	KS0 = new_KS_yule(x,a0,C0)
 	n_data = sum(x[2,:])
+	mi = minimum(x[1,:])
+	ma = maximum(x[1,:])
 	
 	KSs = Array{Float64,1}()
 	for i in 1:n_sample
-#		if (i%100 == 0) || i == n_sample
+		if (i%100 == 0) || i == n_sample
 			@info "$(now()) -- "*j*", GoF Yule law: $i/$n_sample"
-#		end
+		end
 		z = new_rand_yule(rand(n_data), a0, C0, mi)
-		a = new_mle_yule(z,mi)
-		C = 1/(1-(a-1)*sum(beta.(1:(mi-1),a)))
+		a = new_mle_yule(z)
+		C = C_ys(a,mi,ma)
 		KS = new_KS_yule(z,a,C)
 		push!(KSs,KS)
 	end
@@ -93,6 +100,9 @@ end
 function new_gof_exp(j::String, x::Array{Int64,2}, b0::Float64, C0::Float64, mi::Int64, n_sample::Int64=2500)
 	KS0 = new_KS_exp(x,b0,C0)
 	n_data = sum(x[2,:])
+	mi = minimum(x[1,:])
+	ma = maximum(x[1,:])
+	
 	KSs = Array{Float64,1}()
 	for i in 1:n_sample
 		if (i%100 == 0) || i == n_sample
@@ -100,7 +110,7 @@ function new_gof_exp(j::String, x::Array{Int64,2}, b0::Float64, C0::Float64, mi:
 		end
 		z = new_rand_exp(rand(n_data), b0, C0, mi)
 		b = new_mle_exp(z,mi)
-		C = (1 - exp(-b))/exp(-b*mi)
+		C = C_exp(b,mi,ma)
 		KS = new_KS_exp(z,b,C)
 		push!(KSs,KS)
 	end
@@ -253,7 +263,7 @@ end
 
 # Returns the histogram, takes too long to generate the data. The error in the tail of the CDF is eps.
 
-function new_rand_pl(yy::Array{Float64,1}, s::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-4)
+function new_rand_pl(yy::Array{Float64,1}, s::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-6)
 	x = 0.
 	n = Int(mi - 1)
 	
@@ -264,7 +274,7 @@ function new_rand_pl(yy::Array{Float64,1}, s::Float64, C::Float64, mi::Int64 = 1
 	
 	id = 0
 	
-	while (ly - id)*(1 - C*x) > eps
+	while (1 - id/ly)*(1 - C*x) > eps
 		while y[id+1] > x 
 			n += 1
 			x += n^(-s)

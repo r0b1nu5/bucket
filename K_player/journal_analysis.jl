@@ -4,12 +4,13 @@ include("journals.jl")
 include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
+include("distributions.jl")
 
 tups = Array{Tuple{String,Int64,Bool,Bool,Bool,Bool,Bool,Bool,Int64},1}()
 
 for j in journals_short
 	for id in 1:25
-		push!(tups,(j,100,true,false,true,false,false,false,id))
+		push!(tups,(j,100,true,true,true,true,false,false,id))
 	end
 end
 
@@ -56,7 +57,7 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,B
 
 # ============= mle =====================================
 		s = new_mle_pl(num)
-		C = 1/zeta(s,mi)
+		C = C_pl(s,mi,ma)
 
 # ============= goodness-of-fit =========================
 		p_pl = new_gof_pl(j,num,s,C,mi,number_sample)
@@ -77,7 +78,7 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,B
 
 # =========== mle ==========================================
 		a,l = new_mle_plc(num)
-		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
+		C = C_plc(a,l,mi,ma)
 
 # =========== goodness-of-fit =============================
 		p_plc = new_gof_plc(j,num,a,l,C,mi,number_sample)
@@ -95,8 +96,8 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,B
 	if yule
 		@info("$(now()) -- Yule distribution...")
 # =========== mle ==========================================
-		al = new_mle_yule(num,mi)
-		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
+		al = new_mle_yule(num)
+		C = C_ys(al,mi,ma)
 
 # =========== goodness-of-fit =============================
 		p_yule = new_gof_yule(j,num,al,C,mi,number_sample)
@@ -115,7 +116,8 @@ function journal_analysis_parallel(tup::Tuple{String,Int64,Bool,Bool,Bool,Bool,B
 		@info "$(now()) -- Exponential distribution..."
 # =========== mle ==========================================
 		b = new_mle_exp(num,mi)
-		C = (1 - exp(-b))/exp(-b*mi)
+		C = C_exp(b,mi,ma)
+#		C = (1 - exp(-b))/exp(-b*mi)
 # =========== goodness-of-fit =============================
 		p_exp = new_gof_exp(j,num,b,C,mi,number_sample)
 		
