@@ -263,7 +263,7 @@ end
 
 # Returns the histogram, takes too long to generate the data. The error in the tail of the CDF is eps.
 
-function new_rand_pl(yy::Array{Float64,1}, s::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-5)
+function new_rand_pl(yy::Array{Float64,1}, s::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-6)
 	x = 0.
 	n = Int(mi - 1)
 	
