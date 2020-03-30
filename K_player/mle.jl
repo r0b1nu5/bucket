@@ -72,7 +72,7 @@ function new_mle_yule(x::Array{Int64,2})
 		as = LinRange(max(atemp-side,1+side/100),atemp+side,100)
 		
 		for i in 1:100
-			L[i] = n*log(C_ys(as[i],mi,ma)) + n*log(as[i]-1) + sum(x[2,:].*log.(beta.(x[1,:],as[i])))
+			L[i] = n*log(C_ys(as[i],mi,ma)) + n*log(as[i]-1) + sum(x[2,:].*log.(beta.(Float64.(x[1,:]),Float64.(as[i]))))
 		end
 		
 		atemp = as[findmax(L)[2]]
