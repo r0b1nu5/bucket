@@ -9,7 +9,7 @@ include("distributions.jl")
 tups = Array{Tuple{String,Int64,Bool,Bool,Bool,Bool,Bool,Bool,Int64},1}()
 
 journals_short = ["prl","prd"]
-journals_short = ["prd",]
+journals_short = ["prl",]
 
 for j in journals_short
 	for id in 26:50
