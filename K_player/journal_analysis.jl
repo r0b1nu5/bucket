@@ -12,7 +12,7 @@ journals_short = ["prl","prd"]
 journals_short = ["prd",]
 
 for j in journals_short
-	for id in 1:25
+	for id in 26:50
 		push!(tups,(j,100,true,false,false,true,false,false,id))
 	end
 end
