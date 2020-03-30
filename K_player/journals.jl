@@ -13,13 +13,14 @@ journals_short = ["nature",
 	"energy",
 	"chaos",#"chaos_91-99","chaos_00-08","chaos_09-17",
 	"siam",
-	"ann_math",
+	"ann_math"]
 #
-	"prl",#"prl_58-77","prl_78-97","prl_98-17",
+#	"prl",#"prl_58-77","prl_78-97","prl_98-17",
 # =#
+#journals_short = ["prl",]
 #journals_short = ["prd",]
 #
-# #=
+ #=
 	"prd",
 	"bmj",
 	"food_chem_tox",

@@ -75,7 +75,7 @@ for j in js
 		s = new_mle_pl(num)
 		C = C_pl(s,mi,ma)
 		z = z_pl(s,mi,ma)
-		PyPlot.plot(mi:ma,z,"--k",label="pl: s = $(round(s; digits=3))",linewidth=1)
+		PyPlot.plot(mi:ma,z,"--k",label="pl: s = $(round(s; digits=3))",linewidth=1.5)
 		
 		Hs = sum(1.0./((mi:ma).^s))
 		max_k = ceil(Int64,(sum(num[2,:])/Hs)^(1/s))
@@ -87,7 +87,7 @@ for j in js
 #		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
 		zz = z_plc(a,l,mi,ma)
 #		zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
-		PyPlot.plot(mi:ma,zz,"-.k",label="plc: a = $(round(a; digits=3)), l = $(round(l; digits=3))",linewidth=1)
+		PyPlot.plot(mi:ma,zz,"-.k",label="plc: a = $(round(a; digits=3)), l = $(round(l; digits=3))",linewidth=1.5)
 		
 # ============ yule-simon ===============================
 		al = new_mle_yule(num)
@@ -95,7 +95,7 @@ for j in js
 #		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
 		zzzz = z_ys(al,mi,ma)
 #		zzzz = C*(al-1)*beta.(mi:ma,al)
-		PyPlot.plot(mi:ma,zzzz,":k",label="yule: al = $(round(al; digits=3))",linewidth=1)
+		PyPlot.plot(mi:ma,zzzz,":k",label="yule: al = $(round(al; digits=3))",linewidth=1.5)
 		
 # ============ exponential ===============================
 		b = new_mle_exp(num,mi)
@@ -103,7 +103,7 @@ for j in js
 #		C = (1 - exp(-b))/exp(-b*mi)
 		z = z_exp(b,mi,ma)
 #		z = C * exp.(-b*(mi:ma))
-		PyPlot.plot(mi:ma,z,"--k",label="exp: b = $(round(b; digits=3))",linewidth=1)
+		PyPlot.plot(mi:ma,z,"--k",label="exp: b = $(round(b; digits=3))",linewidth=1.5)
 #=
 # ============ poisson ===============================
 		m = new_mle_poisson(num,mi)
