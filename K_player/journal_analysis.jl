@@ -8,8 +8,10 @@ include("distributions.jl")
 
 tups = Array{Tuple{String,Int64,Bool,Bool,Bool,Bool,Bool,Bool,Int64},1}()
 
+journals_short = ["prl","prd"]
+
 for j in journals_short
-	for id in 26:50
+	for id in 1:25
 		push!(tups,(j,100,true,false,false,true,false,false,id))
 	end
 end
