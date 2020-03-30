@@ -323,7 +323,7 @@ function new_rand_plc(yy::Array{Float64,1}, a::Float64, l::Float64, C::Float64, 
 end
 
 
-function new_rand_yule(yy::Array{Float64,1}, a::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-4)
+function new_rand_yule(yy::Array{Float64,1}, a::Float64, C::Float64, mi::Int64 = 1, eps::Float64 = 1e-6)
 	x = 0.
 	n = Int(mi - 1)
 	
@@ -334,7 +334,7 @@ function new_rand_yule(yy::Array{Float64,1}, a::Float64, C::Float64, mi::Int64 =
 	
 	id = 0
 	
-	while (ly - id)*(1 - C*x) > eps
+	while (1 - id/ly)*(1 - C*x) > eps
 		while y[id+1] > x
 			n += 1
 			x += (a-1)*beta(Float64.(n),Float64.(a))
