@@ -4,6 +4,8 @@ include("journals.jl")
 include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
+include("distributions.jl")
+
 
 number_sample = 2500
 precision = 1e-4
@@ -13,7 +15,8 @@ precision = 1e-4
 #js = [used_journals[jn],]
 #js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
 js = journals_short
-js = ["prl", "prd"]
+#js = ["prl", "prd"]
+#js = ["prl_reduced", "prd_reduced"]
 
 ################ DO / DON'T LIST #######################################
 plots = true
@@ -51,6 +54,7 @@ for j in js
 	@info("$(now()) -- Collecting data: $j")
 	if j == "prl_reduced" || j == "prd_reduced"
 		num = Int.(readdlm("data/"*j*"_parsed.csv",','))
+		j = j[1:3]
 	else
 		num = Int.(readdlm("data/"*j*"_parsed.csv",','))
 	end
@@ -69,29 +73,36 @@ for j in js
 		end
 # ============ power law ===============================
 		s = new_mle_pl(num)
-		C = 1/zeta(s,mi)
-		Hs = sum(1.0./((mi:ma).^s))
-		z = C * ((mi:ma).^(-s))
+		C = C_pl(s,mi,ma)
+		z = z_pl(s,mi,ma)
 		PyPlot.plot(mi:ma,z,"--k",label="pl: s = $(round(s; digits=3))",linewidth=1)
+		
+		Hs = sum(1.0./((mi:ma).^s))
 		max_k = ceil(Int64,(sum(num[2,:])/Hs)^(1/s))
 		PyPlot.plot([max_k,max_k],[.5/sum(num[2,:]),maximum(z)*sum(num[2,:])*2],"--k",linewidth=1)
 		
 # ============ power law with cutoff ===============================
 		a,l = new_mle_plc(num)
-		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
-		zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
+		C = C_plc(a,l,mi,ma)
+#		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
+		zz = z_plc(a,l,mi,ma)
+#		zz = C .* (mi:ma).^(-a) .* exp.(-l.*(mi:ma))
 		PyPlot.plot(mi:ma,zz,"-.k",label="plc: a = $(round(a; digits=3)), l = $(round(l; digits=3))",linewidth=1)
 		
 # ============ yule-simon ===============================
-		al = new_mle_yule(num,mi)
-		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
-		zzzz = C*(al-1)*beta.(mi:ma,al)
+		al = new_mle_yule(num)
+		C = C_ys(al,mi,ma)
+#		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
+		zzzz = z_ys(al,mi,ma)
+#		zzzz = C*(al-1)*beta.(mi:ma,al)
 		PyPlot.plot(mi:ma,zzzz,":k",label="yule: al = $(round(al; digits=3))",linewidth=1)
 		
 # ============ exponential ===============================
 		b = new_mle_exp(num,mi)
-		C = (1 - exp(-b))/exp(-b*mi)
-		z = C * exp.(-b*(mi:ma))
+		C = C_exp(b,mi,ma)
+#		C = (1 - exp(-b))/exp(-b*mi)
+		z = z_exp(b,mi,ma)
+#		z = C * exp.(-b*(mi:ma))
 		PyPlot.plot(mi:ma,z,"--k",label="exp: b = $(round(b; digits=3))",linewidth=1)
 
 #=
@@ -118,7 +129,8 @@ for j in js
 
 # ============= mle =====================================
 		s = new_mle_pl(num)
-		C = 1/zeta(s,mi)
+		C = C_pl(s,mi,ma)
+#		C = 1/zeta(s,mi)
 
 # ============= goodness-of-fit =========================
 		p_pl = new_gof_pl(j,num,s,C,mi,number_sample)
@@ -137,7 +149,8 @@ for j in js
 
 # =========== mle ==========================================
 		a,l = new_mle_plc(num)
-		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
+		C = C_plc(a,l,mi,ma)
+#		C = 1/(real(polylog(a,Complex(exp(-l)))) - sum((1:mi-1).^(-a).*exp.(-l*(1:mi-1))))
 
 # =========== goodness-of-fit =============================
 		p_plc = new_gof_plc(j,num,a,l,C,mi,number_sample)
@@ -154,7 +167,8 @@ for j in js
 		@info("$(now()) -- Yule distribution...")
 # =========== mle ==========================================
 		al = new_mle_yule(num,mi)
-		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
+		C = C_ys(al,mi,ma)
+#		C = 1/(1-(al-1)*sum(beta.(1:(mi-1),al)))
 
 # =========== goodness-of-fit =============================
 		p_yule = new_gof_yule(j,num,al,C,mi,number_sample)
