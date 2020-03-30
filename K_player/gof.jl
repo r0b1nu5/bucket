@@ -200,14 +200,14 @@ function new_KS_yule(x::Array{Int64,2}, a::Float64, C::Float64)
 	ma = x[1,end]
 	n = sum(x[2,:])
 	
-	cdf = [C*(a-1)*beta(mi,a),]
+	cdf = [C*(a-1)*beta(Float64.(mi),Float64.(a)),]
 	ecdf = [x[2,1]/n,]
 	count = 2
 	for i in (mi+1):ma
 		if i == x[1,count]
 			count += 1
 		end
-		push!(cdf, cdf[end] + C*(a-1)*beta(i,a))
+		push!(cdf, cdf[end] + C*(a-1)*beta(Float64.(i),Float64.(a)))
 		push!(ecdf, sum(x[2,1:count-1])/n)
 	end
 	
@@ -637,7 +637,7 @@ function gof_yule(j::String,x::Array{Float64,1},a0::Float64,C0::Float64,mi::Floa
 		end
 		z = rand_yule(rand(n_data),a0,C0,mi)
 		a = mle_yule(z,mi)
-		C = 1/(1-(a-1)*sum(beta.(1:(mi-1),a)))
+		C = 1/(1-(a-1)*sum(beta.(Float64.(1:(mi-1)),Float64.(a))))
 		KS = KS_yule(z,a,C)
 		push!(KSs,KS)
 	end
@@ -714,10 +714,10 @@ function KS_yule(x::Array{Float64,1},a::Float64,C::Float64)
 	ma = maximum(x)
 	n = length(x)
 	
-	cdf = [C*(a-1)*beta(mi,a),]
+	cdf = [C*(a-1)*beta(Float64.(mi),Float64.(a)),]
 	ecdf = [sum(x .<= mi)/n,]
 	for i in (mi+1):ma
-		push!(cdf,cdf[end]+C*(a-1)*beta(i,a))
+		push!(cdf,cdf[end]+C*(a-1)*beta(Float64.(i),Float64.(a)))
 		push!(ecdf,sum(x .<= i)/n)
 	end
 	
@@ -783,7 +783,7 @@ function rand_yule(y::Array{Float64,1},a::Float64,C::Float64,mi::Float64=1.)
 	while x < maximum(y) #&& x < 1 - 1/(2500*100)
 		ns += todo .* ones(length(y))
 		n += 1
-		x += C*(a-1)*beta(n,a)
+		x += C*(a-1)*beta(Float64.(n),Float64.(a))
 		todo = [y[i] > x for i in 1:length(y)]
 	end
 	
