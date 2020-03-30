@@ -9,7 +9,7 @@ tups = Array{Tuple{String,Int64,Bool,Bool,Bool,Bool,Bool,Bool,Int64},1}()
 
 for j in journals_short
 	for id in 1:25
-		push!(tups,(j,100,true,false,true,false,false,false,id))
+		push!(tups,(j,100,true,true,false,true,false,false,id))
 	end
 end
 

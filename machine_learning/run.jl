@@ -57,8 +57,8 @@ end
 # #=
 # Compute breaktime with respect to reservoir size.
 
-Ns = Array(200:200:2000)
-Tt0 = 1001
+Ns = Array(50:200:5000)
+Tt0 = 2001
 writedlm("data1/last_run_Ns.csv",Ns,',')
 writedlm("data1/last_run_Tt0.csv",Tt0,',')
 
@@ -66,7 +66,7 @@ Tt = Tt0
 T0 = 8002 - Tt
 
 for i in 1:length(Ns)
-for k in 1:50
+for k in 1:500
 	global N = Ns[i]
 	m = 10*N
 	
