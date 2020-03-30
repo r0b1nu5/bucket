@@ -63,8 +63,8 @@ function new_mle_yule(x::Array{Int64,2})
 	mi = minimum(x[1,:])
 	ma = maximum(x[1,:])
 
-	side = 4.99
-	atemp = 6.
+	side = 1.99
+	atemp = 2.
 	
 	L = zeros(100)
 	
