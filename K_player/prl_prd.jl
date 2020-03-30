@@ -47,8 +47,9 @@ for i in keys(prl)
 end
 
 matri = permutedims(matri)
+ccmap = "plasma"
 
-matshow(matri)
+matshow(matri,cmap=ccmap)
 colorbar()
 xticks((0:5:39),(mi_prl:5:ma_prl))
 xlabel("PRL: # of articles")
@@ -56,11 +57,12 @@ yticks((0:5:37),(mi_prd:5:ma_prd))
 ylabel("PRD: # of articles")
 title("# of authors")
 
-matshow(max.(zeros(size(matri)),log.(matri)))
+matshow(max.(zeros(size(matri)),log10.(matri.+.25)),cmap=ccmap)
+#matshow(log10.(matri),cmap=ccmap)
 colorbar()
-xticks((0:5:39),(mi_prl:5:ma_prl))
+xticks((2:5:39),(mi_prl+2:5:ma_prl))
 xlabel("PRL: # of articles")
-yticks((0:5:37),(mi_prd:5:ma_prd))
+yticks((3:5:38),(mi_prd+3:5:ma_prd))
 ylabel("PRD: # of articles")
 title("log(# of authors)")
 
