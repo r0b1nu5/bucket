@@ -15,7 +15,7 @@ precision = 1e-4
 #js = [used_journals[jn],]
 #js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
 js = journals_short
-js = ["prl", "prd"]
+#js = ["prl", "prd"]
 #js = ["prl_reduced", "prd_reduced"]
 
 ################ DO / DON'T LIST #######################################
@@ -98,17 +98,12 @@ for j in js
 		PyPlot.plot(mi:ma,zzzz,":k",label="yule: al = $(round(al; digits=3))",linewidth=1)
 		
 # ============ exponential ===============================
-@info "Start"
 		b = new_mle_exp(num,mi)
-@info "b done"
 		C = C_exp(b,mi,ma)
-@info "C done"
 #		C = (1 - exp(-b))/exp(-b*mi)
 		z = z_exp(b,mi,ma)
-@info "z done"
 #		z = C * exp.(-b*(mi:ma))
 		PyPlot.plot(mi:ma,z,"--k",label="exp: b = $(round(b; digits=3))",linewidth=1)
-@info "plot done"
 #=
 # ============ poisson ===============================
 		m = new_mle_poisson(num,mi)

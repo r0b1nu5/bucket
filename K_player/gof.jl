@@ -337,7 +337,7 @@ function new_rand_yule(yy::Array{Float64,1}, a::Float64, C::Float64, mi::Int64 =
 	while (ly - id)*(1 - C*x) > eps
 		while y[id+1] > x
 			n += 1
-			x += (a-1)*beta(n,a)
+			x += (a-1)*beta(Float64.(n),Float64.(a))
 		end
 		di = sum(y[id+1:end] .< x)
 		id += di

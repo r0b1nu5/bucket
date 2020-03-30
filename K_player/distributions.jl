@@ -42,7 +42,7 @@ function C_exp(b::Float64, mi::Int64, ma::Int64)
 end
 
 # Value of the exponential distribution
-function z_exp(s::Float64, mi::Int64, ma::Int64)
+function z_exp(b::Float64, mi::Int64, ma::Int64)
 	C = C_exp(b,mi,ma)
 
 	return C * exp.(-b*(mi:ma))
