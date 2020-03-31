@@ -1,7 +1,6 @@
 using DelimitedFiles
 
 include("journals.jl")
-journals_short = ["prl",]
 
 distri = ["pl","plc","yule"]
 
