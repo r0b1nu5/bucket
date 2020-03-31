@@ -1,7 +1,7 @@
 using DelimitedFiles
 
 include("journals.jl")
-#journals_shorts = ["prd",]
+journals_short = ["prl",]
 
 distri = ["pl","plc","yule"]
 
