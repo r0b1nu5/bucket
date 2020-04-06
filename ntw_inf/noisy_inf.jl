@@ -31,7 +31,6 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		
 		dP = [cnoise(dP[i],tau0/h) for i in 1:n]
 		xi = dP0*dP
-		xi = dP0*randn(n)
 
 		th1 = copy(th2)
 
@@ -49,6 +48,7 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 	dths = Array{Float64,2}(undef,n,0)
 	c = 0
 	cm = 0
+	cc = 0
 
 	while iter < max_iter
 		iter += 1
@@ -58,7 +58,6 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		
 		dP = [cnoise(dP[i],tau0/h) for i in 1:n]
 		xi = dP0*dP
-		xi = dP0*randn(n)
 
 		th1 = copy(th2)
 
@@ -73,18 +72,41 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		ddth = dth .- mean(dth)
 
 		c += 1
-		if c%d_meas == 0
-			cm += 1
+#		if c%d_meas == 0
+#			cm += 1
 #			wiwj += dth*dth'
-			wiwj += ddth*ddth'
-		end
+#			wiwj += ddth*ddth'
+#		end
 
 		dth0 = copy(dth)
 		if history
-			ths = [ths th2]
-			dths = [dths dth]
+			if iter%1000 == 0
+				cc += 1
+				writedlm("data2/ths_temp_$cc.csv",ths,',')
+				writedlm("data2/dths_temp_$cc.csv",dths,',')
+				ths = Array{Float64,2}(undef,n,0)
+				ths = [ths th2]
+				dths = Array{Float64,2}(undef,n,0)
+				dths = [dths dth]
+			else
+				ths = [ths th2]
+				dths = [dths dth]
+			end
 		end
 	end
+	
+	if history
+		Ths = Array{Float64,2}(undef,n,0)
+		dThs = Array{Float64,2}(undef,n,0)
+		for i in 1:cc
+			Ths = [Ths readdlm("data2/ths_temp_$i.csv",',')]
+			dThs = [dThs readdlm("data2/dths_temp_$i.csv",',')]
+		end
+		ths = Ths
+		dths = dThs
+	end
+
+
 
 	return wiwj./cm, cm, ths, dths
 end
