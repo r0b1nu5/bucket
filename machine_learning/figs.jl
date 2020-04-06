@@ -1,5 +1,7 @@
 using PyPlot, LinearAlgebra, DelimitedFiles, Statistics
 
+include("../my_lin_reg.jl")
+
  #=
 Tts = Array(51:50:2001)
 T0 = 1001 
@@ -68,8 +70,10 @@ legend()
 
  ##= 
 
-Ns = Int.(vec(readdlm("data1/last_run_Ns.csv",',')))
-T0 = Int(readdlm("data1/last_run_Tt0.csv",',')[1])
+#Ns = Int.(vec(readdlm("data1/last_run_Ns.csv",',')))
+Ns = Int.(vec(readdlm("data_cluster/last_run_Ns.csv",',')))
+#T0 = Int(readdlm("data1/last_run_Tt0.csv",',')[1])
+T0 = Int(readdlm("data_cluster/last_run_Tt0.csv",',')[1])
 
 Tbs00 = Array{Array{Float64,1},1}()
 Tbs25 = Array{Array{Float64,1},1}()
@@ -87,8 +91,9 @@ for j in 1:length(thrs)
 	Tb100 = Array{Float64,1}()
 	for i in 1:length(Ns)
 		Tb = Array{Float64,1}()
-		for k in 1:50
-			push!(Tb,readdlm("data1/Tb$(k).$(i)_vs_N_Tt$(T0)_thr$(thr).csv",',')[1])
+		for k in 1:500
+#			push!(Tb,readdlm("data1/Tb$(k).$(i)_vs_N_Tt$(T0)_thr$(thr).csv",',')[1])
+			push!(Tb,readdlm("data_cluster/Tb$(k).$(i)_vs_N_Tt$(T0)_thr$(thr).csv",',')[1])
 		end
 		push!(Tb00,minimum(Tb))
 		push!(Tb25,quantile(Tb,.25))
@@ -108,12 +113,22 @@ for j in 1:length(thrs)
 	PyPlot.fill([Ns;Ns[length(Ns):-1:1]],[Tb00;Tb100[length(Tb100):-1:1]],color="C$(j-1)",alpha=.1)
 	PyPlot.fill([Ns;Ns[length(Ns):-1:1]],[Tb25;Tb75[length(Tb75):-1:1]],color="C$(j-1)",alpha=.3)
 	PyPlot.plot(Ns,Tbs50[end],"-o",color="C$(j-1)")
+#PyPlot.fill(log.([Ns;Ns[length(Ns):-1:1]]),[Tb00;Tb100[length(Tb100):-1:1]],color="C$(j-1)",alpha=.1)
+#PyPlot.fill(log.([Ns;Ns[length(Ns):-1:1]]),[Tb25;Tb75[length(Tb75):-1:1]],color="C$(j-1)",alpha=.3)
+#PyPlot.plot(log.(Ns),Tbs50[end],"-o",color="C$(j-1)")
 	
+	ni = 9
+	nf = 25
+	a,b = lin_reg(log.(Ns[ni:nf]),Tb50[ni:nf])
+	xs = LinRange(Ns[ni],Ns[nf],100)
+	PyPlot.plot(xs,a*log.(xs) .+ b,"--k",label="y = $(round(a,digits=3))*log(x) + $(round(b,digits=3))")
+	legend()
+
 	if j == length(thrs)
 		xlabel("Reservoir size")
 	end
 	ylabel("Breaktime [iterations]")
-	title("Lorenz system, $(thr*100)% deviation, training time Tt = 4001 [iterations]")
+	title("Lorenz system, $(thr*100)% deviation, training time Tt = $(T0) [iterations]")
 end
 
 # =#

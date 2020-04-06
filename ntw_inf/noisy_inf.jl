@@ -72,11 +72,11 @@ function noise_inf(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::
 		ddth = dth .- mean(dth)
 
 		c += 1
-#		if c%d_meas == 0
-#			cm += 1
-#			wiwj += dth*dth'
+		if c%d_meas == 0
+			cm += 1
+			wiwj += dth*dth'
 #			wiwj += ddth*ddth'
-#		end
+		end
 
 		dth0 = copy(dth)
 		if history
