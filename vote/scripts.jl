@@ -529,6 +529,76 @@ end
 
 
 
+function weighted_clusterings(L::Array{Float64,2}, x0::Array{Float64,1})
+	n = length(x0)
+	
+	dx0 = repeat(x0,1,n) - repeat(x0',n,1)
+
+	idn = setdiff((x0 .< 0.).*(1:n),[0.,])
+	idp = setdiff((x0 .> 0.).*(1:n),[0.,])
+	
+	nn = length(idn)
+	np = length(idp)
+	
+	D = diagm(0 => diag(L))
+	Di = diagm(0 => 1 ./ diag(L))
+	A = D - L
+	wA = Di*A.*dx0
+	wAn = wA[idn,idn]
+	wAp = wA[idp,idp]
+	wAnp = wA[idn,idp]
+	wApn = wA[idp,idn]
+	
+	Cn = sum(wAn)
+	Cp = sum(wAp)
+	C0 = sum(wAnp)
+
+#=
+	cn = Array{Float64,1}()
+	cp = Array{Float64,1}()
+
+	for i in idn
+		nei = setdiff(Int.(A[:,i].*(1:n)),[0;idp])
+		nnei = length(nei)
+		c = 0
+		if nnei > 1
+			for j in 1:nnei-1
+				for k in j+1:nnei
+					if A[nei[j],nei[k]] == 1.
+						c += 1
+					end
+				end
+			end
+			push!(cn,c/(nnei*(nnei-1)/2))
+		end
+	end
+
+	Cn = mean(cn)
+
+	for i in idp
+		nei = setdiff(Int.(A[:,i].*(1:n)),[0;idn])
+		nnei = length(nei)
+		c = 0
+		if nnei > 1
+			for j in 1:nnei-1
+				for k in j+1:nnei
+					if A[nei[j],nei[k]] == 1.
+						c += 1
+					end
+				end
+			end
+			push!(cp,c/(nnei*(nnei-1)/2))
+		end
+	end
+
+	Cp = mean(cp)
+
+	C0 = (sum(A)/2 - sum(An)/2 - sum(Ap)/2)/(nn*np)
+=#
+
+	return Cn,Cp,C0
+end
+
 
 
 
