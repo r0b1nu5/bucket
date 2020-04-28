@@ -30,3 +30,39 @@ function np(x::Float64, eps::Float64, mu::Float64, sig::Float64)
 	return .5*(e1 - e2 + e3 - e4)
 end
 
+function int_non(D::Float64, eps::Float64, mu::Float64, sig::Float64, dx::Float64=.01)
+	nx = round(Int,1/dx)
+	
+	xs = LinRange(0,D,nx)
+	nps = [np(x,eps,mu,sig) for x in xs]
+	nms = [nm(x,eps,mu,sig) for x in xs]
+
+	X = nps./nms.*(exp.(-(xs .- mu).^2/(2*sig^2)) + exp.(-(xs .+ mu).^2/(2*sig^2)))/(2*sqrt(2*pi)*sig)
+	
+	return sum(X)*dx
+end
+
+function int_nmn(D::Float64, eps::Float64, mu::Float64, sig::Float64, dx::Float64=.01)
+	nx = round(Int,1/dx)
+	
+	xs = LinRange(-D,0,nx)
+	nps = [np(x,eps,mu,sig) for x in xs]
+	nms = [nm(x,eps,mu,sig) for x in xs]
+
+	X = (nps - nms).*(exp.(-(xs .- mu).^2/(2*sig^2)) + exp.(-(xs .+ mu).^2/(2*sig^2)))/(2*sqrt(2*pi)*sig)
+	
+	return sum(X)*dx
+end
+
+function int_npn(D::Float64, eps::Float64, mu::Float64, sig::Float64, dx::Float64=.01)
+	nx = round(Int,1/dx)
+	
+	xs = LinRange(-D,0,nx)
+	nps = [np(x,eps,mu,sig) for x in xs]
+	nms = [nm(x,eps,mu,sig) for x in xs]
+
+	X = (nps + nms).*(exp.(-(xs .- mu).^2/(2*sig^2)) + exp.(-(xs .+ mu).^2/(2*sig^2)))/(2*sqrt(2*pi)*sig)
+	
+	return sum(X)*dx
+end
+

@@ -27,7 +27,7 @@ function generate_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64
 			
 			xi = rand(Normal(0,1),n)
 			
-			X = [X (A*X0 + dt * [zeros(n);B*xi])]
+			X = [X (A*X0 + [zeros(n);B*xi])]
 			X0 = X[:,end]
 		end
 		writedlm("data/temp_$(script_id)_$(surcount).csv",X,',')
