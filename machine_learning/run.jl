@@ -1,20 +1,21 @@
 include("reservoir.jl")
 
-xs_file = 1
+xs_file = "_pj3"
 writedlm("data1/last_run_xs_file.csv",xs_file,',')
 
-xs = readdlm("data1/xs$(xs_file).csv",',')
+xs = readdlm("data1/xs"*xs_file*".csv",',')
 
 Tp = 1000 # predcition time
 DT = 1000 # time between training and prediction
 
-Tti = 51
+Tti = 2001
 Ttf = 2001
 dTt = 50
-Ni = 50
-Nf = 5000
+Ni = 2000
+Nf = 2000
 dN = 200
-ks = 500
+k0 = 20
+ks = 80
 
 n = 3
 rho = 1.5
@@ -111,7 +112,7 @@ writedlm("data1/last_run_Ns.csv",Ns,',')
 writedlm("data1/last_run_Tts.csv",Tts,',')
 
 for i in 1:length(Ns)
-	for k in 1:ks
+	for k in (k0+1):(k0+ks)
 		global N = Ns[i]
 		m = 10*N
 
@@ -123,7 +124,7 @@ for i in 1:length(Ns)
 			global T0 = 8002 - Tt
 
 			Wout,c,r = reservoir_training((xs[:,T0:T0+Tt-1],xs[:,T0+1:T0+Tt]),A,Win,a,xi,dT,beta)
-			writedlm("data1/Wout$(k).$(i).$(j)_vs_N_vs_Tt.csv",Wout,',')
+			writedlm("data1/Wout"*xs_file*"_$(k).$(i).$(j)_vs_N_vs_Tt.csv",Wout,',')
 
 			if DT > 0
 				rr = reservoir_tanh(r[:,end],xs[:,T0+Tt:T0+Tt+DT],A,Win,a,xi)
@@ -131,11 +132,11 @@ for i in 1:length(Ns)
 				rr = r
 			end
 
-			ss,rs = reservoir_predicition_self(xs[:,T0+Tt+DT],rr[:,end],Tp,Wout,c,A,Win,a,xi)
+			ss,rs = reservoir_prediction_self(xs[:,T0+Tt+DT],rr[:,end],Tp,Wout,c,A,Win,a,xi)
 
 			for thr in thrs
 				Tb = breaktime(thr,xs[:,T0+Tt+DT:end],ss)
-				writedlm("data1/Tb$(k).$(i).$(j)_vs_N_vs_Tt.csv",Tb,',')
+				writedlm("data1/Tb"*xs_file*"_$(k).$(i).$(j)_vs_N_vs_Tt_thr$(thr).csv",Tb,',')
 			end
 
 			@info "N = $N, Tt = $Tt, k = $k done."
