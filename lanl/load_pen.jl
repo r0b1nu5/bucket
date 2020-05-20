@@ -14,19 +14,45 @@ function load_pen(date::String)
 	th = readdlm("data_PEN/"*date*"_th.csv",',')' * pi/180
 	fs = readdlm("data_PEN/"*date*"_fs.csv",',')'
 
-	N = size(fs)[1]
+	N,T = size(fs)
 
+# Remove the rows without measurements
 	zt = setdiff((sum(th .!= 0,dims=2) .== 0).*(1:N),[0,])
 	zf = setdiff((sum(fs .!= 0,dims=2) .== 0).*(1:N),[0,])
-	z = sort(union(zf,zt))
-	zc = setdiff((1:N),z)
+
+	z1 = sort(union(zf,zt))
+
+# Remove the rows that are copies of other rows
+	cc = Array{Int64,1}()
+	for i in 1:N
+		c = 1
+		te = false
+		while (i-c) > 0 && !te && length(intersect(z1,i)) == 0
+			te = (th[i,:] == th[i-c,:]) || (fs[i,:] == fs[i-c,:])
+			c += 1
+		end
+		if te
+			push!(cc,i)
+		end
+	end
+	
+	z2 = sort(union(z1,cc))
+	zc = setdiff((1:N),z2)
 	
 	writedlm("data_PEN/pen_"*date*"_ids.csv",zc,',')
 
-	th = mod.(th - repeat(th[end,:]',N,1),2pi)
-	fs = fs - repeat(fs[end,:]',N,1)
+	tth = th[:,1]
+	dth = th[:,2:end] - th[:,1:end-1]
+	gp = dth .> pi
+	lp = dth .< -pi
+	tth = [th[:,1] th[:,2:end]+2pi*(lp - gp)]
 
-	Xs = [th[zc,:];fs[zc,:]]
+	ffs = (fs .- 60) * pi/180
+	
+	# I cannot explain why we need this 2.5 factor, but it is needed to have the same measured and empirical derivative, i.e., to have ω_i(t) \approx (θ_i(t)-θ_i(t-1))*dt
+	tth *= 2.5
+
+	Xs = [tth[zc,:]; ffs[zc,:]]
 
 	return Xs
 end
