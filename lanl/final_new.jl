@@ -76,7 +76,7 @@ function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,In
 		plot_new_l0(Ls_l0, L_l0, l_l0, k_l0, ks, T, n)
 	end
 
-	return Ls_l0, (L_l0,A_l0,d_l0,gamma_l0,k_l0,l_l0)
+	return Ls_l0, (L_l0,A_l0,d_l0,gamma_l0,l_l0,k_l0)
 end
 
 
@@ -157,7 +157,7 @@ function run_new_l2(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,In
 		plot_new_l2_2(Ls_l2, L_l2, gamma_l2, l_l2)
 	end
 
-	return Ls_l2, (L_l2,A_l2,d_l2,gamma_l2,k_l2,l_l2)
+	return Ls_l2, (L_l2,A_l2,d_l2,gamma_l2,l_l2,k_l2)
 end
 
 
@@ -268,7 +268,7 @@ function run_new(Xs::Array{Float64,2}, tau::Float64, kmax::Int64, plot::Bool=fal
 		plot_new_l2_2(Ls_l2, L_l2, gamma_l2, l_l2, k_l2, ws)
 	end
 
-	return Ls_l0, (L_l0,A_l0,d_l0,gamma_l0,k_l0,l_l0), Ls_l2, (L_l2,A_l2,d_l2,gamma_l2,k_l2,l_l2)
+	return Ls_l0, (L_l0,A_l0,d_l0,gamma_l0,l_l0,k_l0), Ls_l2, (L_l2,A_l2,d_l2,gamma_l2,l_l2,k_l2)
 end
 
 
@@ -296,12 +296,14 @@ _OUTPUT_:
 `gamma`: Best estimate of the forcing amplitude.
 """
 function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
+	t0 = time()
+	
 	nn,N = size(x)
 	n = Int(nn/2)
 
 # Definition of the needed parameters.
-	Sigma0 = (x*x')/N
-	Sigma1 = (x*Dx')/N
+	S0 = (x*x')/N
+	S1 = (x*Dx')/N
 
 	xtk = xt[:,k]
 	Dxtlk = Dxt[l,k]
@@ -313,41 +315,89 @@ function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 # Definition of the optimization problem.
 	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
 
-	@variable(system_id, A1[i = 1:n, j = 1:n])
-	for i in 1:n-1
-		for j in i+1:n
-			@constraint(system_id, A1[i,j] == A1[j,i])
+	@variable(system_id, A1[i = 1:n, j = i:n])
+	for i = 1:n
+		for j = i:n
+			set_start_value(A1[i,j],A1h[i,j])
 		end
 	end
-	set_start_value.(A1,A1h)
 	@variable(system_id, a2[i = 1:n])
-	for i in 1:n
-		@constraint(system_id, a2[i] >= 0.)
-	end
 	set_start_value.(a2,a2h)
 	@variable(system_id, gamma >= 0.)
 	set_start_value(gamma,1.)
 
-	@NLexpression(system_id, AtAS0[i = 1:n], sum(A1[j1,i]*A1[j1,j2]*Sigma0[j2,i] for j1 = 1:n for j2 = 1:n) + sum(A1[j,i]*a2[j]*Sigma0[n+j,i] for j = 1:n))
-	@NLexpression(system_id, AtAS00[i = (n+1):(2*n)], sum(a2[i-n]*A1[i-n,j]*Sigma0[j,i] for j = 1:n) + a2[i-n]*a2[i-n]*Sigma0[i,i])
-	@NLexpression(system_id, T1, sum(AtAS0[i] for i in 1:n) + sum(AtAS00[i] for i = (n+1):(2*n)))
+# tr(L^2*\th*\th^T)
+	@NLexpression(system_id, AtAS01, 
+		      sum(A1[i,j]*A1[j,k]*S0[k,i] for i = 1:n for j = i:n for k = j:n) + 
+		      sum(A1[i,j]*A1[k,j]*S0[k,i] for i = 1:n for j = i:n for k = 1:j-1) + 
+		      sum(A1[j,i]*A1[j,k]*S0[k,i] for i = 1:n for j = 1:i-1 for k = j:n) + 
+		      sum(A1[j,i]*A1[k,j]*S0[k,i] for i = 1:n for j = 1:i-1 for k = 1:j-1))
 
-	@NLexpression(system_id, AS1[i = 1:n], sum(A1[i,j]*Sigma1[j,i] for j = 1:n) + a2[i]*Sigma1[n+i,i])
-	@NLexpression(system_id, T2, sum(AS1[i] for i in 1:n))
+# tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
+	@NLexpression(system_id, AtAS02, 
+		      sum(A1[i,j]*a2[j]*S0[n+j,i] for i = 1:n for j = i:n) + 
+		      sum(A1[j,i]*a2[j]*S0[n+j,i] for i = 1:n for j = 1:i-1))
 
-	@NLexpression(system_id, AAF[i = 1:n], A1[l,i]*(sum(A1[l,j]*Fk[j,i] for j = 1:n) + a2[l]*Fk[n+l,i]))
-	@NLexpression(system_id, AAFF, a2[l]*(sum(A1[l,j]*Fk[j,n+l] for j = 1:n) + a2[l]*Fk[n+l,n+l]))
-	@NLexpression(system_id, T3, sum(AAF[i] for i = 1:n) + AAFF)
+# tr(D^2*\om*\om^T)
+	@NLexpression(system_id, AtAS03, sum(a2[i]^2*S0[n+i,n+i] for i = 1:n))
+	
+# tr(A^T*A*S0)
+	@NLexpression(system_id, T1, AtAS01 + 2*AtAS02 + AtAS03)
 
-	@NLexpression(system_id, T4, sum(flk[i]*A1[l,i] for i in 1:n) + flk[n+l]*a2[l])
+
+# tr(-L*\th*(D\om)^T)
+	@NLexpression(system_id, AS11, 
+		      sum(A1[i,j]*S1[j,i] for i = 1:n for j = i:n) + 
+		      sum(A1[j,i]*S1[j,i] for i =1:n for j = 1:i-1))
+
+# tr(-D*\om*(D\om)^T)
+	@NLexpression(system_id, AS12, sum(a2[i]*S1[n+i,i] for i = 1:n))
+
+# tr(A*S1)
+	@NLexpression(system_id, T2, AS11 + AS12)
+
+
+# tr((L_{l,:})^T*L_{l,:}*F(k))
+	@NLexpression(system_id, AAF1, 
+		      sum(A1[l,i]*A1[l,j]*Fk[j,i] for i = l:n for j = l:n) + 
+		      2*sum(A1[i,l]*A1[l,j]*Fk[j,i] for i = 1:l-1 for j = l:n) + 
+		      sum(A1[i,l]*A1[j,l]*Fk[j,i] for i = 1:l-1 for j = 1:l-1))
+
+# tr((L_{l,:})^T*D_{l,:}*F(k)) = tr((D_{l,:})^T*L_{l,:}*F(k))
+	@NLexpression(system_id, AAF2, 
+		      sum(A1[l,i]*a2[l]*Fk[n+l,i] for i = l:n) + 
+		      sum(A1[i,l]*a2[l]*Fk[n+l,i] for i = 1:l-1))
+
+# tr((D_{l,:})^T*D_{l,:}*F(k))
+	@NLexpression(system_id, AAF3, a2[l]^2*Fk[n+l,n+l])
+
+# tr((A_{l,:})^T*A_{l,:}*F(k))
+	@NLexpression(system_id, T3, AAF1 + 2*AAF2 + AAF3)
+
+	
+# (f_l(k))^T*A_{l,:}
+	@NLexpression(system_id, T4, sum(flk[i]*A1[l,i] for i = l:n) + sum(flk[i]*A1[i,l] for i = 1:l-1) + flk[n+l]*a2[l])
+
 
 	@NLexpression(system_id, g2, gamma^2)
 
+	
 	@NLobjective(system_id, Min, T1 + 2*T2 + .5*g2 - 2*gamma/sqrt(N)*sqrt(T3 + 2*T4 + glk))
 
 	optimize!(system_id)
 
-	return objective_value(system_id), value.(A1), value.(a2), value(gamma)
+	mL = zeros(n,n)
+	for i in 1:n
+		for j in i+1:n
+			mL[i,j] = value(A1[i,j])
+			mL[j,i] = value(A1[i,j])
+		end
+		mL[i,i] = value(A1[i,i])
+	end
+
+	@info "Full optimization took $(time() - t0)''."
+
+	return objective_value(system_id), mL, value.(a2), value(gamma)
 end
 
 """
@@ -373,6 +423,8 @@ _OUTPUT_:
 `gamma`: Best estimate of the forcing amplitude at each possible location.
 """
 function Lmin_l2(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
+	t0 = time()
+	
 	nn,N = size(x)
 	n = Int(nn/2)
 
@@ -390,16 +442,16 @@ function Lmin_l2(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
 
 	@variable(system_id, A1[i = 1:n, j = 1:n])
-	for i in 1:n-1
-		for j in i+1:n
-			@constraint(system_id, A1[i,j] == A1[j,i])
-		end
-	end
+#	for i in 1:n-1
+#		for j in i+1:n
+#			@constraint(system_id, A1[i,j] == A1[j,i])
+#		end
+#	end
 	set_start_value.(A1,A1h)
 	@variable(system_id, a2[i = 1:n])
 	@variable(system_id, gamma[i = 1:n])
 	for i in 1:n
-		@constraint(system_id, a2[i] >= 0.)
+#		@constraint(system_id, a2[i] >= 0.)
 		@constraint(system_id, gamma[i] >= 0.)
 	end
 	set_start_value.(a2,a2h)
@@ -424,6 +476,8 @@ function Lmin_l2(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 
 	optimize!(system_id)
 
+	@info "Full optimization took $(time() - t0)''."
+	
 	return objective_value(system_id), value.(A1), value.(a2), value.(gamma)
 end
 
@@ -444,7 +498,7 @@ _INPUT_:
 _OUTPUT_:
 `obj`: Value of the objective.
 """
-function objective(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, d::Array{Float64,1}, gamma::Float64, l::Int64, k::Int64)
+function objective(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, a2::Array{Float64,1}, gamma::Float64, l::Int64, k::Int64)
 	x = Xs[:,1:end-1]
 	nn,N = size(x)
 	n = Int(nn/2)
@@ -469,7 +523,7 @@ function objective(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, d::
 	flk = real.(Dxtlk*xtk')
 	glk = norm(Dxtlk)^2
 
-	A = [A1 diagm(0 => d)]
+	A = [A1 diagm(0 => a2)]
 
 	obj = tr(transpose(A)*A*Sigma0) + 2*tr(A*Sigma1) + .5*gamma^2 - 2*gamma/sqrt(N)*sqrt(tr(A[l,:]*transpose(A[l,:])*Fk) + (2*flk*A[l,:])[1] + glk)
 
