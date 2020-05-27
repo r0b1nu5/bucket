@@ -63,11 +63,11 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 	X0 = zeros(2*n)
 	X = Array{Float64,2}(undef,2*n,0)
 	
-	t = -1000
+	t = 0
 
 	str = "data/"*ntw*"_forced_$(maximum(abs.(f)))_$(T)_$(dt).csv"
  ##=
-	surcount = -1
+	surcount = 0
 	
 	while t < T
 		surcount += 1
@@ -78,14 +78,14 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 			
 			xi = rand(Normal(0,1),n)
 			
-			X = [X (A*X0 + dt*([zeros(n);B*xi] + [zeros(n);a.*cos.(2*pi*dt*t*f .+ phi)]))]
+			X = [X (A*X0 + [zeros(n);B*xi] + dt*[zeros(n);a.*cos.(2*pi*dt*t*f .+ phi)])]
 			X0 = X[:,end]
 		end
 		writedlm("data/temp_$(script_id)_$(surcount).csv",X,',')
 		X = Array{Float64,2}(undef,2*n,0)
 	end
 	
-	rm("data/temp_$(script_id)_0.csv")
+#	rm("data/temp_$(script_id)_0.csv")
 
 	Xf = Array{Float64,2}(undef,2*n,0)
 	for i in 1:surcount

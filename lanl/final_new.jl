@@ -8,6 +8,7 @@ Identifies dynamics and forcing characteristics baded only on measurements. Appr
 _INPUT_:
 `Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (rows n+1:2*n).
 `tau`: Time step size.
+`ls = (lmin,lmax,dl)`: Values of l to be tried, lmin:dl:lmax.
 `ks = (kmin,kmax,dk)`: Values of k to be tried, kmin:dk:kmax.
 `plot`: If true, generates the plots of the objective function vs. k.
 `mu`: Initial value of the barrier parameter (in IPOPT).
@@ -23,11 +24,12 @@ _OUTPUT_:
 	`k_l0`: Estimate frequency index (see theory).
 	`l_l0`: Estimate of the forcing location.
 """
-function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, plot::Bool=false, mu::Float64=1e-1, bp::Float64=1e-1)
+function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, plot::Bool=false, mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
 
+	lmin,lmax,dl = ls
 	kmin,kmax,dk = ks
 
 # Computing the needed inputs (time series, discrete derivative, and their Fourier transforms).
@@ -46,20 +48,22 @@ function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,In
 	XXX,A1h,a2h = get_Ah_correl_new(Xs,tau)
 
 # Run the optimizations
-	Ls_l0 = zeros(n,length(kmin:dk:kmax))
+	Ls_l0 = zeros(length(lmin:dl:lmax),length(kmin:dk:kmax))
 	L_l0 = 1000.
 	A_l0 = zeros(n,nn)
 	d_l0 = zeros(n)
 	gamma_l0 = 0.
 	l_l0 = 0
 	k_l0 = 0
-	for l in 1:n
-		c = 0
+	cl = 0
+	for l in lmin:dl:lmax
+		cl += 1
+		ck = 0
 		for k in kmin:dk:kmax
-			c += 1
+			ck += 1
 			@info "l0: l = $l, k = $k"
 			Lt = Lmin_l0(x,Dx,xt,Dxt,l,k,A1h,a2h,mu,bp)
-			Ls_l0[l,c] = Lt[1]
+			Ls_l0[cl,ck] = Lt[1]
 			if Lt[1] < L_l0
 				L_l0,A_l0,d_l0,gamma_l0 = Lt
 				l_l0 = l
@@ -313,8 +317,7 @@ function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 	glk = norm(Dxtlk)^2
 
 # Definition of the optimization problem.
-	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
-
+	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
 	@variable(system_id, A1[i = 1:n, j = i:n])
 	for i = 1:n
 		for j = i:n
@@ -439,7 +442,7 @@ function Lmin_l2(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 	glk = [norm(Dxt[l,k])^2 for l = 1:n]
 
 # Definition of the optimization problem. 
-	system_id = Model(with_optimizer(Ipopt.Optimizer, mu_init = mu, bound_push = bp))
+	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
 
 	@variable(system_id, A1[i = 1:n, j = 1:n])
 #	for i in 1:n-1
