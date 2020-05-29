@@ -13,6 +13,14 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 	rt = reservoir_tanh(r0,ut,A,Win,a,xi)
 #	rt = rt1(reservoir_tanh(r0,ut,A,Win,a,xi))
 	
+	nabs_r = Array{Array{Float64,2},1}()
+	nabs_u = Array{Array{Float64,2},1}()
+	for j in 1:size(ut)[2]
+		x = nablas(rt[:,j],ut[:,j],A,Win,xi)
+		push!(nabs_r,x[1])
+		push!(nabs_u,x[2])
+	end
+	
 	@info "Computing optimal post-treatment..."
 	rb = sum(rt[:,1:dT:T],dims=2)./length(1:dT:T)
 	rb2 = sum(rt[:,1:dT:T].^2,dims=2)./length(1:dT:T)
@@ -24,7 +32,7 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 	Wout = dS*transpose(dR)*inv(Symmetric(dR*transpose(dR) + beta*diagm(0 => ones(N))))
 	c = -vec(Wout*rb - sb)
 	
-	return Wout,c,rt
+	return Wout,c,rt,nabs_r,nabs_u
 end
 
 function reservoir_prediction(us::Array{Float64,2},Wout::Array{Float64,2},c::Array{Float64,1},r0::Array{Float64,1},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64)
@@ -195,6 +203,16 @@ function rt1(r::Array{Float64,2})
 	
 	return [r[1:d,:];r[d+1:end,:].^2]
 end
+
+function nablas(r::Array{Float64,1}, u::Array{Float64,1}, A::Array{Float64,2}, Win::Array{Float64,2}, xi::Float64)
+	cosh2 = (cosh.(A*r + Win*u + xi*ones(length(r)))).^2
+	
+	nablaf_r = A./repeat(cosh2,1,length(r))
+	nablaf_u = Win./repeat(cosh2,1,length(u))
+
+	return nablaf_r,nablaf_u
+end
+
 
 function A_gen(n::Int64,m::Int64,rho::Float64)
 	A = zeros(n,n)
