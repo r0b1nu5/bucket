@@ -48,20 +48,22 @@ end
 
 
 function fx(x::Array{Float64,1}, y::Array{Float64,1}, w::Array{Float64,1}, K::Float64=1.)
-	x0 = mean(x)
-	y0 = mean(y)
+	r = sqrt.(x.^2 + y.^2)
+	x0 = mean(x./r)
+	y0 = mean(y./r)
 	
-	dx = K*x0*y.^2 - K*y0*x.*y - w.*y
+	dx = K*x0*y.^2 ./r - K*y0*x.*y./r - w.*y
 	
 	return dx
 end
 		
 
 function fy(x::Array{Float64,1}, y::Array{Float64,1}, w::Array{Float64,1}, K::Float64=1.)
-	x0 = mean(x)
-	y0 = mean(y)
+	r = sqrt.(x.^2 + y.^2)
+	x0 = mean(x./r)
+	y0 = mean(y./r)
 	
-	dy = K*y0*x.^2 - K*x0*x.*y + w.*x
+	dy = K*y0*x.^2 ./r - K*x0*x.*y./r + w.*x
 	
 	return dy
 end

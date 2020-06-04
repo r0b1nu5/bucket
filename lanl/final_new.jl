@@ -1,7 +1,7 @@
 using DelimitedFiles, PyPlot, LinearAlgebra, JuMP, Ipopt, Distributed, FFTW
 
 """
-	run_new_l0(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, plot::Bool=false, mu::Float64=1e-1, bp::Float64=1e-1)
+	run_new_l0(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, plot::Bool=false, b::Float64=.01, mu::Float64=1e-1, bp::Float64=1e-1)
 
 Identifies dynamics and forcing characteristics baded only on measurements. Approximation of the forcing's frequency is discretized as 2*pi*k/T, with k integer.
 
@@ -10,7 +10,9 @@ _INPUT_:
 `tau`: Time step size.
 `ls = (lmin,lmax,dl)`: Values of l to be tried, lmin:dl:lmax.
 `ks = (kmin,kmax,dk)`: Values of k to be tried, kmin:dk:kmax.
+`is_laplacian`: If true, assumes that the dynamics matrix (A1) is Laplacian with nonpositive off-diagonal terms. 
 `plot`: If true, generates the plots of the objective function vs. k.
+`b`: Regularization parameter to avoid overfitting.
 `mu`: Initial value of the barrier parameter (in IPOPT).
 `bp`: Initial value of the bound_push parameter (in IPOPT).
 
@@ -24,7 +26,7 @@ _OUTPUT_:
 	`k_l0`: Estimate frequency index (see theory).
 	`l_l0`: Estimate of the forcing location.
 """
-function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, plot::Bool=false, mu::Float64=1e-1, bp::Float64=1e-1)
+function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -45,7 +47,9 @@ function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,In
 	end
 
 # Compute warm start
-	XXX,A1h,a2h = get_Ah_correl_new(Xs,tau)
+#	XXX,A1h,a2h = get_Ah_correl_new(Xs,tau) # Performs poorly for Laplcian dynamics, warm start at zero is better.
+	A1h = zeros(n,n)
+	a2h = ones(n)
 
 # Run the optimizations
 	Ls_l0 = zeros(length(lmin:dl:lmax),length(kmin:dk:kmax))
@@ -62,7 +66,11 @@ function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,In
 		for k in kmin:dk:kmax
 			ck += 1
 			@info "l0: l = $l, k = $k"
-			Lt = Lmin_l0(x,Dx,xt,Dxt,l,k,A1h,a2h,mu,bp)
+			if is_laplacian
+				Lt = Lmin_l0_lap(x,Dx,xt,Dxt,l,k,A1h,a2h,b,mu,bp)
+			else
+				Lt = Lmin_l0(x,Dx,xt,Dxt,l,k,A1h,a2h,b,mu,bp)
+			end
 			Ls_l0[cl,ck] = Lt[1]
 			if Lt[1] < L_l0
 				L_l0,A_l0,d_l0,gamma_l0 = Lt
@@ -277,7 +285,7 @@ end
 
 
 """
-	Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=.01 mu::Float64=1e-1, bp::Float64=1e-1)
 
 Minimizes the quadratic error in the estimation of the forced trajectory, for a fixed frequency (k) and location (l) of the forcing. The optimization parameters are the dynamics matrix (A1), the damings (a2), and the forcing amplitude (gamma). 
 
@@ -290,6 +298,7 @@ _INPUT_:
 `k`: Fixed index of the forcing frequency (ν = k/T).
 `A1h`: Warm start for A1.
 `a2h`: Warm start for a2.
+`b`: Regularization parameter to avoid overfitting.
 `mu`: Initial value of the barrier parameter (in IPOPT).
 `bp`: Initial value of the bound_push parameter (in IPOPT).
 
@@ -299,7 +308,7 @@ _OUTPUT_:
 `a2`: Best estimate of the dampings.
 `gamma`: Best estimate of the forcing amplitude.
 """
-function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
+function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=.01, mu::Float64=1e-1, bp::Float64=1e-1)
 	t0 = time()
 	
 	nn,N = size(x)
@@ -319,8 +328,8 @@ function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
 	@variable(system_id, A1[i = 1:n, j = i:n])
-	for i = 1:n
-		for j = i:n
+	for i = 1:n-1
+		for j = i+1:n
 			set_start_value(A1[i,j],A1h[i,j])
 		end
 	end
@@ -385,7 +394,7 @@ function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 	@NLexpression(system_id, g2, gamma^2)
 
 	
-	@NLobjective(system_id, Min, T1 + 2*T2 + .5*g2 - 2*gamma/sqrt(N)*sqrt(T3 + 2*T4 + glk))
+	@NLobjective(system_id, Min, T1 + 2*T2 + .5*g2 - 2*gamma/sqrt(N)*sqrt(T3 + 2*T4 + glk) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
 
 	optimize!(system_id)
 
@@ -403,6 +412,123 @@ function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 	return objective_value(system_id), mL, value.(a2), value(gamma)
 end
 
+"""
+	Lmin_l0_lap(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=.01 mu::Float64=1e-1, bp::Float64=1e-1)
+
+Same as Lmin_l0, but assumes that the dynamics matrix (A1) is a Laplacian, with nonpositive off-diagonal terms.
+"""
+
+function Lmin_l0_lap(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=.01, mu::Float64=1e-1, bp::Float64=1e-1)
+	t0 = time()
+	
+	nn,N = size(x)
+	n = Int(nn/2)
+
+# Definition of the needed parameters.
+	S0 = (x*x')/N
+	S1 = (x*Dx')/N
+
+	xtk = xt[:,k]
+	Dxtlk = Dxt[l,k]
+	
+	Fk = real.(xtk*xtk')
+	flk = real.(Dxtlk*xtk')
+	glk = norm(Dxtlk)^2
+
+# Definition of the optimization problem.
+	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
+	@variable(system_id, A1[i = 1:n-1, j = i+1:n])
+	for i = 1:n-1
+		for j = i+1:n
+			@constraint(system_id, A1[i,j] <= 0.)
+			set_start_value(A1[i,j],A1h[i,j])
+		end
+	end
+	@variable(system_id, a2[i = 1:n])
+	set_start_value.(a2,a2h)
+	@variable(system_id, gamma >= 0.)
+	set_start_value(gamma,1.)
+
+# tr(L^2*\th*\th^T)
+	@NLexpression(system_id, AtAS01, 
+		      sum(A1[j,i]*A1[k,j]*(S0[k,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for k = 1:j-1) + 
+		      sum(A1[j,i]*A1[j,k]*(S0[k,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for k = j+1:n) -
+		      sum(A1[j,i]*A1[k,i]*(S0[k,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for k = 1:i-1) - 
+		      sum(A1[j,i]*A1[i,k]*(S0[k,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for k = i+1:n) +
+		      sum(A1[i,j]*A1[k,j]*(S0[k,i]-S0[j,i]) for i = 1:n for j = i+1:n for k = 1:j-1) + 
+		      sum(A1[i,j]*A1[j,k]*(S0[k,i]-S0[j,i]) for i = 1:n for j = i+1:n for k = j+1:n) -
+		      sum(A1[i,j]*A1[k,i]*(S0[k,i]-S0[i,i]) for i = 1:n for j = i+1:n for k = 1:i-1) -
+		      sum(A1[i,j]*A1[i,k]*(S0[k,i]-S0[i,i]) for i = 1:n for j = i+1:n for k = i+1:n))
+
+# tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
+	@NLexpression(system_id, AtAS02, 
+		      sum(A1[j,i]*(a2[j]*S0[n+j,i]-a2[i]*S0[n+i,i]) for i = 1:n for j = 1:i-1) + 
+		      sum(A1[i,j]*(a2[j]*S0[n+j,i]-a2[i]*S0[n+i,i]) for i = 1:n for j = i+1:n))
+
+# tr(D^2*\om*\om^T)
+	@NLexpression(system_id, AtAS03, sum(a2[i]^2*S0[n+i,n+i] for i = 1:n))
+	
+# tr(A^T*A*S0)
+	@NLexpression(system_id, T1, AtAS01 + 2*AtAS02 + AtAS03)
+
+
+# tr(-L*\th*(D\om)^T)
+	@NLexpression(system_id, AS11, 
+		      sum(A1[i,j]*(S1[j,i]-S1[i,i]) for i = 1:n for j = i+1:n) + 
+		      sum(A1[j,i]*(S1[j,i]-S1[i,i]) for i = 1:n for j = 1:i-1))
+
+# tr(-D*\om*(D\om)^T)
+	@NLexpression(system_id, AS12, sum(a2[i]*S1[n+i,i] for i = 1:n))
+
+# tr(A*S1)
+	@NLexpression(system_id, T2, AS11 + AS12)
+
+
+# tr((L_{l,:})^T*L_{l,:}*F(k))
+	@NLexpression(system_id, AAF1, 
+		      sum(A1[i,l]*A1[j,l]*(Fk[j,i]-Fk[l,i]-Fk[j,l]+Fk[l,l]) for i = 1:l-1 for j = 1:l-1) + 
+		      sum(A1[i,l]*A1[l,j]*(Fk[j,i]-Fk[l,i]-Fk[j,l]+Fk[l,l]) for i = 1:l-1 for j = l+1:n) + 
+		      sum(A1[l,i]*A1[j,l]*(Fk[j,i]-Fk[l,i]-Fk[j,l]+Fk[l,l]) for i = l+1:n for j = 1:l-1) + 
+		      sum(A1[l,i]*A1[l,j]*(Fk[j,i]-Fk[l,i]-Fk[j,l]+Fk[l,l]) for i = l+1:n for j = l+1:n))
+
+# tr((L_{l,:})^T*D_{l,:}*F(k)) = tr((D_{l,:})^T*L_{l,:}*F(k))
+	@NLexpression(system_id, AAF2, 
+		      sum(A1[l,i]*a2[l]*(Fk[n+l,i]-Fk[n+l,l]) for i = l+1:n) + 
+		      sum(A1[i,l]*a2[l]*(Fk[n+l,i]-Fk[n+l,l]) for i = 1:l-1))
+
+# tr((D_{l,:})^T*D_{l,:}*F(k))
+	@NLexpression(system_id, AAF3, a2[l]^2*Fk[n+l,n+l])
+
+# tr((A_{l,:})^T*A_{l,:}*F(k))
+	@NLexpression(system_id, T3, AAF1 + 2*AAF2 + AAF3)
+
+	
+# (f_l(k))^T*A_{l,:}
+	@NLexpression(system_id, T4, sum((flk[i]-flk[l])*A1[l,i] for i = l+1:n) + sum((flk[i]-flk[l])*A1[i,l] for i = 1:l-1) + flk[n+l]*a2[l])
+
+
+	@NLexpression(system_id, g2, gamma^2)
+
+	
+	@NLobjective(system_id, Min, T1 + 2*T2 + .5*g2 - 2*gamma/sqrt(N)*sqrt(T3 + 2*T4 + glk) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
+
+	optimize!(system_id)
+
+	mL = zeros(n,n)
+	for i in 1:n-1
+		for j in i+1:n
+			mL[i,j] = value(A1[i,j])
+			mL[j,i] = value(A1[i,j])
+		end
+	end
+	for i in 1:n
+		mL[i,i] = -sum(mL[i,j] for j = 1:n)
+	end
+
+	@info "Full optimization took $(time() - t0)''."
+
+	return objective_value(system_id), mL, value.(a2), value(gamma)
+end
 """
 Lmin_l2(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, mu::Float64=1e-1, bp::Float64=1e-1)
 
@@ -497,11 +623,12 @@ _INPUT_:
 `gamma`: Forcing amplitude.
 `l`: Forcing location.
 `k`: Index of the forcing frequency (ν = k/T).
+`b`: Regularization parameter to avoid overfitting.
 
 _OUTPUT_:
 `obj`: Value of the objective.
 """
-function objective(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, a2::Array{Float64,1}, gamma::Float64, l::Int64, k::Int64)
+function objective(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, a2::Array{Float64,1}, gamma::Float64, l::Int64, k::Int64, b::Float64=0.)
 	x = Xs[:,1:end-1]
 	nn,N = size(x)
 	n = Int(nn/2)
@@ -528,7 +655,7 @@ function objective(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, a2:
 
 	A = [A1 diagm(0 => a2)]
 
-	obj = tr(transpose(A)*A*Sigma0) + 2*tr(A*Sigma1) + .5*gamma^2 - 2*gamma/sqrt(N)*sqrt(tr(A[l,:]*transpose(A[l,:])*Fk) + (2*flk*A[l,:])[1] + glk)
+	obj = tr(transpose(A)*A*Sigma0) + 2*tr(A*Sigma1) + .5*gamma^2 - 2*gamma/sqrt(N)*sqrt(tr(A[l,:]*transpose(A[l,:])*Fk) + (2*flk*A[l,:])[1] + glk) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n)
 
 	return obj
 end
