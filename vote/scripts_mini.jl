@@ -1,8 +1,8 @@
 using Distributions, PyPlot, Statistics, LinearAlgebra, Random, SparseArrays
 
-include("res_dist.jl")
+include("result.jl")
 
-function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1.)
+function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, m::Int64, w0::Float64=.1)
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))
@@ -12,17 +12,15 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 	LpD = Symmetric(2*D - A)
 	Di = diagm(0 => 1 ./ d)
 	LDi = inv(LpD)*Diagonal(D)
-#	LDi = inv(Di*L + diagm(0 => ones(n)))
-#	LIi = inv(L + diagm(0 => ones(n)))
 
 	w = zeros(n)
-	x = LDi*(x0 + w)
-	o0,p0,n0 = outcome(x)
+	x = LDi*x0
+	np,margp,nn,margn = result_margin(x,m)
 
-	if o0 < 0
+	if np < nn
 		x0 = -x0
-		x = LDi*(x0 + w)
-		o0,p0,n0 = outcome(x)
+		x = -x
+		np,margp,nn,margn = result_margin(x,m)
 	end
 
 	xx = copy(x)
@@ -36,7 +34,7 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 		while o1 > 0. && c < n
 			c += 1
 			w[ids[c]] -= w0
-			x = LDi*(x0 + w)
+			x -= w0*LDi[:,ids[c]]
 			o1,p1,n1 = outcome(x)
 		end
 	end
@@ -44,7 +42,7 @@ function influence_effort_mini(x0::Array{Float64,1}, eps::Float64, w0::Float64=1
 	return sum(w), o0, xx
 end
 
-function influence_effort_mini_repr(x0::Array{Float64,1}, eps::Float64, n_repr::Int64, w0::Float64=1.)
+function influence_effort_mini_repr(x0::Array{Float64,1}, eps::Float64, n_repr::Int64, w0::Float64=.1)
 	n = length(x0)
 
 	A = Float64.((0 .< abs.(repeat(x0,1,n) - repeat(x0',n,1)) .< eps))

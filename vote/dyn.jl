@@ -1,6 +1,5 @@
 using LinearAlgebra
 
-
 function dyn(L::Array{Float64,2}, x0::Array{Float64,2}, w0::Array{Float64,2}, xi::Array{Float64,2}, max_iter::Int64=10000, eps::Float64=1e-8, h::Float64=.1)
 	n = size(x0)[1]
 	
