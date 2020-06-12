@@ -182,7 +182,10 @@ function reservoir_tanh(r0::Array{Float64,1},us::Array{Float64,2},A::Array{Float
 
 	RS = Array{Float64,2}(undef,length(r0),0)
 	for t in 1000:1000:T
-		RS = [RS readdlm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv",',')[:,2:end]]
+		x = readdlm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv",',')[:,2:end]
+		@info "$(length(r0)) - $(size(x)[1])"
+		RS = [RS x]
+#		RS = [RS readdlm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv",',')[:,2:end]]
 		rm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv")
 	end
 	RS = [RS rs[:,2:end]]

@@ -12,12 +12,15 @@ id = rand(10000:99999) # Run's ID
 
 Tti = 101
 Ttf = 2001
+Ttf = 501
 dTt = 200
 Ni = 200
 Nf = 2000
+Nf = 600
 dN = 200
 k0 = 0
 ks = 100
+ks = 2
 
 n = 3
 rho = 1.5
