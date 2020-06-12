@@ -46,7 +46,7 @@ function reservoir_prediction(us::Array{Float64,2},Wout::Array{Float64,2},c::Arr
 	return ss,rs
 end
 
-function reservoir_prediction_self(s0::Array{Float64,1}, r0::Array{Float64,1}, Tp::Int64, Wout::Array{Float64,2}, c::Array{Float64,1}, A::Array{Float64,2}, Win::Array{Float64,2}, a::Float64, xi::Float64, id::Int64=0)
+function reservoir_prediction_self(s0::Array{Float64,1}, r0::Array{Float64,1}, Tp::Int64, Wout::Array{Float64,2}, c::Array{Float64,1}, A::Array{Float64,2}, Win::Array{Float64,2}, a::Float64, xi::Float64, id::Tuple{Int64,Int64,Int64}=(0,0,0))
 	n = length(s0)
 	N = length(r0)
 
@@ -166,14 +166,14 @@ function reservoir_tanh(r0::Array{Float64,1},u::Array{Float64,1},A::Array{Float6
 	return [r0 r1]
 end
 
-function reservoir_tanh(r0::Array{Float64,1},us::Array{Float64,2},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64,id::Int64=0)
+function reservoir_tanh(r0::Array{Float64,1},us::Array{Float64,2},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64,id::Tuple{Int64,Int64,Int64}=(0,0,0))
 	T = size(us)[2]
 	
 	rs = copy(r0)
 	for t in 1:T
 		if t%1000 == 0
 			@info "$t/$T"
-			writedlm("data1/rs_$(t)_$(id).csv",rs,',')
+			writedlm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv",rs,',')
 			rs = rs[:,end]
 		end
 
@@ -182,8 +182,8 @@ function reservoir_tanh(r0::Array{Float64,1},us::Array{Float64,2},A::Array{Float
 
 	RS = Array{Float64,2}(undef,length(r0),0)
 	for t in 1000:1000:T
-		RS = [RS readdlm("data1/rs_$(t)_$(id).csv",',')[:,2:end]]
-		rm("data1/rs_$(t)_$(id).csv")
+		RS = [RS readdlm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv",',')[:,2:end]]
+		rm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv")
 	end
 	RS = [RS rs[:,2:end]]
 	

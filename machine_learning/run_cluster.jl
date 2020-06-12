@@ -55,12 +55,12 @@ end
 	id,i,j,k,xs,A,Win,a,xi,dT,beta,DT,Tp,thrs = arg
 	
 	n,T = size(xs)
-	N = size(Win)[2]
+	N = size(Win)[1]
 	Tt = T - DT - Tp
 
 	Wout,c,r = reservoir_training((xs[:,1:T-Tp-DT-1],xs[:,2:T-Tp-DT]),A,Win,a,xi,dT,beta)
 
-	subid = rand(10000:99999)
+	subid = (i,j,k)
 	if DT > 0
 		rr = reservoir_tanh(r[:,end],xs[:,T-Tp-DT:T-Tp],A,Win,a,xi,subid)
 	else
@@ -74,7 +74,7 @@ end
 		writedlm("data1/Tb_$(k).$(i).$(j)_$(thr)_$(id).csv",Tb,',')
 	end
 
-	@info "Run $(id): n = $N, Tt = $Tt, k = $k done."
+	@info "Run $(id): N = $N, Tt = $Tt, k = $k done."
 end
 
 pmap(run_script,args)
