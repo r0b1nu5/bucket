@@ -8,13 +8,15 @@ end
 
 @everywhere include("final_new.jl")
 
+#=
 """
 	run_new_l0_par(id::String, Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized verions of "run_new_l0".
 
 The parameter "id" identifies the system to be identified.
-"""	
+"""
+=#
 @everywhere function run_new_l0_par(id::String, Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
@@ -53,9 +55,11 @@ The parameter "id" identifies the system to be identified.
 	else
 		pmap(Lmin_l0_par,args)
 	end
+
+	@info "ID $id IS DONE !!!"
 end
 
-
+#=
 """
 	run_new_l2_par(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
@@ -63,7 +67,8 @@ Parallelized version of "run_new_l2".
 
 The parameter "id" identifies the system to be identified.
 """
-function run_new_l2_par(id::String, Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+=#
+@everywhere function run_new_l2_par(id::String, Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -101,13 +106,16 @@ function run_new_l2_par(id::String, Xs::Array{Float64,2}, tau::Float64, ks::Tupl
 	end
 end
 
-
+#=
 """
 	Lmin_l0_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of "Lmin_l0", i.e., stores the data in files.
 """
-function Lmin_l0_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+=#
+@everywhere function Lmin_l0_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
+	id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,mu,bp = tups
+	
 	t0 = time()
 	
 	nn,N = size(x)
@@ -214,13 +222,16 @@ function Lmin_l0_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::
 	writedlm("data/"*id*"_l0_$(l).$(k)_gamma.csv",value(gamma),',')
 end
 
+#=
 """
 	Lmin_l0_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
 Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, with nonpositive off-diagonal terms.
 """
-
-function Lmin_l0_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+=#
+@everywhere function Lmin_l0_lap_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
+	id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,mu,bp = tups
+	
 	t0 = time()
 	
 	nn,N = size(x)
@@ -335,13 +346,16 @@ function Lmin_l0_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, 
 	writedlm("data/"*id*"_lap0_$(l).$(k)_gamma.csv",value(gamma),',')
 end
 
-
+#=
 """
 	Lmin_l2_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of Lmin_l2.
 """
-function Lmin_l2_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+=#
+@everywhere function Lmin_l2_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
+	id,x,Dx,xt,Dxt,k,A1h,a2h,b,mu,bp = tups
+	
 	t0 = time()
 	
 	nn,N = size(x)
@@ -451,13 +465,16 @@ function Lmin_l2_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::
 	writedlm("data/"*id*"_l2_$(l).$(k)_gamma.csv",value.(gamma),',')
 end
 
+#=
 """
 	Lmin_l2_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
 Same as Lmin_l2_par, but assumes that the dynamics matrix (A1) is a Laplacian, with nonpositive off-diagonal terms.
 """
-
-function Lmin_l2_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=.01, mu::Float64=1e-1, bp::Float64=1e-1)
+=#
+@everywhere function Lmin_l2_lap_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
+	id,x,Dx,xt,Dxt,k,A1h,a2h,b,mu,bp = tups
+	
 	t0 = time()
 	
 	nn,N = size(x)
@@ -574,7 +591,7 @@ function Lmin_l2_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, 
 	writedlm("data/"*id*"_lap2_$(l).$(k)_gamma.csv",value.(gamma),',')
 end
 
-
+#=
 """
     get_Ah_correl_new(Xs::Array{Float64,2}, dt::Float64)
 
@@ -589,7 +606,8 @@ _OUTPUT_:
 `Lh`: Estimate of the Laplacian matrix normalized by the inertias (M^{-1}*L).
 `dh`: Estimate of the damping over inertia ratios.
 """
-function get_Ah_correl_new(Xs::Array{Float64,2}, dt::Float64)
+=#
+@everywhere function get_Ah_correl_new(Xs::Array{Float64,2}, dt::Float64)
 	nn,T = size(Xs)
 	n = Int(nn/2)
 
