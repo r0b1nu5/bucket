@@ -117,8 +117,8 @@ function Lmin_l0_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::
 	S0 = (x*x')/N
 	S1 = (x*Dx')/N
 
-	xtk = xt[:,k]
-	Dxtlk = Dxt[l,k]
+	xtk = xt[:,k+1]
+	Dxtlk = Dxt[l,k+1]
 	
 	Fk = real.(xtk*xtk')
 	flk = real.(Dxtlk*xtk')
@@ -139,10 +139,10 @@ function Lmin_l0_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::
 
 # tr(L^2*\th*\th^T)
 	@NLexpression(system_id, AtAS01, 
-		      sum(A1[i,j]*A1[j,k]*S0[k,i] for i = 1:n for j = i:n for k = j:n) + 
-		      sum(A1[i,j]*A1[k,j]*S0[k,i] for i = 1:n for j = i:n for k = 1:j-1) + 
-		      sum(A1[j,i]*A1[j,k]*S0[k,i] for i = 1:n for j = 1:i-1 for k = j:n) + 
-		      sum(A1[j,i]*A1[k,j]*S0[k,i] for i = 1:n for j = 1:i-1 for k = 1:j-1))
+		      sum(A1[i,j]*A1[j,m]*S0[m,i] for i = 1:n for j = i:n for m = j:n) + 
+		      sum(A1[i,j]*A1[m,j]*S0[m,i] for i = 1:n for j = i:n for m = 1:j-1) + 
+		      sum(A1[j,i]*A1[j,m]*S0[m,i] for i = 1:n for j = 1:i-1 for m = j:n) + 
+		      sum(A1[j,i]*A1[m,j]*S0[m,i] for i = 1:n for j = 1:i-1 for m = 1:j-1))
 
 # tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
 	@NLexpression(system_id, AtAS02, 
@@ -230,8 +230,8 @@ function Lmin_l0_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, 
 	S0 = (x*x')/N
 	S1 = (x*Dx')/N
 
-	xtk = xt[:,k]
-	Dxtlk = Dxt[l,k]
+	xtk = xt[:,k+1]
+	Dxtlk = Dxt[l,k+1]
 	
 	Fk = real.(xtk*xtk')
 	flk = real.(Dxtlk*xtk')
@@ -253,14 +253,14 @@ function Lmin_l0_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, 
 
 # tr(L^2*\th*\th^T)
 	@NLexpression(system_id, AtAS01, 
-		      sum(A1[j,i]*A1[k,j]*(S0[k,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for k = 1:j-1) + 
-		      sum(A1[j,i]*A1[j,k]*(S0[k,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for k = j+1:n) -
-		      sum(A1[j,i]*A1[k,i]*(S0[k,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for k = 1:i-1) - 
-		      sum(A1[j,i]*A1[i,k]*(S0[k,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for k = i+1:n) +
-		      sum(A1[i,j]*A1[k,j]*(S0[k,i]-S0[j,i]) for i = 1:n for j = i+1:n for k = 1:j-1) + 
-		      sum(A1[i,j]*A1[j,k]*(S0[k,i]-S0[j,i]) for i = 1:n for j = i+1:n for k = j+1:n) -
-		      sum(A1[i,j]*A1[k,i]*(S0[k,i]-S0[i,i]) for i = 1:n for j = i+1:n for k = 1:i-1) -
-		      sum(A1[i,j]*A1[i,k]*(S0[k,i]-S0[i,i]) for i = 1:n for j = i+1:n for k = i+1:n))
+		      sum(A1[j,i]*A1[m,j]*(S0[m,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for m = 1:j-1) + 
+		      sum(A1[j,i]*A1[j,m]*(S0[m,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for m = j+1:n) -
+		      sum(A1[j,i]*A1[m,i]*(S0[m,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for m = 1:i-1) - 
+		      sum(A1[j,i]*A1[i,m]*(S0[m,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for m = i+1:n) +
+		      sum(A1[i,j]*A1[m,j]*(S0[m,i]-S0[j,i]) for i = 1:n for j = i+1:n for m = 1:j-1) + 
+		      sum(A1[i,j]*A1[j,m]*(S0[m,i]-S0[j,i]) for i = 1:n for j = i+1:n for m = j+1:n) -
+		      sum(A1[i,j]*A1[m,i]*(S0[m,i]-S0[i,i]) for i = 1:n for j = i+1:n for m = 1:i-1) -
+		      sum(A1[i,j]*A1[i,m]*(S0[m,i]-S0[i,i]) for i = 1:n for j = i+1:n for m = i+1:n))
 
 # tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
 	@NLexpression(system_id, AtAS02, 
@@ -351,7 +351,7 @@ function Lmin_l2_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::
 	S0 = (x*x')/N
 	S1 = (x*Dx')/N
 
-	xtk = xt[:,k]
+	xtk = xt[:,k+1]
 	
 	Fk = real.(xtk*xtk')
 	flk = [real.(Dxt[l,k]*xtk') for l = 1:n]
@@ -376,10 +376,10 @@ function Lmin_l2_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::
 
 # tr(L^2*\th*\th^T)
 	@NLexpression(system_id, AtAS01, 
-		      sum(A1[i,j]*A1[j,k]*S0[k,i] for i = 1:n for j = i:n for k = j:n) + 
-		      sum(A1[i,j]*A1[k,j]*S0[k,i] for i = 1:n for j = i:n for k = 1:j-1) + 
-		      sum(A1[j,i]*A1[j,k]*S0[k,i] for i = 1:n for j = 1:i-1 for k = j:n) + 
-		      sum(A1[j,i]*A1[k,j]*S0[k,i] for i = 1:n for j = 1:i-1 for k = 1:j-1))
+		      sum(A1[i,j]*A1[j,m]*S0[m,i] for i = 1:n for j = i:n for m = j:n) + 
+		      sum(A1[i,j]*A1[m,j]*S0[m,i] for i = 1:n for j = i:n for m = 1:j-1) + 
+		      sum(A1[j,i]*A1[j,m]*S0[m,i] for i = 1:n for j = 1:i-1 for m = j:n) + 
+		      sum(A1[j,i]*A1[m,j]*S0[m,i] for i = 1:n for j = 1:i-1 for m = 1:j-1))
 
 # tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
 	@NLexpression(system_id, AtAS02, 
@@ -467,7 +467,7 @@ function Lmin_l2_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, 
 	S0 = (x*x')/N
 	S1 = (x*Dx')/N
 
-	xtk = xt[:,k]
+	xtk = xt[:,k+1]
 	
 	Fk = real.(xtk*xtk')
 	flk = [real.(Dxt[l,k]*xtk') for l = 1:n]
@@ -492,14 +492,14 @@ function Lmin_l2_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, 
 
 # tr(L^2*\th*\th^T)
 	@NLexpression(system_id, AtAS01, 
-		      sum(A1[j,i]*A1[k,j]*(S0[k,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for k = 1:j-1) + 
-		      sum(A1[j,i]*A1[j,k]*(S0[k,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for k = j+1:n) -
-		      sum(A1[j,i]*A1[k,i]*(S0[k,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for k = 1:i-1) - 
-		      sum(A1[j,i]*A1[i,k]*(S0[k,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for k = i+1:n) +
-		      sum(A1[i,j]*A1[k,j]*(S0[k,i]-S0[j,i]) for i = 1:n for j = i+1:n for k = 1:j-1) + 
-		      sum(A1[i,j]*A1[j,k]*(S0[k,i]-S0[j,i]) for i = 1:n for j = i+1:n for k = j+1:n) -
-		      sum(A1[i,j]*A1[k,i]*(S0[k,i]-S0[i,i]) for i = 1:n for j = i+1:n for k = 1:i-1) -
-		      sum(A1[i,j]*A1[i,k]*(S0[k,i]-S0[i,i]) for i = 1:n for j = i+1:n for k = i+1:n))
+		      sum(A1[j,i]*A1[m,j]*(S0[m,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for m = 1:j-1) + 
+		      sum(A1[j,i]*A1[j,m]*(S0[m,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for m = j+1:n) -
+		      sum(A1[j,i]*A1[m,i]*(S0[m,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for m = 1:i-1) - 
+		      sum(A1[j,i]*A1[i,m]*(S0[m,i]-S0[i,i]) for i = 1:n for j = 1:i-1 for m = i+1:n) +
+		      sum(A1[i,j]*A1[m,j]*(S0[m,i]-S0[j,i]) for i = 1:n for j = i+1:n for m = 1:j-1) + 
+		      sum(A1[i,j]*A1[j,m]*(S0[m,i]-S0[j,i]) for i = 1:n for j = i+1:n for m = j+1:n) -
+		      sum(A1[i,j]*A1[m,i]*(S0[m,i]-S0[i,i]) for i = 1:n for j = i+1:n for m = 1:i-1) -
+		      sum(A1[i,j]*A1[i,m]*(S0[m,i]-S0[i,i]) for i = 1:n for j = i+1:n for m = i+1:n))
 
 # tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
 	@NLexpression(system_id, AtAS02, 
