@@ -1,6 +1,6 @@
 using PyPlot, DelimitedFiles
 
-# State of the system in encoded as xy = (x,\dot{x},y,\dot{y})
+# State of the system is encoded as xy = (x,\dot{x},y,\dot{y})
 
 function hh(xy0::Array{Float64,1},do_the_plot::Bool=false,n_iter::Int64=1000,h::Float64=.01,lambda::Float64=1.)
 	x0,xd0,y0,yd0 = xy0

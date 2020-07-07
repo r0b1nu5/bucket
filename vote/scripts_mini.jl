@@ -82,84 +82,6 @@ function influence_effort_mini_repr(x0::Array{Float64,1}, eps::Float64, n_repr::
 	return sum(w), o0, xx
 end
 
-function loop_mini(x0::Array{Float64,1}, epss::Array{Float64,1})
-	m = length(epss)
-
-	effort = Array{Float64,1}()
-
-	for j in 1:m
-		@info "j = $j/$m"
-		push!(effort,influence_effort_mini(x0,epss[j])[1])
-	end
-	
-	return effort
-end
-
-function plot_quartiles(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::String="C0")
-	q0,q25,q50,q75,q00 = quants(effort)
-
-	plot_quants(q0,q25,q50,q75,q00,epss,colo)
-end
-
-function plot_mean(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::String="C0")
-	n,m = size(effort)
-
-	mef = [mean(effort[:,i]) for i in 1:m]
-	sef = [std(effort[:,i]) for i in 1:m]
-
-	for i in 1:m
-		PyPlot.plot([epss[i],epss[i]],[mef[i]-sef[i],mef[i]+sef[i]],color=colo)
-	end
-
-	PyPlot.plot(epss,mef,"o",color=colo)
-end
-	
-function plot_quants(q0::Array{Float64,1}, q25::Array{Float64,1}, q50::Array{Float64,1}, q75::Array{Float64,1}, q00::Array{Float64,1}, epss::Array{Float64,1}, colo::String="C0") 
-	for i in 1:length(epss)
-		PyPlot.plot(epss[i]*[1,1],[q25[i],q75[i]],color=colo)
-	end
-
-	PyPlot.plot(epss,q0,"x",color=colo)
-	PyPlot.plot(epss,q00,"x",color=colo)
-	PyPlot.plot(epss,q50,"o",color=colo)
-end
-
-
-function plot_mini(effort::Array{Float64,1}, epss::Array{Float64,1})
-	PyPlot.plot(epss,effort,color="C1",label="minimum")
-end
-
-
-function eps_connect(x0::Array{Float64,1}, epss::Array{Float64,1}, thr::Float64=.95)
-	n = length(x0)
-
-	dx = x0[2:end] - x0[1:end-1]
-	ig = [minimum([1.;abs.(2*(setdiff((dx .> eps).*(1:n-1),[0,]) .- n/2)./n)]) for eps in epss]
-	epi = minimum(setdiff((ig .> thr).*(1:length(epss)),[0,]))
-
-	return epss[epi]
-end
-		
-function quants(effort::Array{Float64,2})
-	n,m = size(effort)
-	
-	q0 = Array{Float64,1}()
-	q25 = Array{Float64,1}()
-	q50 = Array{Float64,1}()
-	q75 = Array{Float64,1}()
-	q00 = Array{Float64,1}()
-
-	for j in 1:m
-		push!(q0, quantile(effort[:,j], 0.))
-		push!(q25, quantile(effort[:,j], 0.25))
-		push!(q50, quantile(effort[:,j], 0.5))
-		push!(q75, quantile(effort[:,j], 0.75))
-		push!(q00, quantile(effort[:,j], 1.))
-	end
-
-	return q0,q25,q50,q75,q00
-end
-
 function outcome(x::Array{Float64,1})
 	return sum(sign.(x)), sum(x .> 0.), sum(x .< 0.)
 end
@@ -196,6 +118,89 @@ function mini_sort(x0::Array{Float64,1}, pos2neg::Bool)
 	end
 
 	return ids
+end
+
+function loop_mini(x0::Array{Float64,1}, epss::Array{Float64,1})
+	m = length(epss)
+
+	effort = Array{Float64,1}()
+
+	for j in 1:m
+		@info "j = $j/$m"
+		push!(effort,influence_effort_mini(x0,epss[j])[1])
+	end
+	
+	return effort
+end
+
+
+function eps_connect(x0::Array{Float64,1}, epss::Array{Float64,1}, thr::Float64=.95)
+	n = length(x0)
+
+	dx = x0[2:end] - x0[1:end-1]
+	ig = [minimum([1.;abs.(2*(setdiff((dx .> eps).*(1:n-1),[0,]) .- n/2)./n)]) for eps in epss]
+	epi = minimum(setdiff((ig .> thr).*(1:length(epss)),[0,]))
+
+	return epss[epi]
+end
+		
+function quants(effort::Array{Float64,2})
+	n,m = size(effort)
+	
+	q0 = Array{Float64,1}()
+	q25 = Array{Float64,1}()
+	q50 = Array{Float64,1}()
+	q75 = Array{Float64,1}()
+	q00 = Array{Float64,1}()
+
+	for j in 1:m
+		push!(q0, quantile(effort[:,j], 0.))
+		push!(q25, quantile(effort[:,j], 0.25))
+		push!(q50, quantile(effort[:,j], 0.5))
+		push!(q75, quantile(effort[:,j], 0.75))
+		push!(q00, quantile(effort[:,j], 1.))
+	end
+
+	return q0,q25,q50,q75,q00
+end
+
+function plot_quartiles(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::String="C0")
+	q0,q25,q50,q75,q00 = quants(effort)
+
+	plot_quants(q0,q25,q50,q75,q00,epss,colo)
+end
+
+function plot_mean(effort::Array{Float64,2}, epss::Array{Float64,1}, colo::String="C0")
+	n,m = size(effort)
+
+	mef = [mean(effort[:,i]) for i in 1:m]
+	sef = [std(effort[:,i]) for i in 1:m]
+
+	for i in 1:m
+		PyPlot.plot([epss[i],epss[i]],[mef[i]-sef[i],mef[i]+sef[i]],color=colo)
+	end
+
+	PyPlot.plot(epss,mef,"o",color=colo)
+end
+	
+function plot_quants(q0::Array{Float64,1}, q25::Array{Float64,1}, q50::Array{Float64,1}, q75::Array{Float64,1}, q00::Array{Float64,1}, epss::Array{Float64,1}, colo::String="C0") 
+#=
+for i in 1:length(epss)
+		PyPlot.plot(epss[i]*[1,1],[q25[i],q75[i]],color=colo)
+	end
+
+	PyPlot.plot(epss,q0,"x",color=colo)
+	PyPlot.plot(epss,q00,"x",color=colo)
+	PyPlot.plot(epss,q50,"o",color=colo)
+=#
+	PyPlot.fill([epss;epss[length(epss):-1:1]],[q0;q00[length(q00):-1:1]],color=colo,alpha=.1)
+	PyPlot.fill([epss;epss[length(epss):-1:1]],[q25;q75[length(q75):-1:1]],color=colo,alpha=.3)
+	PyPlot.plot(epss,q50,"-o",color=colo)
+end
+
+
+function plot_mini(effort::Array{Float64,1}, epss::Array{Float64,1})
+	PyPlot.plot(epss,effort,color="C1",label="minimum")
 end
 
 
