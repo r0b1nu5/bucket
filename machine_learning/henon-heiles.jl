@@ -2,11 +2,15 @@ using PyPlot, DelimitedFiles
 
 # State of the system is encoded as xy = (x,\dot{x},y,\dot{y})
 
-function hh(xy0::Array{Float64,1},do_the_plot::Bool=false,n_iter::Int64=1000,h::Float64=.01,lambda::Float64=1.)
+function hh(xy0::Array{Float64,1},do_the_plot::Bool=false,n_iter::Int64=1000,h::Float64=.001,lambda::Float64=1.,verb::Bool=false)
 	x0,xd0,y0,yd0 = xy0
+	
+	Etol = 1e-6
 
 	E = E_hh(xy0,lambda)
-	@info "Energy level: E = $E"
+	if verb
+		@info "Energy level: E = $E"
+	end
 
 	iter = 0
 	c = 0
@@ -15,9 +19,9 @@ function hh(xy0::Array{Float64,1},do_the_plot::Bool=false,n_iter::Int64=1000,h::
 	xys = Array{Float64,2}(undef,4,0)
 	xys = [xys xy0]
 	
-	while iter < n_iter && abs(E_hh(xy1,lambda)-E) < 1e-8
+	while iter < n_iter && abs(E_hh(xy2,lambda)-E) < Etol
 		iter += 1
-		if iter%1000 == 0
+		if iter%1000 == 0 && verb
 			@info "$iter/$n_iter"
 		end
 		
@@ -50,7 +54,7 @@ function hh(xy0::Array{Float64,1},do_the_plot::Bool=false,n_iter::Int64=1000,h::
 	XYs = [XYs xys]
 	xys = XYs
 
-	if abs(E_hh(xys[:,end],lambda) - E) > 1e-8
+	if abs(E_hh(xys[:,end],lambda) - E) >= Etol
 		@info "Diverged (energy not conserved)."
 		if do_the_plot
 			PyPlot.plot(xys[1,1],xys[3,1],"o",color="C4")
