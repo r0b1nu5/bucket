@@ -7,24 +7,24 @@ include("final_new_par.jl")
 @info "====================================================================="
 
 ids = [
-       "ntw3_1",
-       "ntw3_2",
-       "ntw3_3",
+#       "ntw3_1",
+#       "ntw3_2",
+#       "ntw3_3",
 #       "ntw20_1",
 #       "ntw20_2",
 #       "ntw20_3",
 #       "ntw20_4",
 #       "ieee57_1",
 #       "ieee57_2",
-#       "pen_1",
- #      "pen_2",
- #      "pen_2",
- #      "pen_3",
- #      "pen_4",
- #      "pen_5",
- #      "pen_6",
- #      "pen_7",
- #      "pen_8"
+       "pen_1",
+       "pen_2",
+       "pen_2",
+       "pen_3",
+       "pen_4",
+       "pen_5",
+       "pen_6",
+       "pen_7",
+       "pen_8"
       ]
 
 ks_ntw3 = (1,50,1)
@@ -44,12 +44,12 @@ files = Dict{String,String}(
 			    "ieee57_2" => "data_melvyn/time_series_57_0.100000_0.010000_0.100000.csv",
 			    "pen_1" => "data_PEN/Xs_2013-01-15_00.csv",
 			    "pen_2" => "data_PEN/Xs_2013-03-10_04.csv",
-			    "pen_1" => "data_PEN/Xs_2013-04-03_02.csv",
-			    "pen_1" => "data_PEN/Xs_2013-04-03_03.csv",
-			    "pen_1" => "data_PEN/Xs_2013-04-03_07.csv",
-			    "pen_1" => "data_PEN/Xs_2013-07-30_01.csv",
-			    "pen_1" => "data_PEN/Xs_2013-07-30_04.csv",
-			    "pen_1" => "data_PEN/Xs_2013-07-30_09.csv"
+			    "pen_3" => "data_PEN/Xs_2013-04-03_02.csv",
+			    "pen_4" => "data_PEN/Xs_2013-04-03_03.csv",
+			    "pen_5" => "data_PEN/Xs_2013-04-03_07.csv",
+			    "pen_6" => "data_PEN/Xs_2013-07-30_01.csv",
+			    "pen_7" => "data_PEN/Xs_2013-07-30_04.csv",
+			    "pen_8" => "data_PEN/Xs_2013-07-30_09.csv"
 			    )
 
 taus = Dict{String,Float64}(

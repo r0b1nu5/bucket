@@ -217,9 +217,9 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 	@info "Full optimization took $(time() - t0)''."
 
 	writedlm("data/"*id*"_l0_$(l).$(k)_obj.csv",objective_value(system_id),',')
-	writedlm("data/"*id*"_l0_$(l).$(k)_A1.csv",mL,',')
-	writedlm("data/"*id*"_l0_$(l).$(k)_a2.csv",value.(a2),',')
-	writedlm("data/"*id*"_l0_$(l).$(k)_gamma.csv",value(gamma),',')
+#	writedlm("data/"*id*"_l0_$(l).$(k)_A1.csv",mL,',')
+#	writedlm("data/"*id*"_l0_$(l).$(k)_a2.csv",value.(a2),',')
+#	writedlm("data/"*id*"_l0_$(l).$(k)_gamma.csv",value(gamma),',')
 end
 
 #=
@@ -341,9 +341,9 @@ Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	@info "Full optimization took $(time() - t0)''."
 
 	writedlm("data/"*id*"_lap0_$(l).$(k)_obj.csv",objective_value(system_id),',')
-	writedlm("data/"*id*"_lap0_$(l).$(k)_A1.csv",mL,',')
-	writedlm("data/"*id*"_lap0_$(l).$(k)_a2.csv",value.(a2),',')
-	writedlm("data/"*id*"_lap0_$(l).$(k)_gamma.csv",value(gamma),',')
+#	writedlm("data/"*id*"_lap0_$(l).$(k)_A1.csv",mL,',')
+#	writedlm("data/"*id*"_lap0_$(l).$(k)_a2.csv",value.(a2),',')
+#	writedlm("data/"*id*"_lap0_$(l).$(k)_gamma.csv",value(gamma),',')
 end
 
 #=
@@ -460,9 +460,9 @@ Parallelized version of Lmin_l2.
 	@info "Full optimization took $(time() - t0)''."
 	
 	writedlm("data/"*id*"_l2_$(l).$(k)_obj.csv",objective_value(system_id),',')
-	writedlm("data/"*id*"_l2_$(l).$(k)_A1.csv",mL,',')
-	writedlm("data/"*id*"_l2_$(l).$(k)_a2.csv",value.(a2),',')
-	writedlm("data/"*id*"_l2_$(l).$(k)_gamma.csv",value.(gamma),',')
+#	writedlm("data/"*id*"_l2_$(l).$(k)_A1.csv",mL,',')
+#	writedlm("data/"*id*"_l2_$(l).$(k)_a2.csv",value.(a2),',')
+#	writedlm("data/"*id*"_l2_$(l).$(k)_gamma.csv",value.(gamma),',')
 end
 
 #=
@@ -586,9 +586,9 @@ Same as Lmin_l2_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	@info "Full optimization took $(time() - t0)''."
 
 	writedlm("data/"*id*"_lap2_$(l).$(k)_obj.csv",objective_value(system_id),',')
-	writedlm("data/"*id*"_lap2_$(l).$(k)_A1.csv",mL,',')
-	writedlm("data/"*id*"_lap2_$(l).$(k)_a2.csv",value.(a2),',')
-	writedlm("data/"*id*"_lap2_$(l).$(k)_gamma.csv",value.(gamma),',')
+#	writedlm("data/"*id*"_lap2_$(l).$(k)_A1.csv",mL,',')
+#	writedlm("data/"*id*"_lap2_$(l).$(k)_a2.csv",value.(a2),',')
+#	writedlm("data/"*id*"_lap2_$(l).$(k)_gamma.csv",value.(gamma),',')
 end
 
 #=
