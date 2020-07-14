@@ -1,10 +1,10 @@
-using LinearAlgebra, Distributed, Dates
+using LinearAlgebra, Distributed, Dates, DelimitedFiles
 
 include("big_rand.jl")
 include("scripts_mini.jl")
 include("result.jl")
 
-needed_paths = ["./temp_data/","./data/single/","./data/several/","./data/wta/"]
+needed_paths = ["./data/","./temp_data/","./data/single/","./data/several/","./data/wta/"]
 for path in needed_paths
 	if !isdir(path)
 		mkdir(path)
@@ -68,7 +68,7 @@ function generate_country_bias(N::Array{Int64,1}, M::Array{Int64,1}, MU::Array{F
 		while maxd > eps
 			N1 = round(Int64,bias[i]*N[i])
 			N2 = N[i] - N1
-			global x = big_rand(N1,-MU[i]+DE[i],SI[i],N2,MU[i]+DE[i],SI[i])
+			global x = big_rand(N1,-MU[i],SI[i],N2,MU[i],SI[i])
 			maxd = maximum(x[2:end]-x[1:end-1])
 		end	
 		push!(X0,x)

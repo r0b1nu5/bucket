@@ -1,59 +1,29 @@
-using Distributed, DelimitedFiles, Distributions
+using Distributed
 
-include("scripts.jl")
-include("big_rand.jl")
+n_thr = 9
 
-@everywhere include("cluster_fcts.jl")
-
-# Generate the tuples in order to compute effort wrt eps (\in [emi,ema]), and run the computation in parallel.
-
-ttt = time()
-
-nx = 1 # Number of natural opinion to consider
-n0 = 50 # Index of the realization
-emi = .05 # Minimal eps value
-ema = .7 # Maximal eps value
-ne = 30 # Resolution of eps values
-epss = Array(LinRange(emi,ema,ne)) # List of eps values
-n_run = 50 # Number of runs for the random strategy
-d = 1. # Distance between the modes in the distribution of x0
-sig = .2 # Standard deviation in the distribution of x0
-n1 = 1000 # Number of agents in the left mode
-n2 = 1001 # Number of agents in the right mode
-n_modes = [2,3,4,5] # Eigenmodes to consider in the Fiedler strategy
-
-xess = Array{Tuple{Array{Float64,1},Float64,String,Int64},1}()
-
-for i in n0+1:n0+nx
-	x0 = zeros(n1+n2)
-	dx0 = [1000.,]
-	while maximum(dx0) > emi
-		x0 = sort([rand(Normal(-d/2,sig),n1);rand(Normal(d/2,sig),n2)])
-		dx0 = x0[2:end] - x0[1:end-1]
-	end
-	writedlm("data/x$i.csv",x0,',')
-	for j in 1:ne
-		eps = epss[j]
-		for st in ["rand","fiedler","mini","cent"]
-			if st == "rand"
-				for k in 1:n_run
-					push!(xess,(x0,eps,"rand$k",i))
-				end
-			else
-				push!(xess,(x0,eps,st,i))
-			end
-		end
-	end
+if nworkers() < n_thr
+	addprocs(n_thr - nworkers())
 end
 
-   
+@everywhere include("run_country.jl")
 
-pmap(eff,xess)
-				    
-@info "Elapsed time: $((time() - ttt)/60) minutes"
+t0 = time()
 
+ids = (11,30)
+epss = Array(LinRange(.2,.8,20))
+Ns = [rand(200:1000,9) for i in 1:3]
+Ms = [2*round.(Int64,Ns[i]/100) .+ 1 for i in 1:3]
+MUs = [m*ones(9) for m in [.3,.5,.7]]
+DEs = [m*ones(9) for m in [0.,.1,.2]]
+biass = [m*ones(9) for m in [0.,.05,.1]]
+SIs = [m*ones(9) for m in [.1,.2,.3]]
 
+run_country(ids,epss,Ns,Ms,MUs,DEs,biass,SIs)
 
+t1 = time()
+
+@info "Everything done in $((t1-t0)/(60*60)) hours."
 
 
 
