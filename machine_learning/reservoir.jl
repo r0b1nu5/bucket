@@ -12,7 +12,9 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 	r0 = rand(N)
 	rt = reservoir_tanh(r0,ut,A,Win,a,xi)
 #	rt = rt1(reservoir_tanh(r0,ut,A,Win,a,xi))
-	
+	@info "Reservoir states computed."
+
+	#=
 	nabs_r = Array{Array{Float64,2},1}()
 	nabs_u = Array{Array{Float64,2},1}()
 	for j in 1:size(ut)[2]
@@ -20,6 +22,7 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 		push!(nabs_r,x[1])
 		push!(nabs_u,x[2])
 	end
+	=#
 	
 	@info "Computing optimal post-treatment..."
 	rb = sum(rt[:,1:dT:T],dims=2)./length(1:dT:T)
@@ -32,7 +35,8 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 	Wout = dS*transpose(dR)*inv(Symmetric(dR*transpose(dR) + beta*diagm(0 => ones(N))))
 	c = -vec(Wout*rb - sb)
 	
-	return Wout,c,rt,nabs_r,nabs_u
+#	return Wout,c,rt,nabs_r,nabs_u
+	return Wout,c,rt
 end
 
 function reservoir_prediction(us::Array{Float64,2},Wout::Array{Float64,2},c::Array{Float64,1},r0::Array{Float64,1},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64)

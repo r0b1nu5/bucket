@@ -1,6 +1,7 @@
 using LinearAlgebra, Statistics, Dates
 
 include("henon-heiles.jl")
+include("lorenz.jl")
 
 needed_paths = ["./temp_data/",]
 for path in needed_paths
@@ -122,7 +123,7 @@ function lyap_lorenz(x0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_samp
 
 	lyaph = mean(log.(dd./delta)./(h*n_iter))
 
-	return lyaph,dd,XX1,XX2,t
+	return lyaph,dd,XX1,XX2
 end
 
 

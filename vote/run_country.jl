@@ -146,11 +146,13 @@ function effort_single(X0::Array{Array{Float64,1},1}, X1::Array{Array{Float64,1}
 		while oc0*oc1 > 0. && c2 < length(x1)
 			c1 += 1
 			c2 += 1
-				to_inf = inf_order[c2]
+			to_inf = inf_order[c2]
 			state = state_id[to_inf]
 			index = setdiff((1:length(x1)).*(state_id .== state),[0.])
+			oc10 = outcome(x1[index])[1]
 			x1[index] += w0*LDis[state][:,to_inf-sum(N[1:state-1])]
-			oc1 = outcome(x1)[1]
+			oc11 = outcome(x1[index])[1]
+			oc1 = oc1 - oc10 + oc11
 		end
 	end
 	

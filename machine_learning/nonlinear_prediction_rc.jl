@@ -4,8 +4,8 @@ include("lorenz.jl")
 include("henon-heiles.jl")
 include("reservoir.jl")
 
-model = "lorenz"
-new_reservoir = false
+model = "lorenz2"
+new_reservoir = true
 
 if model == "lorenz"
 # #=
@@ -13,7 +13,7 @@ if model == "lorenz"
 #	xs2 = readdlm("data1/xs2.csv",',')
 #	xs3 = readdlm("data1/xs3.csv",',')
 	xs1 = readdlm("data1/xs4.csv",',')
-# =#
+# # =#
 	n = 3
 elseif model == "hh"
 #	xs1 = readdlm("data1/hh_xys0_chaos.csv",',')
@@ -25,12 +25,12 @@ elseif model == "hh"
 	n = 4
 end
 
-#=
+# #=
 T0 = 1 # starting time
 Tt = 8001 # training time
-=#
-Tp = 1000 # time between training and prediction
-DT = 1000 # prediction time
+# =#
+DT = 1000 # time between training and prediction
+Tp = 1000 # prediction time
 
 thr = 1e-1
 
@@ -77,9 +77,9 @@ diff = xs1[:,(T0+Tt+DT):(T0+Tt+DT+Tp)] - ss
 errs = abs.(diff)./repeat(amps,1,Tp+1)
 merr = [maximum(errs[:,1:i]) for i in 1:Tp+1]
 
-Tb = minimum(setdiff((1:Tp+1).*(merr .> thr),[0,]))
+Tb = minimum(setdiff([(1:Tp+1).*(merr .> thr);Tp+2],[0,]))
 
- #=
+# #=
 fignum = rand(1000:9999)
 for i in 1:n
 	figure(fignum)
