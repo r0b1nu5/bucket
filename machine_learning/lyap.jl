@@ -18,6 +18,7 @@ function lyap_hh(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample:
 	c = 0
 	cc = 0
 	d = Array{Float64,1}()
+	D = Array{Float64,1}()
 	XY1 = Array{Float64,2}(undef,4,0)
 	XY2 = Array{Float64,2}(undef,4,0)
 	while c < n_sample
@@ -37,10 +38,13 @@ function lyap_hh(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample:
 			XY2 = xys11
 			writedlm("temp_data/d_$cc.csv",d,',')
 			d = [norm(xy1[[1,3]] - xy11[[1,3]]),]
+			writedlm("temp_data/D_$cc.csv",D,',')
+			D = [norm(xy1 - xy11),]
 		else
 			XY1 = [XY1 xys1]
 			XY2 = [XY2 xys11]
 			push!(d,norm(xy1[[1,3]] - xy11[[1,3]]))
+			push!(D,norm(xy1 - xy11))
 		end
 
 		xy0 = copy(xy1)
@@ -52,6 +56,8 @@ function lyap_hh(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample:
 	XY11 = Array{Float64,2}(undef,4,0)
 	XY22 = Array{Float64,2}(undef,4,0)
 	dd = Array{Float64,1}()
+	DD = Array{Float64,1}()
+
 	for i in 1:cc
 		XY11 = [XY11 readdlm("temp_data/XY1_$i.csv",',')]
 		rm("temp_data/XY1_$i.csv")
@@ -59,14 +65,18 @@ function lyap_hh(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample:
 		rm("temp_data/XY2_$i.csv")
 		dd = [dd;vec(readdlm("temp_data/d_$i.csv",','))]
 		rm("temp_data/d_$i.csv")
+		DD = [DD;vec(readdlm("temp_data/D_$i.csv",','))]
+		rm("temp_data/D_$i.csv")
 	end
 	XY11 = [XY11 XY1]
 	XY22 = [XY22 XY2]
 	dd = [dd;d]
+	Dd = [DD;D]
 
 	lyaph = mean(log.(dd./delta)./(h*n_iter))
+	Lyaph = mean(log.(DD./delta)./(h*n_iter))
 
-	return lyaph,dd,XY11,XY22
+	return lyaph,dd,Lyaph,DD,XY11,XY22
 end
 
 

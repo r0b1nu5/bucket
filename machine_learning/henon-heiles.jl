@@ -122,5 +122,57 @@ function gen_xy0(E0::Float64,lambda::Float64=1.,eps::Float64=1e-8)
 end
 
 
+function poincare_hh(xy0::Array{Float64,1}, n_iter::Int64, fig::String="Poincare", col::String="C0", h::Float64=.01, lambda::Float64=1.)
+	x0,xd0,y0,yd0 = xy0
 
+	Etol = 1e-6
 
+	E = E_hh(xy0,lambda)
+
+	iter = 0
+	c = 0
+	xy1 = copy(xy0)
+	xy2 = copy(xy0)
+	xys = Array{Float64,2}(undef,4,0)
+	xys = [xys xy0]
+	
+	while iter < n_iter && abs(E_hh(xy2,lambda)-E) < Etol
+		iter += 1
+		
+		xy1 = copy(xy2)
+
+		k1 = f_hh(xy1,lambda)
+		k2 = f_hh(xy1 + h/2*k1,lambda)
+		k3 = f_hh(xy1 + h/2*k2,lambda)
+		k4 = f_hh(xy1 + h*k3,lambda)
+
+		dxy = (k1+2*k2+2*k3+k4)/6
+		xy2 = xy1 + h*dxy
+		
+		if xy1[1]*xy2[1] <= 0. && xy1[2] > 0.
+			figure(fig)
+			PyPlot.plot(xy1[3],xy1[4],".",color=col)
+#			pause(.0001)
+		end
+
+	end
+
+	if abs(E_hh(xy2,lambda) - E) >= Etol
+		@info "Diverged (energy not conserved)."
+	end
+
+	xlabel("y")
+	ylabel("dy/dt")
+	title("E = $E")
+end
+
+function poincare_hh(xys::Array{Float64,2}, fig::String="Poincare", col::String="C0")
+	n,T = size(xys)
+
+	for i in 1:T-1
+		if xys[1,i]*xys[1,i+1] <= 0. && xys[2,i] > 0.
+			figure(fig)
+			PyPlot.plot(xys[3,i],xys[4,i],".",color=col)
+		end
+	end
+end

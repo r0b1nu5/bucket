@@ -1,6 +1,6 @@
 include("reservoir.jl")
 
-xs_file = "_pj3"
+xs_file = "1"
 writedlm("data1/last_run_xs_file.csv",xs_file,',')
 
 xs = readdlm("data1/xs"*xs_file*".csv",',')
@@ -8,9 +8,9 @@ xs = readdlm("data1/xs"*xs_file*".csv",',')
 Tp = 1000 # predcition time
 DT = 1000 # time between training and prediction
 
-Tti = 2001
+Tti = 201
 Ttf = 2001
-dTt = 50
+dTt = 100
 Ni = 2000
 Nf = 2000
 dN = 200
@@ -28,7 +28,7 @@ beta = .01
 thrs = [.1,.05,.02]
 
 
- #=
+# #=
 # Compute Wout and breaktime with respect to training time.
 
 Tts = Array(Tti:dTt:Ttf)
@@ -45,6 +45,8 @@ for i in 1:length(Tts)
 	global T0 = 8002 - Tt
 	Wout,c,r = reservoir_training((xs[:,T0:T0+Tt-1],xs[:,T0+1:T0+Tt]),A,Win,a,xi,dT,beta)
 	writedlm("data1/Wout$(i)_vs_Tt_N$N.csv",Wout,',')
+	writedlm("data1/V$(i)_vs_Tt_N$N.csv",xs[:,T0+1:T0+Tt],',')
+	writedlm("data1/R$(i)_vs_Tt_N$N.csv",r,',')
 
 	if DT > 0
 		rr = reservoir_tanh(r[:,end],xs[:,T0+Tt:T0+Tt+DT],A,Win,a,xi)
@@ -103,7 +105,7 @@ end
 end
 # =#
 
-# #=
+ #=
 # Compute breaktime with respect to reservoir size and training time
 
 Ns = Array(Ni:dN:Nf)
