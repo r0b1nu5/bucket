@@ -10,7 +10,7 @@ for path in needed_paths
 	end
 end
 
-function lyap_hh(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample::Int64, h::Float64=.01, lambda::Float64=1.)
+function lyap_hh(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample::Int64, h::Float64=.01, lambda::Float64=1.,verb::Bool=false)
 	v = 2*rand(2) .- 1
 	xy00 = copy(xy0)
 	xy00[[1,3]] += delta*v/norm(v)
@@ -31,6 +31,9 @@ function lyap_hh(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample:
 		xy11 = xys11[:,end]
 		
 		if c%1000 == 0
+			if verb
+				@info "c = $c"
+			end
 			cc += 1
 			writedlm("temp_data/XY1_$cc.csv",XY1,',')
 			XY1 = xys1
@@ -79,6 +82,48 @@ function lyap_hh(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample:
 	return lyaph,dd,Lyaph,DD,XY11,XY22
 end
 
+function lyap_hh_light(xy0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample::Int64, h::Float64=.01, lambda::Float64=1.,verb::Bool=false)
+	v = 2*rand(2) .- 1
+	xy00 = copy(xy0)
+	xy00[[1,3]] += delta*v/norm(v)
+
+	c = 0
+	cc = 0
+	d = Array{Float64,1}()
+	D = Array{Float64,1}()
+	XY1 = Array{Float64,2}(undef,4,0)
+	XY2 = Array{Float64,2}(undef,4,0)
+
+	Sd = 0.
+	SD = 0.
+
+	while c < n_sample
+		c += 1
+		
+		xys1,E = hh(xy0,false,n_iter,h,lambda)
+		xys11,E = hh(xy00,false,n_iter,h,lambda)
+
+		xy1 = xys1[:,end]
+		xy11 = xys11[:,end]
+	
+		Sd += log(norm(xy1[[1,3]] - xy11[[1,3]])/delta)/(h*n_iter)
+		SD += log(norm(xy1 - xy11)/delta)/(h*n_iter)
+
+		if c%1000 == 0 && verb
+			@info "c = $c"
+		end
+		
+		xy0 = copy(xy1)
+		v = xy11[[1,3]] - xy1[[1,3]]
+		v = v/norm(v)
+		xy00 = [xy0[1] + delta*v[1],xy11[2],xy0[3]  + delta*v[2],xy11[4]]
+	end
+
+	lyaph = Sd/c
+	Lyaph = SD/c
+
+	return lyaph,Lyaph
+end
 
 function lyap_lorenz(x0::Array{Float64,1}, delta::Float64, n_iter::Int64, n_sample::Int64, sig::Float64, beta::Float64, rho::Float64, h::Float64)
 	v = 2*rand(3) .- 1

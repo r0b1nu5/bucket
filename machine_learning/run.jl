@@ -1,6 +1,6 @@
 include("reservoir.jl")
 
-xs_file = "1"
+xs_file = "_hh1"
 writedlm("data1/last_run_xs_file.csv",xs_file,',')
 
 xs = readdlm("data1/xs"*xs_file*".csv",',')
@@ -8,8 +8,8 @@ xs = readdlm("data1/xs"*xs_file*".csv",',')
 Tp = 1000 # predcition time
 DT = 1000 # time between training and prediction
 
-Tti = 201
-Ttf = 2001
+Tti = 1501
+Ttf = 3001
 dTt = 100
 Ni = 2000
 Nf = 2000
@@ -17,7 +17,7 @@ dN = 200
 k0 = 20
 ks = 80
 
-n = 3
+n,T = size(xs)
 rho = 1.5
 sig = 1.
 a = 1.
