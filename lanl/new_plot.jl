@@ -8,6 +8,8 @@ ids = [
        "ntw20_2",
        "ntw20_3",
        "ntw20_4",
+       "ntw20_5",
+       "ntw20_6",
        "ieee57_1",
        "ieee57_2",
        "pen_1",
@@ -33,6 +35,8 @@ Ks = Dict{String,Tuple{Int64,Int64,Int64}}(
 					   "ntw20_2" => ks_ntw20,
 					   "ntw20_3" => ks_ntw20,
 					   "ntw20_4" => ks_ntw20,
+					   "ntw20_5" => ks_ntw20,
+					   "ntw20_6" => ks_ntw20,
 					   "ieee57_1" => ks_ieee57,
 					   "ieee57_2" => ks_ieee57,
 					   "pen_1" => ks_pen,
@@ -53,6 +57,8 @@ ns = Dict{String,Int64}(
 			"ntw20_2" => 20,
 			"ntw20_3" => 20,
 			"ntw20_4" => 20,
+			"ntw20_5" => 20,
+			"ntw20_6" => 20,
 			"ieee57_1" => 57,
 			"ieee57_2" => 57,
 			"pen_1" => 115,
@@ -68,7 +74,7 @@ ns = Dict{String,Int64}(
 
 Ls = Dict{String,Array{Float64,2}}()
 #for ntw in ids
-for ntw in ["ntw20_4",]
+for ntw in ["ntw20_6",]
 	ls = 1:ns[ntw]
 	ks = Ks[ntw][1]:Ks[ntw][3]:Ks[ntw][2]
 	L = zeros(length(ls),length(ks))
