@@ -1,3 +1,5 @@
+gs_failure/data/
+gs_failure/figs/
 K_player/analysis/
 K_player/figures/
 K_player/refs/
@@ -6,8 +8,10 @@ lanl/data/
 lanl/data_marc/fle*
 lanl/data_melvyn/
 lanl/data_PEN/
+lanl/data_uk10/
 lanl/figs/
 lanl/Mas16/
+lanl/send/
 line_rank/data/
 machine_learning/data1/
 machine_learning/data_cluster/
