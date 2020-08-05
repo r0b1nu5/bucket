@@ -15,12 +15,11 @@ ids = [
 #       "ntw20_3",
 #       "ntw20_4",
 #	"ntw20_5",
-	"ntw20_6",
+#	"ntw20_6",
 #       "ieee57_1",
 #       "ieee57_2",
 #       "pen_1",
-#       "pen_2",
-#       "pen_2",
+       "pen_2",
 #       "pen_3",
 #       "pen_4",
 #       "pen_5",
@@ -32,7 +31,8 @@ ids = [
 ks_ntw3 = (1,50,1)
 ks_ntw20 = (1,30,1)
 ks_ieee57 = (1,30,1)
-ks_pen = (1500,11000,1000)
+#ks_pen = (1500,11000,1000)
+ks_pen = (4000,6000,50)
 
 files = Dict{String,String}(
 			    "ntw3_1" => "data_marc/Xs1.csv",
@@ -105,7 +105,7 @@ for id in ids
 	nn = size(Xs)[1]
 	n = Int(nn/2)
 
-	xxx = run_new_l0_par(id,Xs,taus[id],(1,n,1),Ks[id],false)
+	xxx = run_new_l0_par(id,Xs,taus[id],(127,n,1),Ks[id],false)
 end
 
 
