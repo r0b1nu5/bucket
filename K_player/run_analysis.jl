@@ -1,6 +1,6 @@
 using Distributed
 
-n_thr = 5
+n_thr = 10
 
 if nworkers() < n_thr
 	addprocs(n_thr - nworkers())
