@@ -25,8 +25,8 @@ ids = [
 ks_ntw3 = (1,50,1)
 ks_ntw20 = (1,30,1)
 ks_ieee57 = (1,30,1)
-#ks_pen = (1500,11000,1000)
-ks_pen = (5000,6000,50)
+ks_pen = (1500,11000,1000)
+#ks_pen = (5000,6000,50)
 
 Ks = Dict{String,Tuple{Int64,Int64,Int64}}(
 					   "ntw3_1" => ks_ntw3,
@@ -81,7 +81,7 @@ for ntw in ["pen_2",]
 	L = zeros(length(ls),length(ks))
 	for i in 1:length(ls)
 		for j in 1:length(ks)
-			L[i,j] = readdlm("data2/"*ntw*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
+			L[i,j] = readdlm("data/"*ntw*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
 		end
 	end
 	Ls[ntw] = L
