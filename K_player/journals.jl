@@ -8,7 +8,7 @@ journals_short = ["nature",
 	"lancet",#"lancet_letters",
 	"neng_j_med",#"neng_j_med_letters",
 	"plant_cell",
-	"j_phys_chem_a",
+	"j_acs",
 	"ieee_trans_autom_control",
 	"energy",
 	"chaos",#"chaos_91-99","chaos_00-08","chaos_09-17",
@@ -34,6 +34,18 @@ journals_short = ["nature",
 	"bull_ams"]
 # =#
 used_journals = ["chaos","ieee_trans_autom_control","lancet","nature","neng_j_med","pnas","prd","pre","prl","science","bmj","medical_ped_onc","scientometrics"]
+
+journals_red_short = [
+		      "nature_1950",
+		      "energy_2005",
+		      "ieee_trans_autom_control_2000",
+		      "j_acs_1930",
+		      "lancet_1910",
+		      "neng_j_med_1950",
+		      "plant_cell_2000",
+		      "pnas_1950",
+		     "science_1940"]
+
 
 journals_full = Dict{String,String}()
 
@@ -80,22 +92,32 @@ journals_code["bmj"] = "BMJ"
 journals_code["bull_ams"] = "BAM"
 journals_code["chaos"] = "CHA"
 journals_code["energy"] = "ENE"
+journals_code["energy_2005"] = "ENE*"
 journals_code["food_chem_tox"] = "FCT"
 journals_code["ieee_trans_autom_control"] = "TAC"
+journals_code["ieee_trans_autom_control_2000"] = "TAC*"
 journals_code["j_phys_chem_a"] = "PCA"
 journals_code["j_mat_chem_a"] = "MCA"
+journals_code["j_acs"] = "ACS"
+journals_code["j_acs_1930"] = "ACS*"
 journals_code["lancet"] = "LAN"
+journals_code["lancet_1910"] = "LAN*"
 journals_code["medical_ped_onc"] = "MPO"
 journals_code["molecular_bio_evo"] = "MBE"
 journals_code["nature"] = "NAT"
+journals_code["nature_1950"] = "NAT*"
 journals_code["nature_comm"] = "NAC"
 journals_code["neng_j_med"] = "NEM"
+journals_code["neng_j_med_1950"] = "NEM*"
 journals_code["plant_cell"] = "PLC"
+journals_code["plant_cell_2000"] = "PLC*"
 journals_code["pnas"] = "PNA"
+journals_code["pnas_1950"] = "PNA*"
 journals_code["prd"] = "PRD"
 journals_code["pre"] = "PRE"
 journals_code["prl"] = "PRL"
 journals_code["science"] = "SCI"
+journals_code["science_1940"] = "SCI*"
 journals_code["scientometrics"] = "SCM"
 journals_code["siam"] = "SIA"
 
@@ -103,14 +125,23 @@ journals_code["siam"] = "SIA"
 journals_colors = Dict{String,Tuple{Array{Float64,1},Array{Float64,1}}}()
 
 journals_colors["nature"] = (parse.(Int64,["1f","77","b4"],base = 16)./255,[0.,0.,0.])
+journals_colors["nature_1950"] = (parse.(Int64,["1f","77","b4"],base = 16)./255,[0.,0.,0.])
 journals_colors["pnas"] = (parse.(Int64,["ff","7f","0e"],base = 16)./255,[0.,0.,0.])
+journals_colors["pnas_1950"] = (parse.(Int64,["ff","7f","0e"],base = 16)./255,[0.,0.,0.])
 journals_colors["science"] = (parse.(Int64,["2c","a0","2c"],base = 16)./255,[0.,0.,0.])
+journals_colors["science_1940"] = (parse.(Int64,["2c","a0","2c"],base = 16)./255,[0.,0.,0.])
 journals_colors["lancet"] = (parse.(Int64,["d6","27","28"],base = 16)./255,[0.,0.,0.])
+journals_colors["lancet_1910"] = (parse.(Int64,["d6","27","28"],base = 16)./255,[0.,0.,0.])
 journals_colors["neng_j_med"] = (parse.(Int64,["94","67","bd"],base = 16)./255,[0.,0.,0.])
+journals_colors["neng_j_med_1950"] = (parse.(Int64,["94","67","bd"],base = 16)./255,[0.,0.,0.])
 journals_colors["plant_cell"] = (parse.(Int64,["8c","56","4b"],base = 16)./255,[0.,0.,0.])
 journals_colors["j_phys_chem_a"] = (parse.(Int64,["e3","77","c2"],base = 16)./255,[0.,0.,0.])
+journals_colors["j_acs"] = (parse.(Int64,["e3","77","c2"],base = 16)./255,[0.,0.,0.])
+journals_colors["j_acs_1930"] = (parse.(Int64,["e3","77","c2"],base = 16)./255,[0.,0.,0.])
 journals_colors["ieee_trans_autom_control"] = (parse.(Int64,["7f","7f","7f"],base = 16)./255,[0.,0.,0.])
+journals_colors["ieee_trans_autom_control_2000"] = (parse.(Int64,["7f","7f","7f"],base = 16)./255,[0.,0.,0.])
 journals_colors["energy"] = (parse.(Int64,["bc","bd","22"],base = 16)./255,[0.,0.,0.])
+journals_colors["energy_2005"] = (parse.(Int64,["bc","bd","22"],base = 16)./255,[0.,0.,0.])
 journals_colors["chaos"] = (parse.(Int64,["17","be","cf"],base = 16)./255,[0.,0.,0.])
 journals_colors["siam"] = (parse.(Int64,["ae","c7","e8"],base = 16)./255,[0.,0.,0.])
 journals_colors["ann_math"] = (parse.(Int64,["ff","bb","78"],base = 16)./255,[0.,0.,0.])
