@@ -37,14 +37,18 @@ used_journals = ["chaos","ieee_trans_autom_control","lancet","nature","neng_j_me
 
 journals_red_short = [
 		      "nature_1950",
-		      "energy_2005",
-		      "ieee_trans_autom_control_2000",
-		      "j_acs_1930",
+		      "pnas_1950",
+		      "science_1940",
 		      "lancet_1910",
 		      "neng_j_med_1950",
 		      "plant_cell_2000",
-		      "pnas_1950",
-		     "science_1940"]
+		      "j_acs_1930",
+		      "ieee_trans_autom_control_2000",
+		      "energy_2005",
+		      "chaos",
+		      "siam",
+		      "ann_math"
+		      ]
 
 
 journals_full = Dict{String,String}()
@@ -135,6 +139,7 @@ journals_colors["lancet_1910"] = (parse.(Int64,["d6","27","28"],base = 16)./255,
 journals_colors["neng_j_med"] = (parse.(Int64,["94","67","bd"],base = 16)./255,[0.,0.,0.])
 journals_colors["neng_j_med_1950"] = (parse.(Int64,["94","67","bd"],base = 16)./255,[0.,0.,0.])
 journals_colors["plant_cell"] = (parse.(Int64,["8c","56","4b"],base = 16)./255,[0.,0.,0.])
+journals_colors["plant_cell_2000"] = (parse.(Int64,["8c","56","4b"],base = 16)./255,[0.,0.,0.])
 journals_colors["j_phys_chem_a"] = (parse.(Int64,["e3","77","c2"],base = 16)./255,[0.,0.,0.])
 journals_colors["j_acs"] = (parse.(Int64,["e3","77","c2"],base = 16)./255,[0.,0.,0.])
 journals_colors["j_acs_1930"] = (parse.(Int64,["e3","77","c2"],base = 16)./255,[0.,0.,0.])
