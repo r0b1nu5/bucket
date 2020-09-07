@@ -26,9 +26,10 @@ ks_ntw3 = (1,50,1)
 ks_ntw20 = (1,30,1)
 ks_ieee57 = (1,30,1)
 #ks_pen = (1500,11000,1000)	## 1st range for all pen
-#ks_pen = (5000,6000,50)	## 2nd range for pen_2 and pen_5
+ks_pen = (5000,6000,50)	## 2nd range for pen_2 and pen_5
 #ks_pen = (8500,10000,50)	## 2nd range for pen_3
-ks_pen = (6000,7000,50)		## 2nd range for pen_4
+#ks_pen = (6000,7000,50)		## 2nd range for pen_4
+#ks_pen = (9000,10000,50)	## 2nd range for pen_8
 
 Ks = Dict{String,Tuple{Int64,Int64,Int64}}(
 					   "ntw3_1" => ks_ntw3,
@@ -77,7 +78,7 @@ ns = Dict{String,Int64}(
 
 Ls = Dict{String,Array{Float64,2}}()
 #for ntw in ids
-for ntw in ["pen_4",]
+for ntw in ["pen_2",]
 	ls = 1:ns[ntw]
 	ks = Ks[ntw][1]:Ks[ntw][3]:Ks[ntw][2]
 	L = zeros(length(ls),length(ks))
