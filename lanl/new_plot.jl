@@ -1,57 +1,34 @@
 using PyPlot, DelimitedFiles
 
-ids = [
-       "ntw3_1",
-       "ntw3_2",
-       "ntw3_3",
-       "ntw20_1",
-       "ntw20_2",
-       "ntw20_3",
-       "ntw20_4",
-       "ntw20_5",
-       "ntw20_6",
-       "ieee57_1",
-       "ieee57_2",
-       "pen_1",
-       "pen_2",
-       "pen_3",
-       "pen_4",
-       "pen_5",
-       "pen_6",
-       "pen_7",
-       "pen_8"
-      ]
+to_plot = [("pen_2",2),]
 
-ks_ntw3 = (1,50,1)
-ks_ntw20 = (1,30,1)
-ks_ieee57 = (1,30,1)
-#ks_pen = (1500,11000,1000)	## 1st range for all pen
-ks_pen = (5000,6000,50)	## 2nd range for pen_2 and pen_5
-#ks_pen = (8500,10000,50)	## 2nd range for pen_3
-#ks_pen = (6000,7000,50)		## 2nd range for pen_4
-#ks_pen = (9000,10000,50)	## 2nd range for pen_8
-
-Ks = Dict{String,Tuple{Int64,Int64,Int64}}(
-					   "ntw3_1" => ks_ntw3,
-					   "ntw3_2" => ks_ntw3,
-					   "ntw3_3" => ks_ntw3,
-					   "ntw20_1" => ks_ntw20,
-					   "ntw20_2" => ks_ntw20,
-					   "ntw20_3" => ks_ntw20,
-					   "ntw20_4" => ks_ntw20,
-					   "ntw20_5" => ks_ntw20,
-					   "ntw20_6" => ks_ntw20,
-					   "ieee57_1" => ks_ieee57,
-					   "ieee57_2" => ks_ieee57,
-					   "pen_1" => ks_pen,
-					   "pen_2" => ks_pen,
-					   "pen_3" => ks_pen,
-					   "pen_4" => ks_pen,
-					   "pen_5" => ks_pen,
-					   "pen_6" => ks_pen,
-					   "pen_7" => ks_pen,
-					   "pen_8" => ks_pen
-					   )
+kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
+							 ("ntw3_1",1) => (1,50,1),
+							 ("ntw3_2",1) => (1,50,1),
+							 ("ntw3_3",1) => (1,50,1),
+							 ("ntw20_1",1) => (1,30,1),
+							 ("ntw20_2",1) => (1,30,1),
+							 ("ntw20_3",1) => (1,30,1),
+							 ("ntw20_4",1) => (1,30,1),
+							 ("ntw20_5",1) => (1,30,1),
+							 ("ntw20_6",1) => (1,30,1),
+							 ("ieee57_1",1) => (1,30,1),
+							 ("ieee57_2",1) => (1,30,1),
+							 ("pen_1",1) => (1500,11000,1000),
+							 ("pen_2",1) => (1500,11000,1000),
+							 ("pen_2",2) => (5000,6000,50),
+							 ("pen_2",3) => (5750,5850,1),
+							 ("pen_3",1) => (1500,11000,1000),
+							 ("pen_3",2) => (8500,10000,50),
+							 ("pen_4",1) => (1500,11000,1000),
+							 ("pen_4",2) => (6000,7000,50),
+							 ("pen_5",1) => (1500,11000,1000),
+							 ("pen_5",2) => (5000,6500,50),
+							 ("pen_6",1) => (1500,11000,1000),
+							 ("pen_7",1) => (1500,11000,1000),
+							 ("pen_8",1) => (1500,11000,1000),
+							 ("pen_8",2) => (9000,10000,50)
+							 )
 
 ns = Dict{String,Int64}(
 			"ntw3_1" => 3,
@@ -77,10 +54,11 @@ ns = Dict{String,Int64}(
 
 
 Ls = Dict{String,Array{Float64,2}}()
-#for ntw in ids
-for ntw in ["pen_2",]
+for ntw_run in to_plot
+	ntw,run = ntw_run
 	ls = 1:ns[ntw]
-	ks = Ks[ntw][1]:Ks[ntw][3]:Ks[ntw][2]
+	Ks = kss[ntw_run]
+	ks = Ks[1]:Ks[3]:Ks[2]
 	L = zeros(length(ls),length(ks))
 	for i in 1:length(ls)
 		for j in 1:length(ks)
@@ -89,7 +67,7 @@ for ntw in ["pen_2",]
 	end
 	Ls[ntw] = L
 
-	figure(ntw)
+	figure("ntw: "*ntw*", run: $run")
 	for i in 1:length(ls)
 		PyPlot.plot(ks,L[i,:],"-o",label="l = $(ls[i])")
 	end
