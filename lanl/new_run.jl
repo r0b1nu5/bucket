@@ -19,8 +19,8 @@ ids = [
 #	"pen_1",
 #       "pen_2",
 #       "pen_3",
-       "pen_4",
-#       "pen_5",
+#       "pen_4",
+       "pen_5",
 #       "pen_6",
 #       "pen_7",
 #       "pen_8"
@@ -29,7 +29,7 @@ ids = [
 ks_ntw3 = (1,50,1)
 ks_ntw20 = (1,30,1)
 ks_ieee57 = (1,30,1)
-ks_pen = (6000,7000,50)
+ks_pen = (5000,6000,50)
 #ks_pen = (1500,11000,1000)
 
 files = Dict{String,String}(
