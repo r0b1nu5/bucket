@@ -1,6 +1,6 @@
 using PyPlot, DelimitedFiles
 
-to_plot = [("pen_2",2),]
+to_plot = [("pen_5",2),]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -20,6 +20,7 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("pen_2",3) => (5750,5850,1),
 							 ("pen_3",1) => (1500,11000,1000),
 							 ("pen_3",2) => (8500,10000,50),
+							 ("pen_3",3) => (9300,9600,50),
 							 ("pen_4",1) => (1500,11000,1000),
 							 ("pen_4",2) => (6000,7000,50),
 							 ("pen_5",1) => (1500,11000,1000),
