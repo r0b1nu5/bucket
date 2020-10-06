@@ -12,6 +12,7 @@ function reservoir_training(training_data::Tuple{Array{Float64,2},Array{Float64,
 	r0 = rand(N)
 	rt = reservoir_tanh(r0,ut,A,Win,a,xi)
 #	rt = rt1(reservoir_tanh(r0,ut,A,Win,a,xi))
+#	rt = reservoir_lin(r0,ut,A,Win,a,xi)
 	@info "Reservoir states computed."
 
 	#=
@@ -45,6 +46,7 @@ function reservoir_prediction(us::Array{Float64,2},Wout::Array{Float64,2},c::Arr
 #	@info "Predicting trajectory..."	
 	rs = reservoir_tanh(r0,us,A,Win,a,xi)
 #	rs = rt1(reservoir_tanh(r0,us,A,Win,a,xi))
+#	rs = reservoir_lin(r0,us,A,Win,a,xi)
 	ss = Wout*rs + repeat(c,1,T)
 	
 	return ss,rs
@@ -196,6 +198,40 @@ function reservoir_tanh(r0::Array{Float64,1},us::Array{Float64,2},A::Array{Float
 	
 	return RS
 end
+
+function reservoir_lin(r0::Array{Float64,1},u::Array{Float64,1},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64)
+	r1 = (1-a)*r0 + a*(A*r0 + Win*u .+ xi)
+	
+	return [r0 r1]
+end
+
+function reservoir_lin(r0::Array{Float64,1},us::Array{Float64,2},A::Array{Float64,2},Win::Array{Float64,2},a::Float64,xi::Float64,id::Tuple{Int64,Int64,Int64}=(0,0,0))
+	T = size(us)[2]
+	
+	rs = copy(r0)
+	for t in 1:T
+		if t%1000 == 0
+			@info "$t/$T"
+			writedlm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv",rs,',')
+			rs = rs[:,end]
+		end
+
+		rs = [rs ((1-a)*rs[:,end] + a*(A*rs[:,end] + Win*us[:,t] .+ xi))]
+	end
+
+	RS = Array{Float64,2}(undef,length(r0),0)
+	for t in 1000:1000:T
+		x = readdlm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv",',')[:,2:end]
+		@info "$(length(r0)) - $(size(x)[1])"
+		RS = [RS x]
+#		RS = [RS readdlm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv",',')[:,2:end]]
+		rm("data1/rs_$(t)_$(id[1]).$(id[2]).$(id[3]).csv")
+	end
+	RS = [RS rs[:,2:end]]
+	
+	return RS
+end
+
 
 function rt1(r::Array{Float64,1})
 	D = length(r)
