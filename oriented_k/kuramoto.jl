@@ -18,11 +18,12 @@ function kuramoto(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float64,
 	th2 = th0
 	ths = Array{Float64,2}(undef,n,0)
 	ths = [ths th0]
+	dths = Array{Float64,2}(undef,n,0)
 
 	while err > eps && iter < max_iter
 		iter += 1
 		if iter%100 == 0
-			@info "iter: $iter"
+			@info "iter: $iter, err: $err"
 		end
 		
 		k1 = om - S*W*sin.(Bt*th1)
@@ -34,13 +35,14 @@ function kuramoto(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float64,
 
 		th2 = th1 + h*dth
 
-		err = maximum(abs.(dth))
+		err = maximum(abs.(dth*ones(1,n) - ones(n)*dth'))
 
 		th1 = copy(th2)
 		ths = [ths th1]
+		dths = [dths dth]
 	end
 
-	return ths,iter
+	return ths,dths,iter
 end
 
 
