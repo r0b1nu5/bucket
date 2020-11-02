@@ -20,6 +20,7 @@ precision = 1e-4
 
 #js = journals_short
 js = journals_red_short
+js = ["science_1940",]
 
 ################ DO / DON'T LIST #######################################
 plots = true

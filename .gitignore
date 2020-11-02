@@ -3,6 +3,9 @@ gs_failure/figs/
 K_player/figures/
 K_player/refs/
 lanl/export2cluster.sh
+lanl/data/
+lanl/data2/
+lanl/failed/
 lanl/data_marc/fle*
 lanl/data_melvyn/
 lanl/data_PEN/

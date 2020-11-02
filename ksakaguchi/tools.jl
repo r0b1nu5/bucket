@@ -9,6 +9,17 @@ function winding(th::Array{Float64,1}, C::Array{Int64,1})
 	return q
 end
 
+function jacobian(L::Array{Float64,2}, th::Array{Float64,1}, a::Float64)
+	n = length(th)
+
+	A = -L.*(1 .- diagm(0 => ones(n)))
+
+	dth = th*ones(1,n) - ones(n)*th'
+
+	J = A.*cos.(dth .- a)
+end
+
+
 
 
 

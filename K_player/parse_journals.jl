@@ -4,6 +4,7 @@ include("journals.jl")
 
 js = journals_short
 js = ["nature_1950","energy_2005","ieee_trans_autom_control_2000","j_acs_1930","j_acs","lancet_1910","neng_j_med_1950","plant_cell_2000","pnas_1950","science_1940"]
+js = ["science_1940",]
 for j in js
 	num = Array{Float64,1}(vec(readdlm("./data/"*j*".txt",'\t')[2:end-2,2]))
 	
