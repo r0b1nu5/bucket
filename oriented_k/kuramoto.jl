@@ -1,10 +1,10 @@
 using LinearAlgebra
 
-include("L2B.jl")
+include("tools.jl")
 
 # DIRECTED VERSION OF THE KURAMOTO MODEL.
 
-function kuramoto(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float64,1}, h::Float64=.01, eps::Float64=1e-6, max_iter::Int64=1e6)
+function kuramoto(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float64,1}, h::Float64=.01, eps::Float64=1e-6, max_iter::Int64=Int(1e6))
 	n = length(th0)
 
 	B,S,T,w = L2B_dir(L)
