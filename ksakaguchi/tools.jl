@@ -21,6 +21,9 @@ function jacobian(L::Array{Float64,2}, th::Array{Float64,1}, a::Float64)
 	dth = th*ones(1,n) - ones(n)*th'
 
 	J = A.*cos.(dth .- a)
+	J = J - diagm(0 => vec(sum(J,dims=2)))
+
+	return J
 end
 
 function freq_width(L::Array{Float64,2}, om0::Array{Float64,1}, th0::Array{Float64,1}, a::Float64, verb::Bool=false, res::Float64=.0005)
@@ -64,6 +67,7 @@ function freq_width(L::Array{Float64,2}, om0::Array{Float64,1}, th0::Array{Float
 	end
 
 	bmax = copy(b)
+	fmax = mean(x[2][:,end])
 
 	b = 0.
 	db = 1.
@@ -91,8 +95,9 @@ function freq_width(L::Array{Float64,2}, om0::Array{Float64,1}, th0::Array{Float
 	end
 
 	bmin = copy(b)
+	fmin = mean(x[2][:,end])
 
-	return bmin,bmax
+	return bmin,bmax,fmin,fmax
 end
 
 
