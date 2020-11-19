@@ -114,6 +114,56 @@ function cyqle(n::Int64, q::Int64=1)
 	return L
 end
 
+function gershgorin(M::Array{Float64,2})
+	c = diag(M)
+
+	n = length(c)
+
+	M0 = (1 .- diagm(0 => ones(n))).*M
+
+	rh = vec(sum(abs.(M0),dims=2))
+	rv = vec(sum(abs.(M0),dims=1))
+
+	ls = eigvals(M)
+
+	t = LinRange(0,2pi,100)
+	x1 = minimum(real.(c)-rh)-1
+	x2 = maximum(real.(c)+rh)+1
+	y1 = minimum(imag.(c)-rh)-1
+	y2 = maximum(imag.(c)+rh)+1
+	x3 = minimum(real.(c)-rv)-1
+	x4 = maximum(real.(c)+rv)+1
+	y3 = minimum(imag.(c)-rv)-1
+	y4 = maximum(imag.(c)+rv)+1
+
+	figure()
+	subplot(1,2,1)
+	PyPlot.plot([x1,x2],[0.,0.],"--k")
+	PyPlot.plot([0.,0.],[y1,y2],"--k")
+	axis([x1,x2,y1,y2])
+	subplot(1,2,2)
+	PyPlot.plot([x3,x4],[0.,0.],"--k")
+	PyPlot.plot([0.,0.],[y3,y4],"--k")
+	axis([x3,x4,y3,y4])
+
+	for i in 1:n
+		subplot(1,2,1)
+		PyPlot.plot(rh[i]*cos.(t) .+ real(c[i]),rh[i]*sin.(t) .+ imag(c[i]),label="i = $i")
+		PyPlot.plot(real(ls[i]),imag(ls[i]),"ok")
+		subplot(1,2,2)
+		PyPlot.plot(rv[i]*cos.(t) .+ real(c[i]),rv[i]*sin.(t) .+ imag(c[i]))
+		PyPlot.plot(real(ls[i]),imag(ls[i]),"ok")
+	end
+
+	subplot(1,2,1)
+	title("Row Gershgorin circles")
+	legend()
+	subplot(1,2,2)
+	title("Column Gershgoring circles")
+
+	return c,rh,rv
+end
+
 
 
 
