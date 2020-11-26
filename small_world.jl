@@ -71,5 +71,57 @@ function avg_path_l(L::Array{Float64,2})
 end
 
 
+function resistive_world(N::Int64, k::Int64)
+	d = round(Int,k/2)
+
+	n = k+1
+
+	L = 2*diagm(0 => ones(n)) - diagm(1 => ones(n-1)) - diagm(-1 => ones(n-1)) - diagm(n-1 => ones(1)) - diagm(1-n => ones(1))
+	Ld = pinv(L)
+
+	while n < N
+		n += 1
+		if n%10 == 0
+			@info "n = $n"
+		end
+
+		i = rand(1:n-1)
+
+		L = [L zeros(n-1);zeros(1,n)]
+		Ld = [Ld zeros(n-1);zeros(1,n)]
+		
+		ei = zeros(n)
+		ei[[i,n]] = [1.,-1.]
+		
+		L += ei*ei'
+		Ld = Ld - (Ld*ei*ei'*Ld)/(1 + ei'*Ld*ei)
+
+		Omn = Ld[n,n] .+ diag(Ld) - 2*Ld[n,:]
+
+		tolerate = setdiff(Array(1:n-1),[i,])
+		for l in 2:k
+			p = 1 ./Omn[tolerate]
+			p ./= sum(p)
+			c = [sum(p[1:j]) for j in 0:length(tolerate)]
+
+			x = rand()
+			new_id_t = setdiff((x .> c).*(1:length(tolerate)+1),[0,])[end]
+			new_id = tolerate[new_id_t]
+
+			tolerate = setdiff(tolerate,[new_id,])
+
+			ei = zeros(n)
+			ei[[n,new_id]] = [1.,-1.]
+
+			L += ei*ei'
+			Ld = Ld - (Ld*ei*ei'*Ld)/(1 + ei'*Ld*ei)
+		end
+
+	end
+
+	return L
+end
+
+
 
 

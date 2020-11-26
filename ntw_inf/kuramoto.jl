@@ -128,7 +128,7 @@ end
 # max_iter: maximum number of iterations
 # store: number of iterations to save (at the end of the time series)
 
-function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float64,1}, a0::Array{Float64,1}, w0::Array{Float64,1}, p0::Array{Float64,1}, store::Int64=1, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.1)
+function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float64,1}, a0::Array{Float64,1}, w0::Array{Float64,1}, p0::Array{Float64,1}, store::Int64=1, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.01)
 	B,w = L2B(L)
 	W = diagm(0 => w)
 	Bt = transpose(B)

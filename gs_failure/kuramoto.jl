@@ -9,7 +9,7 @@ include("../get_rgb.jl")
 # th0: initial angles
 # store_history: if "true", then returns all angles' time evolution
 # verb: displays info along the simulation
-function kuramoto(L::Array{Float64,2},P::Array{Float64,1},th0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=10000,eps::Float64=1e-6,h::Float64=0.1)
+function kuramoto(L::Array{Float64,2},P::Array{Float64,1},th0::Array{Float64,1},store_history::Bool=false,verb::Bool=true,max_iter::Int=10000,eps::Float64=1e-6,h::Float64=0.01)
 	n = size(L)[1]
 	
 	B,w = L2B(L)

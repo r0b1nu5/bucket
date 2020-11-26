@@ -41,7 +41,7 @@ function parse_cdf(file::String, name::String, bus_ids::Tuple{Int64,Int64}, line
 	R = y[:,7]
 	X = y[:,8]
 	g = R./(R.^2 + X.^2)
-	b = X./(R.^2 + X.^2)
+	b = -X./(R.^2 + X.^2)
 
 	I = zeros(n,m)
 	for i in 1:m

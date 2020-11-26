@@ -18,8 +18,8 @@ function NR(BB::Array{Float64,2}, GG::Array{Float64,2}, P::Array{Float64,1}, Q::
 	n = n2+n3
 	N = n+1
 
-	B = abs.(BB).*(1 .- diagm(0 => ones(N)))
-	G = abs.(GG).*(1 .- diagm(0 => ones(N)))
+	B = BB #abs.(BB).*(1 .- diagm(0 => ones(N)))
+	G = GG #abs.(GG).*(1 .- diagm(0 => ones(N)))
 
 	err = 1000.
 	t = zeros(n)
@@ -69,5 +69,8 @@ function NR(BB::Array{Float64,2}, GG::Array{Float64,2}, P::Array{Float64,1}, Q::
 end
 		
 
+function GS(B::Array{Float64,2}, G::Array{Float64,2}, P::Array{Float64,1}, Q::Array{Float64,1}, V::Array{Float64,1}, niter::Int64=3)
+
+end
 
 
