@@ -17,7 +17,7 @@ function L2B(L::Array{Float64,2})
 		end
 	end
 	
-	return B,w
+	return B,w,Array(transpose(B))
 end
 
 function L2B(L::SparseMatrixCSC{Float64,Int})
@@ -72,5 +72,38 @@ function L2B_dir(L::Array{Float64,2})
 end
 
 
+function L2B(L::SparseMatrixCSC{Float64,Int},tol::Float64=1e-8)
+	n = size(L)[1]
+	
+	I,J,V = findnz(L)
+	mm = length(I)
+	
+	m = 0 
+	IB = Array{Int64,1}()
+	JB = Array{Int64,1}()
+	VB = Array{Float64,1}()
+	w = Array{Float64,1}()
+
+	for k in 1:mm
+		i = I[k]
+		j = J[k]
+		v = V[k]
+		if i < j && abs(v) > tol
+			m += 1
+			push!(IB,i)
+			push!(JB,m)
+			push!(VB,1.)
+			push!(IB,j)
+			push!(JB,m)
+			push!(VB,-1.)
+			push!(w,-v)
+		end
+	end
+
+	B = sparse(IB,JB,VB)
+	Bt = sparse(JB,IB,VB)
+
+	return B,w,Bt
+end
 
 

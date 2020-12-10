@@ -1,5 +1,60 @@
 using Statistics,PyPlot
 
+function kuramoto_q(qs::Array{Int64,1},om::Array{Float64,1},Ks::Array{Float64,1},th0::Array{Float64,1},history::Bool=true)
+	n = length(th0)
+	h = .01
+		
+	B = Array{Float64,2}(undef,n,0)
+	for i in 1:n-1
+		for j in i+1:n
+			l = zeros(n)
+			l[[i,j]] = [1.,-1.]
+			B = [B l]
+		end
+	end
+	Bt = transpose(B)
+	
+	omega = om .-= mean(om)
+		
+	th1 = copy(th0)
+	th2 = copy(th0)
+	if history
+		ths = Array{Float64,2}(undef,n,0)
+		ths = [ths th0]
+	else
+		ths = Array{Float64,1}
+	end
+	err = 1000.
+	c = 0
+
+	while err > 1e-6 && c < 1e6
+#		if c%1000 == 0
+#			@info "c = $c, err = $err"
+#		end
+		c += 1
+		
+		th1 = copy(th2)
+		
+		k1 = omega - B*sin.(Bt*th1*qs')*Ks
+		k2 = omega - B*sin.(Bt*(th1+h/2*k1)*qs')*Ks
+		k3 = omega - B*sin.(Bt*(th1+h/2*k2)*qs')*Ks
+		k4 = omega - B*sin.(Bt*(th1+h*k3)*qs')*Ks
+		
+		dth = (k1+2*k2+2*k3+k4)/6
+		
+		th2 = th1 + h*dth
+		if history
+			ths = [ths th2]
+		else
+			ths = copy(th2)
+		end
+		err = maximum(abs.(dth))
+	end
+	
+	return ths
+end
+
+
 function kuramoto_q(q::Int64,om::Array{Float64,1},K::Float64,th0::Array{Float64,1},history::Bool=true)
 	n = length(th0)
 	h = .01

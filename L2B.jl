@@ -20,29 +20,38 @@ function L2B(L::Array{Float64,2})
 	return B,w
 end
 
-function L2B(L::SparseMatrixCSC{Float64,Int})
+function L2B(L::SparseMatrixCSC{Float64,Int},tol::Float64=1e-8)
 	n = size(L)[1]
 	
-	B = Array{Float64,2}(undef,n,0)
-	w = Array{Float64,1}(undef,0)
-	Bt = Array{Float64,2}(undef,0,n)
-	for i in 1:n-1
-		for j in i+1:n
-			if L[i,j] != 0.0
-				ed = zeros(n)
-				edt = zeros(1,n)
-				ed[i] = 1.0
-				edt[1,i] = 1.0
-				ed[j] = -1.0
-				edt[1,j] = -1.0
-				B = [B ed]
-				Bt = [Bt;edt]
-				push!(w,-L[i,j])
-			end
+	I,J,V = findnz(L)
+	mm = length(I)
+	
+	m = 0 
+	IB = Array{Int64,1}()
+	JB = Array{Int64,1}()
+	VB = Array{Flaot64,1}()
+	w = Array{Float64,1}()
+
+	for k in 1:mm
+		i = I[k]
+		j = J[k]
+		v = V[k]
+		if i < j && abs(v) > tol
+			m += 1
+			push!(IB,i)
+			push!(JB,m)
+			push!(VB,1.)
+			push!(IB,j)
+			push!(JB,m)
+			push!(VB,-1.)
+			push!(w,v)
 		end
 	end
-	
-	return sparse(B),w,sparse(Bt)
+
+	B = sparse(IB,JB,VB)
+	Bt = sparse(JB,IB,VB)
+
+	return B,w,Bt
 end
 
 function L2B_ij(L::Array{Float64,2}, i0::Int64, j0::Int64)
