@@ -958,9 +958,13 @@ function kuramoto_q(L::SparseMatrixCSC{Float64,Int64}, qs::Array{Float64,1}, Ks:
 	c = 0
 	iter = 0
 
+	io_t = open("data1/th.csv","a")
+	io_dt = open("data1/dh.csv","a")
+	io_prt = open("data1/prt.csv","a")
+
 	while err > eps && iter < max_iter
 		if iter%1000 == 0
-			@info "c = $c, err = $err"
+			@info "iter = $iter, err = $err"
 		end
 		iter += 1
 		
@@ -986,6 +990,11 @@ function kuramoto_q(L::SparseMatrixCSC{Float64,Int64}, qs::Array{Float64,1}, Ks:
 		th2 = th1 + h*dth
 		err = maximum(abs.(dth))
 		
+		writedlm(io_t,th2',',')
+		writedlm(io_dt,dth',',')
+		writedlm(io_prt,xis',',')
+		
+#=
 		if store && iter%100 == 0
 			c += 1
 			writedlm("data1/ths_$c.csv",ths[:,1:end],',')
@@ -1006,8 +1015,10 @@ function kuramoto_q(L::SparseMatrixCSC{Float64,Int64}, qs::Array{Float64,1}, Ks:
 			dhs = copy(dth)
 			ds = diag(Lt)
 		end
-	end
 
+=#
+	end
+#=
 	Ths = Array{Float64,2}(undef,n,0)
 	Dhs = Array{Float64,2}(undef,n,0)
 	Ds = Array{Float64,2}(undef,n,0)
@@ -1022,10 +1033,141 @@ function kuramoto_q(L::SparseMatrixCSC{Float64,Int64}, qs::Array{Float64,1}, Ks:
 	Ths = [Ths ths]
 	Dhs = [Dhs dhs]
 	Ds = [Ds ds]
+=#
+	close(io_t)
+	close(io_dt)
+	close(io_prt)
 
-	return Ths,Dhs,Ds
+	Ths = Array(readdlm("data1/th.csv",',')')
+	Dhs = Array(readdlm("data1/dh.csv",',')')
+	Ps = Array(readdlm("data1/prt.csv",',')')
+
+	rm("data1/th.csv")
+	rm("data1/dh.csv")
+	rm("data1/prt.csv")
+
+	return Ths,Dhs,Ps
 end
 
+
+function linear_noise(L::SparseMatrixCSC{Float64,Int64}, om::Array{Float64,1}, x0::Array{Float64,1}, ls::Array{Int64,1}, a0::Array{Float64,1}, tau::Array{Float64,1}, sig::Float64=0., store::Bool=true, max_iter::Int64=10000, eps::Float64=1e-8, h::Float64=.01)
+	n = length(th0)
+	P = length(ls)
+
+	B,w,Bt = L2B(L)
+	m = length(w)
+	W = spdiagm(0 => w)
+	
+	dLs = Array{SparseMatrixCSC{Float64,Int64},1}()
+	for p in 1:P
+		dWt = spzeros(length(w),length(w))
+		dWt[ls[p],ls[p]] = 1.
+		push!(dLs,B*dWt*Bt)
+	end
+	
+	omega = om .-= mean(om)
+		
+	x1 = copy(x0)
+	x2 = copy(x0)
+	if store
+		xs = Array{Float64,2}(undef,n,0)
+		xs = [xs x0]
+		dxs = Array{Float64,2}(undef,n,0)
+		dxs = [dxs zeros(n)]
+	else
+		xs = Array{Float64,1}
+		dxs = Array{Float64,1}
+	end
+	err = 1000.
+	c = 0
+	iter = 0
+
+	xis = randn(P)
+
+	io_x = open("data1/xs.csv","a")
+	io_dx = open("data1/dxs.csv","a")
+	io_prt = open("data1/prt.csv","a")
+
+	while err > eps && iter < max_iter
+		if iter%1000 == 0
+			@info "iter = $iter, err = $err"
+		end
+		iter += 1
+		
+		xis = [cnoise(xis[p],tau[p]/h) for p in 1:P]
+		dL = spzeros(n,n)
+		for p in 1:P
+			dL += a0[p]*xis[p]*dLs[p]
+		end
+
+		Lt = L + dL
+
+		eta = sig*randn(n)
+
+		x1 = copy(x2)
+		
+		k1 = omega + eta - (L + dL)*x1
+		k2 = omega + eta - (L + dL)*(x1+h/2*k1)
+		k3 = omega + eta - (L + dL)*(x1+h/2*k2)
+		k4 = omega + eta - (L + dL)*(x1+h*k3)
+		
+		dx = (k1+2*k2+2*k3+k4)/6
+		
+		x2 = x1 + h*dx
+		err = maximum(abs.(dx))
+
+		writedlm(io_x,x2',',')
+		writedlm(io_dx,dx',',')
+		writedlm(io_prt,xis',',')
+
+#=
+		if store && iter%100 == 0
+			c += 1
+			writedlm("data1/xs_$c.csv",xs[:,1:end],',')
+			xs = Array{Float64,2}(undef,n,0)
+			xs = [xs x2]
+			writedlm("data1/dxs_$c.csv",dxs[:,1:end],',')
+			dxs = Array{Float64,2}(undef,n,0)
+			dxs = [dxs dx]
+		elseif store
+			xs = [xs x2]
+			dxs = [dxs dx]
+		else
+			xs = copy(x2)
+			dxs = copy(dx)
+		end
+=#
+end
+#=
+	Xs = Array{Float64,2}(undef,n,0)
+	dXs = Array{Float64,2}(undef,n,0)
+	for i in 1:c
+		if i%10 == 0
+			@info "Retrieve c = $i"
+		end
+		Xs = [Xs readdlm("data1/xs_$i.csv",',')]
+		rm("data1/xs_$i.csv")
+		dXs = [dXs readdlm("data1/dxs_$i.csv",',')]
+		rm("data1/dxs_$i.csv")
+	end
+	Xs = [Xs xs]
+	dXs = [dXs dxs]
+
+=#
+	close(io_x)
+	close(io_dx)
+	close(io_prt)
+
+	Xs = Array(readdlm("data1/xs.csv",',')')
+	dXs = Array(readdlm("data1/dxs.csv",',')')
+	Ps = Array(readdlm("data1/prt.csv",',')')
+
+	rm("data1/xs.csv")
+	rm("data1/dxs.csv")
+	rm("data1/prt.csv")
+
+	return Xs,dXs,Ps
+end
 
 
 
