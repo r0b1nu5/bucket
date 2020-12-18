@@ -1,5 +1,6 @@
 using SparseArrays
 
+# Computes the incidence matrix (B) and the edge weights (w) from the Laplacian matrix (l).
 function L2B(L::Array{Float64,2})
 	n = size(L)[1]
 	
