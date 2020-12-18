@@ -1,6 +1,6 @@
 using PyPlot, DelimitedFiles
 
-to_plot = [("pen_4",3),]
+to_plot = [("pen_2",2),("pen_3",2),("pen_4",2),("pen_5",2),("pen_8",2)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -54,6 +54,51 @@ ns = Dict{String,Int64}(
 			"pen_8" => 134
 			)
 
+node_ids = Dict{String,Array{Int64,1}}(
+				       "ntw3_1" => [1,2,3],
+				       "ntw3_2" => [1,2,3],
+				       "ntw3_3" => [1,2,3],
+				       "ntw20_1" => Array(1:20),
+				       "ntw20_2" => Array(1:20),
+				       "ntw20_3" => Array(1:20),
+				       "ntw20_4" => Array(1:20),
+				       "ntw20_5" => Array(1:20),
+				       "ntw20_6" => Array(1:20),
+				       "ieee57_1" => Array(1:57),
+				       "ieee57_2" => Array(1:57),
+				       "pen_1" => vec(Int.(readdlm("data_PEN/pen_2013-01-15_00_ids.csv",',').-1)),
+				       "pen_2" => vec(Int.(readdlm("data_PEN/pen_2013-03-10_04_ids.csv",',').-1)),
+				       "pen_3" => vec(Int.(readdlm("data_PEN/pen_2013-04-03_02_ids.csv",',').-1)),
+				       "pen_4" => vec(Int.(readdlm("data_PEN/pen_2013-04-03_03_ids.csv",',').-1)),
+				       "pen_5" => vec(Int.(readdlm("data_PEN/pen_2013-04-03_07_ids.csv",',').-1)),
+				       "pen_6" => vec(Int.(readdlm("data_PEN/pen_2013-07-30_01_ids.csv",',').-1)),
+				       "pen_7" => vec(Int.(readdlm("data_PEN/pen_2013-07-30_04_ids.csv",',').-1)),
+				       "pen_8" => vec(Int.(readdlm("data_PEN/pen_2013-07-30_09_ids.csv",',').-1))
+				       )
+
+T = Dict{String,Float64}(
+		       "ntw3_1" => 50.,
+		       "ntw3_2" => 50.,
+		       "ntw3_3" => 50.,
+		       "ntw20_1" => 100.,
+		       "ntw20_2" => 100.,
+		       "ntw20_3" => 100.,
+		       "ntw20_4" => 100.,
+		       "ntw20_5" => 100.,
+		       "ntw20_6" => 10.,
+		       "ieee57_1" => 2000.,
+		       "ieee57_2" => 20000.,
+		       "pen_1" => 1565.6,
+		       "pen_2" => 1260.,
+		       "pen_3" => 660.,
+		       "pen_4" => 600.,
+		       "pen_5" => 1260.,
+		       "pen_6" => 660.,
+		       "pen_7" => 1260.,
+		       "pen_8" => 1260.
+		       )
+
+
 
 Ls = Dict{String,Array{Float64,2}}()
 for ntw_run in to_plot
@@ -69,12 +114,23 @@ for ntw_run in to_plot
 	end
 	Ls[ntw] = L
 
+	Lmi,iii = findmin(L)
+
+#	node_id = iii[1]
+	node_id = node_ids[ntw][iii[1]]
+#	freq = ks[iii[2]]
+	freq = ks[iii[2]]/T[ntw]
+	
 	figure("ntw: "*ntw*", run: $run")
 	for i in 1:length(ls)
-		PyPlot.plot(ks,L[i,:],"-o",label="l = $(ls[i])")
+		PyPlot.plot(ks/T[ntw],L[i,:],"-o",label="l = $(ls[i])")
 	end
-	xlabel("k")
+	xlabel("freq")
 	ylabel("objective")
+	twiny()
+	PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
+	xlabel("k")
+	title("Node id: $(node_id), frequency: $freq")
 end
 
 					   

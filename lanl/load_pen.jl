@@ -11,8 +11,8 @@ using Distributed
 # Last oscillator is considered as the reference node.
 
 function load_pen(date::String)
-	th = readdlm("data_PEN/"*date*"_th.csv",',')' * pi/180
-	fs = readdlm("data_PEN/"*date*"_fs.csv",',')'
+	th = readdlm("data_PEN/th_"*date*".csv",',')' * pi/180
+	fs = readdlm("data_PEN/fs_"*date*".csv",',')'
 
 	N,T = size(fs)
 
@@ -86,10 +86,10 @@ end
 				th = [th T]
 			end
 	
-			open("data_PEN/"*date*"_fs.csv","a") do f
+			open("data_PEN/fs_"*date*".csv","a") do f
 				writedlm(f,fs',',')
 			end
-			open("data_PEN/"*date*"_th.csv","a") do f
+			open("data_PEN/th_"*date*".csv","a") do f
 				writedlm(f,th',',')
 			end
 
@@ -98,7 +98,7 @@ end
 	end
 end
 
-#pmap(treat_pen,dates)
+
 
 
 
