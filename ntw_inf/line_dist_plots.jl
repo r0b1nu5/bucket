@@ -2,7 +2,7 @@ using PyPlot, DelimitedFiles
 
 h = .001
 
-for ntw in ["euroroad","polblogs"]
+for ntw in ["euroroad","usairports"]
 	local t = readdlm("line_dist_data/"*ntw*"_t.csv",',')
 	local ts = readdlm("line_dist_data/"*ntw*"_ts.csv",',')
 	local te = vec(readdlm("line_dist_data/"*ntw*"_te.csv",','))
@@ -42,7 +42,7 @@ for ntw in ["euroroad","polblogs"]
 	
 	figure(ntw*": time series ")
 
-	subplot(3,1,1)
+	subplot(3,2,1)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[mit[T1:T2];mat[T2:-1:T1]],"k",alpha=.2)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[d05t[T1:T2];d95t[T2:-1:T1]],"k",alpha=.3)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[d25t[T1:T2];d75t[T2:-1:T1]],"k",alpha=.3)
@@ -51,7 +51,7 @@ for ntw in ["euroroad","polblogs"]
 		PyPlot.plot(h*(T1:T2),t[i,T1:T2])
 	end
 	ylabel("θ")
-	subplot(3,1,2)
+	subplot(3,2,3)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[mid[T1:T2];mad[T2:-1:T1]],"k",alpha=.2)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[d05d[T1:T2];d95d[T2:-1:T1]],"k",alpha=.3)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[d25d[T1:T2];d75d[T2:-1:T1]],"k",alpha=.3)
@@ -60,7 +60,7 @@ for ntw in ["euroroad","polblogs"]
 		PyPlot.plot(h*(T1:T2),d[i,T1:T2])
 	end
 	ylabel("θ'")
-	subplot(3,1,3)
+	subplot(3,2,5)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[mip[T1:T2];map[T2:-1:T1]],"k",alpha=.2)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[d05p[T1:T2];d95p[T2:-1:T1]],"k",alpha=.3)
 	PyPlot.fill(h*[T1:T2;T2:-1:T1],[d25p[T1:T2];d75p[T2:-1:T1]],"k",alpha=.3)
@@ -71,25 +71,26 @@ for ntw in ["euroroad","polblogs"]
 	xlabel("t")
 	ylabel("ψ")
 	
-	figure(ntw*": snapshot")
+	#figure(ntw*": snapshot")
 		
-	subplot(3,1,1)
+	subplot(3,2,2)
 	PyPlot.plot(ids,te[ids],".",color="C7")
 	for i in ijs
 		PyPlot.plot(i,te[i],"x")
 	end
-	ylabel("θ")
-	subplot(3,1,2)
+	#ylabel("θ")
+	subplot(3,2,4)
 	PyPlot.plot(ids,de[ids],".",color="C7")
 	for i in ijs
 		PyPlot.plot(i,de[i],"x")
 	end
-	ylabel("θ'")
-	subplot(3,1,3)
+	#ylabel("θ'")
+	subplot(3,2,6)
 	PyPlot.plot(ids,pe[ids],".",color="C7")
 	for i in ijs
 		PyPlot.plot(i,pe[i],"x")
 	end
+	xlabel("id")
 end
 
 

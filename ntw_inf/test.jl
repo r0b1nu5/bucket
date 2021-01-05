@@ -5,17 +5,27 @@ include("line_dist.jl")
 #L = readdlm("ntws_data/uk_lap_mat.csv",',')
 #Lsp = readdlm("ntws_data/hamsterster2_lap_mat_sp.csv",',')
 
-# #= polblogs
-Lsp = readdlm("ntws_data/polblogs_redred_lap_mat_sp.csv",',')
-om0 = vec(readdlm("line_dist_data/polblogs_om2.csv",','))
-om = .5 * om0
-#ls = [rand(1:16000),rand(1:16000)]
-ls = [9838,1047]
-as = [.4,.4]
+ #= airports
+Lsp = readdlm("ntws_data/usairports_lap_mat_sp.csv",',')
+om0 = vec(readdlm("line_dist_data/usairports_om1.csv",','))
+om = om0
+#ls = rand(1:17214,2)
+ls = [9850,8885]
+as = [.9,.8]
 sig = .0005
 # =#
 
- #= euroroad
+ #= polblogs
+Lsp = readdlm("ntws_data/polblogs_redred_lap_mat_sp.csv",',')
+om0 = vec(readdlm("line_dist_data/polblogs_om2.csv",','))
+om = .5 * om0
+ls = [rand(1:16000),rand(1:16000)]
+#ls = [9838,1047]
+as = [.3,.4]
+sig = .0005
+# =#
+
+# #= euroroad
 Lsp = readdlm("ntws_data/euroroad_red_lap_mat_sp.csv",',')
 om0 = vec(readdlm("line_dist_data/euroroad_om1.csv",','))
 om = .1 * om0
