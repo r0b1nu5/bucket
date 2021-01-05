@@ -1,6 +1,6 @@
 using PyPlot
 
-function check_new(A1::Array{Float64,2}, A1h::Array{Float64,2}, a2::Array{Float64,1}, a2h::Array{Float64,1}, g::Float64, gh::Array{Float64,1}, l::Int64, nu::Float64, T::Float64, Ls::Array{Float64,2}, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64})
+function check(A1::Array{Float64,2}, A1h::Array{Float64,2}, a2::Array{Float64,1}, a2h::Array{Float64,1}, g::Float64, gh::Array{Float64,1}, l::Int64, nu::Float64, T::Float64, Ls::Array{Float64,2}, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64})
 	n = size(A1)[1]
 
 	lmin,lmax,dl = ls

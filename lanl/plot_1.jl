@@ -1,6 +1,6 @@
 using PyPlot, DelimitedFiles
 
-include("final_new.jl")
+include("final.jl")
 
 figure()
 
@@ -16,7 +16,7 @@ for i in 1:3
 	k2 = Array{Int64,1}()
 
 	for N in Ns
-		LLL = run_new(Xs[:,1:N],1e-3,50)
+		LLL = run(Xs[:,1:N],1e-3,50)
 		push!(L_l0,LLL[2][1])
 		push!(L_l2,LLL[4][1])
 		push!(g0,LLL[2][4])

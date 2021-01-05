@@ -1,7 +1,7 @@
 using DelimitedFiles, PyPlot, LinearAlgebra, JuMP, Ipopt, FFTW
 
 """
-	run_new_l0(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	run_l0(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
 Identifies dynamics and forcing characteristics baded only on measurements. Approximation of the forcing's frequency is discretized as 2*pi*k/T, with k integer.
 
@@ -21,12 +21,12 @@ _OUTPUT_:
 `(L_l0, A_l0, d_l0, gamma_l0, k_l0, l_l0)`: results under l0.
 	`L_l0`: Minimal value of the objective.
 	`A_l0`: Estimate of the dynamics matrix.
-	`d_l0`: Estimate of the damings.
+	`d_l0`: Estimate of the dampings.
 	`gamma_l0`: Estimate of the forcing amplitude.
 	`k_l0`: Estimate frequency index (see theory).
 	`l_l0`: Estimate of the forcing location.
 """
-function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+function run_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -47,7 +47,7 @@ function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,In
 	end
 
 # Compute warm start
-#	XXX,A1h,a2h = get_Ah_correl_new(Xs,tau) # Performs poorly for Laplcian dynamics, warm start at zero is better.
+#	XXX,A1h,a2h = get_Ah_correl(Xs,tau) # Performs poorly for Laplcian dynamics, warm start at zero is better.
 	A1h = zeros(n,n)
 	a2h = ones(n)
 
@@ -85,7 +85,7 @@ function run_new_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,In
 	if plot
 		T = N*tau
 		figure("l0, T = $(N*tau)")
-		plot_new_l0(Ls_l0, L_l0, l_l0, k_l0, ks, T, n)
+		plot_l0(Ls_l0, L_l0, l_l0, k_l0, ks, T, n)
 	end
 
 	return Ls_l0, (L_l0,A_l0,d_l0,gamma_l0,l_l0,k_l0)
@@ -93,7 +93,7 @@ end
 
 
 """
-	run_new_l2(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	run_l2(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
 Identifies dynamics and forcing characteristics baded only on measurements. Approximation of the forcing's frequency is discretized as 2*pi*k/T, with k integer.
 
@@ -117,7 +117,7 @@ _OUTPUT_:
 	`k_l2`: Estimate frequency index (see theory).
 	`l_l2`: Estimate of the forcing location.
 """
-function run_new_l2(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+function run_l2(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, plot::Bool=false, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -137,7 +137,7 @@ function run_new_l2(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,In
 	end
 
 # Compute warm start
-	XXX,A1h,a2h = get_Ah_correl_new(Xs,tau)
+	XXX,A1h,a2h = get_Ah_correl(Xs,tau)
 
 # Run the optimizations
 	Ls_l2 = zeros(length(kmin:dk:kmax))
@@ -170,9 +170,9 @@ function run_new_l2(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,In
 		T = N*tau
 		figure("l2, T = $(N*tau)")
 		subplot(1,2,1)
-		plot_new_l2_1(Ls_l2, L_l2, gamma_l2, l_l2, k_l2, ks, T)
+		plot_l2_1(Ls_l2, L_l2, gamma_l2, l_l2, k_l2, ks, T)
 		subplot(1,2,2)
-		plot_new_l2_2(Ls_l2, L_l2, gamma_l2, l_l2)
+		plot_l2_2(Ls_l2, L_l2, gamma_l2, l_l2)
 	end
 
 	return Ls_l2, (L_l2,A_l2,d_l2,gamma_l2,l_l2,k_l2)
@@ -777,7 +777,7 @@ function objective_l2(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, 
 end
 
 """
-	plot_new_l0(Ls_l0::Array{Float64,2}, L_l0::Float64, l_l0::Int64, k_l0::Int64, ks::Tuple{Int64,Int64,Int64}, T::Union{Float64,Int64}, n::Int64)
+	plot_l0(Ls_l0::Array{Float64,2}, L_l0::Float64, l_l0::Int64, k_l0::Int64, ks::Tuple{Int64,Int64,Int64}, T::Union{Float64,Int64}, n::Int64)
 
 Plots the value of the objective vs. the estimated (discretized) forcing frequencies by the l0 approach.
 
@@ -790,7 +790,7 @@ _INPUT_:
 `T`: Observation time.
 `n`: Number of agents.
 """
-function plot_new_l0(Ls_l0::Array{Float64,2}, L_l0::Float64, l_l0::Int64, k_l0::Int64, ks::Tuple{Int64,Int64,Int64}, T::Union{Float64,Int64}, n::Int64)
+function plot_l0(Ls_l0::Array{Float64,2}, L_l0::Float64, l_l0::Int64, k_l0::Int64, ks::Tuple{Int64,Int64,Int64}, T::Union{Float64,Int64}, n::Int64)
 	kmin,kmax,dk = ks
 	ws = 2*pi*(kmin:dk:kmax)/T
 	for l in 1:n
@@ -802,7 +802,7 @@ function plot_new_l0(Ls_l0::Array{Float64,2}, L_l0::Float64, l_l0::Int64, k_l0::
 end
 
 """
-	plot_new_l2_1(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{Float64,1}, l_l2::Int64, k_l0::Int64, ks::Tuple{Int64,Int64,Int64}, T::Union{Float64,Int64})
+	plot_l2_1(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{Float64,1}, l_l2::Int64, k_l0::Int64, ks::Tuple{Int64,Int64,Int64}, T::Union{Float64,Int64})
 
 Plots the value of the objective vs. the estimated (discretized) forcing frequencies by the l2 approach.
 
@@ -814,7 +814,7 @@ _INPUT_:
 `k_l2`: Corresponding value of k.
 `ks = (kmin,kmax,dk)`: Values of assessed (kmin:dk:kmax).
 """
-function plot_new_l2_1(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{Float64,1}, l_l2::Int64, k_l2::Int64, ks::Tuple{Int64,Int64,Int64}, T::Union{Float64,Int64})
+function plot_l2_1(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{Float64,1}, l_l2::Int64, k_l2::Int64, ks::Tuple{Int64,Int64,Int64}, T::Union{Float64,Int64})
 	kmin,kmax,dk = ks
 	ws = 2*pi*(kmin:dk:kmax)/T
 	PyPlot.plot(ws,Ls_l2,"o")
@@ -824,7 +824,7 @@ function plot_new_l2_1(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{F
 end
 
 """
-	plot_new_l2_2(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{Float64,1}, l_l2::Int64)
+	plot_l2_2(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{Float64,1}, l_l2::Int64)
 
 Plots the value of the estimated forcing amplitude vs. the agent index, obtained by the l2 approach.
 
@@ -834,7 +834,7 @@ _INPUT_:
 `gamma_l2`: Corresponding forcing amplitudes.
 `l_l2`: Index with largest amplitude.
 """
-function plot_new_l2_2(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{Float64,1}, l_l2::Int64)
+function plot_l2_2(Ls_l2::Array{Float64,1}, L_l2::Float64, gamma_l2::Array{Float64,1}, l_l2::Int64)
 	PyPlot.plot(1:length(gamma_l2),gamma_l2,"o")
 	xlabel("node index")
 	ylabel("Estimated amplitude")
@@ -845,7 +845,7 @@ end
 """
 	TODO
 """
-function plot_new_error(Lh::Array{Array{Float64,2},1}, L::Array{Float64,2}, dh::Array{Array{Float64,1},1}, d::Array{Float64,1}, gammah::Array{Array{Float64,1},1}, gamma::Array{Float64,1}, wh::Array{Float64,1}, w::Float64, Xss::Array{Array{Float64,2},1}, taus::Array{Float64,1}, ls::Array{Int64,1}, ks::Array{Int64,1})
+function plot_error(Lh::Array{Array{Float64,2},1}, L::Array{Float64,2}, dh::Array{Array{Float64,1},1}, d::Array{Float64,1}, gammah::Array{Array{Float64,1},1}, gamma::Array{Float64,1}, wh::Array{Float64,1}, w::Float64, Xss::Array{Array{Float64,2},1}, taus::Array{Float64,1}, ls::Array{Int64,1}, ks::Array{Int64,1})
 	n = length(Lh)
 	
 	bs = Array(LinRange(-.4,.4,n+1))
@@ -891,7 +891,7 @@ function plot_new_error(Lh::Array{Array{Float64,2},1}, L::Array{Float64,2}, dh::
 end
 
 """
-    get_Ah_correl_new(Xs::Array{Float64,2}, dt::Float64)
+    get_Ah_correl(Xs::Array{Float64,2}, dt::Float64)
 
 Estimates the dynamics matrix bases on Lokhov18.
 
@@ -904,7 +904,7 @@ _OUTPUT_:
 `Lh`: Estimate of the Laplacian matrix normalized by the inertias (M^{-1}*L).
 `dh`: Estimate of the damping over inertia ratios.
 """
-function get_Ah_correl_new(Xs::Array{Float64,2}, dt::Float64)
+function get_Ah_correl(Xs::Array{Float64,2}, dt::Float64)
 	nn,T = size(Xs)
 	n = Int(nn/2)
 

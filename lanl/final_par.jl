@@ -1,23 +1,29 @@
-using Distributed
+using Distributed, Dates
 
+# Define the number of parallel threads.
 n_thr = 3
 
 if nworkers() < n_thr
 	addprocs(n_thr - nworkers())
 end
 
-@everywhere include("final_new.jl")
+# If the directory "data" does not exists, then create it.
+if !isdir("data/")
+	mkdir("data/")
+end
+
+@everywhere include("final.jl")
 
 #=
 """
-	run_new_l0_par(id::String, Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	run_l0_par(id::String, Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
-Parallelized verions of "run_new_l0".
+Parallelized verions of "run_l0".
 
 The parameter "id" identifies the system to be identified.
 """
 =#
-@everywhere function run_new_l0_par(id::String, Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+@everywhere function run_l0_par(id::String, Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -38,7 +44,7 @@ The parameter "id" identifies the system to be identified.
 	end
 
 # Compute warm start
-#	XXX,A1h,a2h = get_Ah_correl_new(Xs,tau) # Performs poorly for Laplcian dynamics, warm start at zero is better.
+#	XXX,A1h,a2h = get_Ah_correl(Xs,tau) # Performs poorly for Laplcian dynamics, warm start at zero is better.
 	A1h = zeros(n,n)
 	a2h = ones(n)
 
@@ -61,14 +67,14 @@ end
 
 #=
 """
-	run_new_l2_par(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	run_l2_par(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
-Parallelized version of "run_new_l2".
+Parallelized version of "run_l2".
 
 The parameter "id" identifies the system to be identified.
 """
 =#
-@everywhere function run_new_l2_par(id::String, Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+@everywhere function run_l2_par(id::String, Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -88,7 +94,7 @@ The parameter "id" identifies the system to be identified.
 	end
 
 # Compute warm start
-#	XXX,A1h,a2h = get_Ah_correl_new(Xs,tau) # Performs poorly.
+#	XXX,A1h,a2h = get_Ah_correl(Xs,tau) # Performs poorly.
 	A1h = zeros(n,n)
 	a2h = zeros(n)
 
@@ -593,7 +599,7 @@ end
 
 #=
 """
-    get_Ah_correl_new(Xs::Array{Float64,2}, dt::Float64)
+    get_Ah_correl(Xs::Array{Float64,2}, dt::Float64)
 
 Estimates the dynamics matrix bases on Lokhov18.
 
@@ -607,7 +613,7 @@ _OUTPUT_:
 `dh`: Estimate of the damping over inertia ratios.
 """
 =#
-@everywhere function get_Ah_correl_new(Xs::Array{Float64,2}, dt::Float64)
+@everywhere function get_Ah_correl(Xs::Array{Float64,2}, dt::Float64)
 	nn,T = size(Xs)
 	n = Int(nn/2)
 

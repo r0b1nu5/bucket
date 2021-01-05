@@ -1,6 +1,6 @@
 using Dates
 
-include("final_new_par.jl")
+include("final_par.jl")
 
 @info "====================================================================="
 @info "$(now())"
@@ -97,7 +97,7 @@ for id in ids
 	nn = size(Xs)[1]
 	n = Int(nn/2)
 
-	xxx = run_new_l0_par(id,Xs,taus[id],(1,n,1),Ks[id],false)
+	xxx = run_l0_par(id,Xs,taus[id],(1,n,1),Ks[id],false)
 end
 
 
