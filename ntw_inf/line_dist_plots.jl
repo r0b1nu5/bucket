@@ -37,7 +37,7 @@ for ntw in ["euroroad","usairports"]
 	local d95p = ps[6,:]
 	local map = ps[7,:]
 	
-	local T1 = 1
+	local T1 = 500
 	local T2 = length(mit)
 	
 	figure(ntw*": time series ")
@@ -76,19 +76,19 @@ for ntw in ["euroroad","usairports"]
 	subplot(3,2,2)
 	PyPlot.plot(ids,te[ids],".",color="C7")
 	for i in ijs
-		PyPlot.plot(i,te[i],"x")
+		PyPlot.plot(i,te[i],"o",markeredgecolor="k")
 	end
 	#ylabel("θ")
 	subplot(3,2,4)
 	PyPlot.plot(ids,de[ids],".",color="C7")
 	for i in ijs
-		PyPlot.plot(i,de[i],"x")
+		PyPlot.plot(i,de[i],"o",markeredgecolor="k")
 	end
 	#ylabel("θ'")
 	subplot(3,2,6)
 	PyPlot.plot(ids,pe[ids],".",color="C7")
 	for i in ijs
-		PyPlot.plot(i,pe[i],"x")
+		PyPlot.plot(i,pe[i],"o",markeredgecolor="k")
 	end
 	xlabel("id")
 end

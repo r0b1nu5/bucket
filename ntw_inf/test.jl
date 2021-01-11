@@ -57,12 +57,12 @@ Tf = [1200*h,2000*h]
 tau = [.8,1.]
 
 
-ths0,dh1,ds = kuramoto_q(L,qs,Ks,om,th0,ls,zeros(length(as)),Ti,Tf,0.,true,20000,1e-4,h) 
-#ths0,dh1,prt = linear_noise(L,om,th0,ls,zeros(length(as)),tau,0.,true,20000,1e-4,h)
+#ths0,dh1,ds = kuramoto_q(L,qs,Ks,om,th0,ls,zeros(length(as)),Ti,Tf,0.,true,20000,1e-4,h) 
+ths0,dh1,prt = linear_noise(L,om,th0,ls,zeros(length(as)),tau,0.,true,20000,1e-4,h)
 th1 = ths0[:,end]
 
-ths,dhs,ds = kuramoto_q(L,qs,Ks,om,th1,ls,as,Ti,Tf,sig,true,3000,-1.,h) 
-#ths,dhs,prt = linear_noise(L,om,th1,ls,as,tau,sig,true,3000,-1.,h)
+#ths,dhs,ds = kuramoto_q(L,qs,Ks,om,th1,ls,as,Ti,Tf,sig,true,3000,-1.,h) 
+ths,dhs,prt = linear_noise(L,om,th1,ls,as,tau,sig,true,3000,-1.,h)
 
 @info "Compute ψ"
 psi = L*ths
