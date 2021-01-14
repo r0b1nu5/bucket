@@ -1,7 +1,7 @@
 using Distributed, Dates
 
 # Define the number of parallel threads.
-n_thr = 3
+n_thr = 1
 
 if nworkers() < n_thr
 	addprocs(n_thr - nworkers())

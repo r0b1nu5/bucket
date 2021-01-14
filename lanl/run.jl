@@ -16,10 +16,11 @@ ids = [
 #       "ntw20_4",
 #       "ieee57_1",
 #       "ieee57_2",
+	"uk_1"
 #	"pen_1",
 #       "pen_2",
 #       "pen_3",
-       "pen_4",
+#       "pen_4",
 #       "pen_5",
 #       "pen_6",
 #       "pen_7",
@@ -29,6 +30,7 @@ ids = [
 ks_ntw3 = (1,50,1)
 ks_ntw20 = (1,30,1)
 ks_ieee57 = (1,30,1)
+ks_uk = (1,30,1)
 ks_pen = (6500,6600,1)
 #ks_pen = (1500,11000,1000)
 
@@ -40,6 +42,7 @@ files = Dict{String,String}(
 			    "ntw20_2" => "data_melvyn/time_series_20_0.100000_0.010000_0.010000.csv",
 			    "ntw20_3" => "data_melvyn/time_series_20_0.100000_0.100000_0.005000.csv",
 			    "ntw20_4" => "data_melvyn/time_series_20_0.100000_0.100000_0.010000.csv",
+			    "uk_1" => "data_melvyn/time_series_2_UK.csv",
 			    "ieee57_1" => "data_melvyn/time_series_57_0.100000_0.010000_0.010000.csv",
 			    "ieee57_2" => "data_melvyn/time_series_57_0.100000_0.010000_0.100000.csv",
 			    "pen_1" => "data_PEN/Xs_2013-01-15_00.csv",
@@ -62,6 +65,7 @@ taus = Dict{String,Float64}(
 			    "ntw20_4" => 1e-3,
 			    "ieee57_1" => 1e-3,
 			    "ieee57_2" => 1e-3,
+			    "uk_1" => 1e-3,
 			    "pen_1" => 1/30,
 			    "pen_2" => 1/30,
 			    "pen_3" => 1/30,
@@ -82,6 +86,7 @@ Ks = Dict{String,Tuple{Int64,Int64,Int64}}(
 					   "ntw20_4" => ks_ntw20,
 					   "ieee57_1" => ks_ieee57,
 					   "ieee57_2" => ks_ieee57,
+					   "uk_1" => ks_uk,
 					   "pen_1" => ks_pen,
 					   "pen_2" => ks_pen,
 					   "pen_3" => ks_pen,
