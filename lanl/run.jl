@@ -12,8 +12,8 @@ include("final_par.jl")
 
 ids = [
        "ntw3_1",
-#       "ntw3_2",
-#       "ntw3_3",
+       "ntw3_2",
+       "ntw3_3",
 #       "ntw20_1",
 #       "ntw20_2",
 #       "ntw20_3",

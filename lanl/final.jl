@@ -103,7 +103,7 @@ _INPUT_:
 `ks = (kmin,kmax,dk)`: Values of k to try, (kmin:dk:kmax).
 `is_laplacian`: If true, assumes that the dynamics matrix (A1) is Laplacian with nonpositive off-diagonal terms. 
 `plot`: If true, generates the plots of the objective function vs. k.
-`b`: Regularization parameter to avoid overfitting.
+`b`: Regularization parameters to avoid overfitting.
 `mu`: Initial value of the barrier parameter (in IPOPT).
 `bp`: Initial value of the bound_push parameter (in IPOPT).
 
