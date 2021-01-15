@@ -1,5 +1,9 @@
 using Dates
 
+# Choose between l0 and l1 penalty.
+#approach = "l0"
+approach = "l1"
+
 include("final_par.jl")
 
 @info "====================================================================="
@@ -7,7 +11,7 @@ include("final_par.jl")
 @info "====================================================================="
 
 ids = [
-#       "ntw3_1",
+       "ntw3_1",
 #       "ntw3_2",
 #       "ntw3_3",
 #       "ntw20_1",
@@ -16,7 +20,7 @@ ids = [
 #       "ntw20_4",
 #       "ieee57_1",
 #       "ieee57_2",
-	"uk_1"
+#	"uk_1"
 #	"pen_1",
 #       "pen_2",
 #       "pen_3",
@@ -42,7 +46,7 @@ files = Dict{String,String}(
 			    "ntw20_2" => "data_melvyn/time_series_20_0.100000_0.010000_0.010000.csv",
 			    "ntw20_3" => "data_melvyn/time_series_20_0.100000_0.100000_0.005000.csv",
 			    "ntw20_4" => "data_melvyn/time_series_20_0.100000_0.100000_0.010000.csv",
-			    "uk_1" => "data_melvyn/time_series_2_UK.csv",
+			    "uk_1" => "data_melvyn/uk_time_series.csv",
 			    "ieee57_1" => "data_melvyn/time_series_57_0.100000_0.010000_0.010000.csv",
 			    "ieee57_2" => "data_melvyn/time_series_57_0.100000_0.010000_0.100000.csv",
 			    "pen_1" => "data_PEN/Xs_2013-01-15_00.csv",
@@ -102,7 +106,11 @@ for id in ids
 	nn = size(Xs)[1]
 	n = Int(nn/2)
 
-	xxx = run_l0_par(id,Xs,taus[id],(1,n,1),Ks[id],false)
+	if approach == "l0"
+		xxx = run_l0_par(id,Xs,taus[id],(1,n,1),Ks[id],false)
+	elseif approach == "l1"
+		xxx = run_l1_par(id,Xs,taus[id],Ks[id],false)
+	end
 end
 
 

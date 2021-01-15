@@ -67,14 +67,14 @@ end
 
 #=
 """
-	run_l2_par(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	run_l1_par(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
-Parallelized version of "run_l2".
+Parallelized version of "run_l1".
 
 The parameter "id" identifies the system to be identified.
 """
 =#
-@everywhere function run_l2_par(id::String, Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+@everywhere function run_l1_par(id::String, Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -99,16 +99,16 @@ The parameter "id" identifies the system to be identified.
 	a2h = zeros(n)
 
 # Run the optimizations
-	args = Array{Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,2},Float64,Float64,Float64},1}()
+	args = Array{Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64},1}()
 
 	for k in kmin:dk:kmax
 		push!(args,(id,x,Dx,xt,Dxt,k,A1h,a2h,b,mu,bp))
 	end
 
 	if is_laplacian
-		pmap(Lmin_l2_lap_par,args)
+		pmap(Lmin_l1_lap_par,args)
 	else
-		pmap(Lmin_l2_par,args)
+		pmap(Lmin_l1_par,args)
 	end
 end
 
@@ -354,12 +354,12 @@ end
 
 #=
 """
-	Lmin_l2_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l1_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
-Parallelized version of Lmin_l2.
+Parallelized version of Lmin_l1.
 """
 =#
-@everywhere function Lmin_l2_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
+@everywhere function Lmin_l1_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
 	id,x,Dx,xt,Dxt,k,A1h,a2h,b,mu,bp = tups
 	
 	t0 = time()
@@ -465,20 +465,20 @@ Parallelized version of Lmin_l2.
 	
 	@info "Full optimization took $(time() - t0)''."
 	
-	writedlm("data/"*id*"_l2_$(l).$(k)_obj.csv",objective_value(system_id),',')
-#	writedlm("data/"*id*"_l2_$(l).$(k)_A1.csv",mL,',')
-#	writedlm("data/"*id*"_l2_$(l).$(k)_a2.csv",value.(a2),',')
-#	writedlm("data/"*id*"_l2_$(l).$(k)_gamma.csv",value.(gamma),',')
+	writedlm("data/"*id*"_l1_$(k)_obj.csv",objective_value(system_id),',')
+#	writedlm("data/"*id*"_l1_$(k)_A1.csv",mL,',')
+#	writedlm("data/"*id*"_l1_$(k)_a2.csv",value.(a2),',')
+	writedlm("data/"*id*"_l1_$(k)_gamma.csv",value.(gamma),',')
 end
 
 #=
 """
-	Lmin_l2_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l1_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
 
-Same as Lmin_l2_par, but assumes that the dynamics matrix (A1) is a Laplacian, with nonpositive off-diagonal terms.
+Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, with nonpositive off-diagonal terms.
 """
 =#
-@everywhere function Lmin_l2_lap_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
+@everywhere function Lmin_l1_lap_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
 	id,x,Dx,xt,Dxt,k,A1h,a2h,b,mu,bp = tups
 	
 	t0 = time()
@@ -591,10 +591,10 @@ Same as Lmin_l2_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 
 	@info "Full optimization took $(time() - t0)''."
 
-	writedlm("data/"*id*"_lap2_$(l).$(k)_obj.csv",objective_value(system_id),',')
-#	writedlm("data/"*id*"_lap2_$(l).$(k)_A1.csv",mL,',')
-#	writedlm("data/"*id*"_lap2_$(l).$(k)_a2.csv",value.(a2),',')
-#	writedlm("data/"*id*"_lap2_$(l).$(k)_gamma.csv",value.(gamma),',')
+	writedlm("data/"*id*"_lap2_$(k)_obj.csv",objective_value(system_id),',')
+#	writedlm("data/"*id*"_lap2_$(k)_A1.csv",mL,',')
+#	writedlm("data/"*id*"_lap2_$(k)_a2.csv",value.(a2),',')
+	writedlm("data/"*id*"_lap2_$(k)_gamma.csv",value.(gamma),',')
 end
 
 #=
