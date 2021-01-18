@@ -345,11 +345,13 @@ function Lmin_l1(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 	S0 = (x*x')/N
 	S1 = (x*Dx')/N
 
-	xtk = xt[:,k+1] # THE FIRST COLUMN CORRESPONDS TO f=0, WHICH WE DON'T WANT TO TREAT.
+	xtk = xt[:,k+1] # THE FIRST COLUMN (of xt) CORRESPONDS TO f=0, WHICH WE DON'T WANT TO TREAT.
 	
 	Fk = real.(xtk*xtk')
-	flk = [real.(Dxt[l,k]*xtk') for l = 1:n]
-	glk = [norm(Dxt[l,k])^2 for l = 1:n]
+	flk = [real.(Dxt[l,k+1]*xtk') for l = 1:n] # THE FIRST COLUMN (of Dxt) CORRESPONDS TO f=0, WHICH WE DON'T WANT TO TREAT.
+
+	glk = [norm(Dxt[l,k+1])^2 for l = 1:n]# THE FIRST COLUMN (of Dxt) CORRESPONDS TO f=0, WHICH WE DON'T WANT TO TREAT.
+
 
 # Definition of the optimization problem. 
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
@@ -478,15 +480,16 @@ function objective_l0(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, 
 	Sigma1 = (x*Dx')/N
 
 	xtk = xt[:,k+1]
-	Dxtlk = Dxt[l,k+1]
 	
 	Fk = real.(xtk*xtk')
-	flk = real.(Dxtlk*xtk')
-	glk = norm(Dxtlk)^2
+	flk = real.(Dxt[l,k+1]*xtk')
+	glk = norm(Dxt[l,k+1])^2
 
 	A = [A1 diagm(0 => a2)]
 
-	obj = tr(transpose(A)*A*Sigma0) + 2*tr(A*Sigma1) + .5*gamma^2 - 2*gamma/sqrt(N)*sqrt(tr(A[l,:]*transpose(A[l,:])*Fk) + (2*flk*A[l,:])[1] + glk) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n)
+	temp = gamma*sqrt(tr(A[l,:]*transpose(A[l,:])*Fk) + (2*flk*A[l,:])[1] + glk)
+
+	obj = tr(transpose(A)*A*Sigma0) + 2*tr(A*Sigma1) + .5*gamma^2 - 2/sqrt(N)*temp + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n)
 
 	return obj
 end
@@ -529,8 +532,8 @@ function objective_l1(Xs::Array{Float64,2}, tau::Float64, A1::Array{Float64,2}, 
 	xtk = xt[:,k+1]
 	
 	Fk = real.(xtk*xtk')
-	flk = [real.(Dxt[l,k]*xtk') for l = 1:n]
-	glk = [norm(Dxt[l,k])^2 for l = 1:n]
+	flk = [real.(Dxt[l,k+1]*xtk') for l = 1:n]
+	glk = [norm(Dxt[l,k+1])^2 for l = 1:n]
 
 	A = [A1 diagm(0 => a2)]
 
