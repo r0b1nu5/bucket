@@ -132,11 +132,10 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 	S1 = (x*Dx')/N
 
 	xtk = xt[:,k+1]
-	Dxtlk = Dxt[l,k+1]
 	
 	Fk = real.(xtk*xtk')
-	flk = real.(Dxtlk*xtk')
-	glk = norm(Dxtlk)^2
+	flk = real.(Dxt[l,k+1]*xtk')
+	glk = norm(Dxt[l,k+1])^2
 
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
@@ -251,8 +250,8 @@ Parallelized version of Lmin_l1.
 	xtk = xt[:,k+1]
 	
 	Fk = real.(xtk*xtk')
-	flk = [real.(Dxt[l,k]*xtk') for l = 1:n]
-	glk = [norm(Dxt[l,k])^2 for l = 1:n]
+	flk = [real.(Dxt[l,k+1]*xtk') for l = 1:n]
+	glk = [norm(Dxt[l,k+1])^2 for l = 1:n]
 
 # Definition of the optimization problem. 
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
@@ -398,11 +397,10 @@ Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	S1 = (x*Dx')/N
 
 	xtk = xt[:,k+1]
-	Dxtlk = Dxt[l,k+1]
 	
 	Fk = real.(xtk*xtk')
-	flk = real.(Dxtlk*xtk')
-	glk = norm(Dxtlk)^2
+	flk = real.(Dxt[l,k+1]*xtk')
+	glk = norm(Dxt[l,k+1])^2
 
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
@@ -525,8 +523,8 @@ Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	xtk = xt[:,k+1]
 	
 	Fk = real.(xtk*xtk')
-	flk = [real.(Dxt[l,k]*xtk') for l = 1:n]
-	glk = [norm(Dxt[l,k])^2 for l = 1:n]
+	flk = [real.(Dxt[l,k+1]*xtk') for l = 1:n]
+	glk = [norm(Dxt[l,k+1])^2 for l = 1:n]
 
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))

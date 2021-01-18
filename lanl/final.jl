@@ -216,11 +216,12 @@ function Lmin_l0(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Fl
 	S1 = (x*Dx')/N
 
 	xtk = xt[:,k+1]		# THE FIRST COLUMN IS f=0, WHICH WE DON'T WANT TO TREAT.
-	Dxtlk = Dxt[l,k+1]	# THE FIRST COLUMN IS f=0, WHICH WE DON'T WANT TO TREAT.
 	
 	Fk = real.(xtk*xtk')
-	flk = real.(Dxtlk*xtk')
-	glk = norm(Dxtlk)^2
+	flk = real.(Dxt[l,k+1]*xtk') # THE FIRST COLUMN IS f=0, WHICH WE DON'T WANT TO TREAT.
+
+	glk = norm(Dxt[l,k+1])^2 # THE FIRST COLUMN IS f=0, WHICH WE DON'T WANT TO TREAT.
+
 
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
@@ -708,11 +709,12 @@ function Lmin_l0_lap(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Comple
 	S1 = (x*Dx')/N
 
 	xtk = xt[:,k+1]		# THE FIRST COLUMN IS f=0, WHICH WE DON'T WANT TO TREAT.
-	Dxtlk = Dxt[l,k+1]	# THE FIRST COLUMN IS f=0, WHICH WE DON'T WANT TO TREAT.
-	
+		
 	Fk = real.(xtk*xtk')
-	flk = real.(Dxtlk*xtk')
-	glk = norm(Dxtlk)^2
+	flk = real.(Dxt[l,k+1]*xtk') # THE FIRST COLUMN IS f=0, WHICH WE DON'T WANT TO TREAT.
+
+	glk = norm(Dxt[l,k+1])^2 # THE FIRST COLUMN IS f=0, WHICH WE DON'T WANT TO TREAT.
+
 
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
@@ -828,8 +830,8 @@ function Lmin_l1_lap(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Comple
 	xtk = xt[:,k+1] # THE FIRST COLUMN CORRESPONDS TO f=0, WHICH WE DON'T WANT TO TREAT.
 	
 	Fk = real.(xtk*xtk')
-	flk = [real.(Dxt[l,k]*xtk') for l = 1:n]
-	glk = [norm(Dxt[l,k])^2 for l = 1:n]
+	flk = [real.(Dxt[l,k+1]*xtk') for l = 1:n]
+	glk = [norm(Dxt[l,k+1])^2 for l = 1:n]
 
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
