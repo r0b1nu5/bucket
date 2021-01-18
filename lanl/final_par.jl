@@ -30,6 +30,7 @@ The parameter "id" identifies the system to be identified.
 
 	lmin,lmax,dl = ls
 	kmin,kmax,dk = ks
+	kmax = min(kmax,round(Int,N/2))
 
 # Computing the needed inputs (time series, discrete derivative, and their Fourier transforms).
 	x = Xs[:,1:end-1]
@@ -80,6 +81,7 @@ The parameter "id" identifies the system to be identified.
 	N = NN-1
 
 	kmin,kmax,dk = ks
+	kmax = min(kmax,round(Int,N/2))
 
 # Computing the needed inputs (time series, discrete derivative, and their Fourier transforms).
 	x = Xs[:,1:end-1]

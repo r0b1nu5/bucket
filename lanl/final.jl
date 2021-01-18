@@ -33,6 +33,7 @@ function run_l0(Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}
 
 	lmin,lmax,dl = ls
 	kmin,kmax,dk = ks
+	kmax = min(kmax,round(Int,N/2))
 
 # Computing the needed inputs (time series, discrete derivative, and their Fourier transforms).
 	x = Xs[:,1:end-1]
@@ -123,6 +124,7 @@ function run_l1(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}
 	N = NN-1
 
 	kmin,kmax,dk = ks
+	kmax = min(kmax,round(Int,N/2))
 
 # Computing the needed inputs (time series, discrete derivative, and their Fourier transforms).
 	x = Xs[:,1:end-1]
