@@ -66,14 +66,14 @@ node_ids = Dict{String,Array{Int64,1}}(
 				       "ntw20_6" => Array(1:20),
 				       "ieee57_1" => Array(1:57),
 				       "ieee57_2" => Array(1:57),
-				       "pen_1" => vec(Int.(readdlm("data_PEN/pen_2013-01-15_00_ids.csv",',').-1)),
-				       "pen_2" => vec(Int.(readdlm("data_PEN/pen_2013-03-10_04_ids.csv",',').-1)),
-				       "pen_3" => vec(Int.(readdlm("data_PEN/pen_2013-04-03_02_ids.csv",',').-1)),
-				       "pen_4" => vec(Int.(readdlm("data_PEN/pen_2013-04-03_03_ids.csv",',').-1)),
-				       "pen_5" => vec(Int.(readdlm("data_PEN/pen_2013-04-03_07_ids.csv",',').-1)),
-				       "pen_6" => vec(Int.(readdlm("data_PEN/pen_2013-07-30_01_ids.csv",',').-1)),
-				       "pen_7" => vec(Int.(readdlm("data_PEN/pen_2013-07-30_04_ids.csv",',').-1)),
-				       "pen_8" => vec(Int.(readdlm("data_PEN/pen_2013-07-30_09_ids.csv",',').-1))
+				       "pen_1" => vec(Int.(readdlm("data_pen/pen_2013-01-15_00_ids.csv",',').-1)),
+				       "pen_2" => vec(Int.(readdlm("data_pen/pen_2013-03-10_04_ids.csv",',').-1)),
+				       "pen_3" => vec(Int.(readdlm("data_pen/pen_2013-04-03_02_ids.csv",',').-1)),
+				       "pen_4" => vec(Int.(readdlm("data_pen/pen_2013-04-03_03_ids.csv",',').-1)),
+				       "pen_5" => vec(Int.(readdlm("data_pen/pen_2013-04-03_07_ids.csv",',').-1)),
+				       "pen_6" => vec(Int.(readdlm("data_pen/pen_2013-07-30_01_ids.csv",',').-1)),
+				       "pen_7" => vec(Int.(readdlm("data_pen/pen_2013-07-30_04_ids.csv",',').-1)),
+				       "pen_8" => vec(Int.(readdlm("data_pen/pen_2013-07-30_09_ids.csv",',').-1))
 				       )
 
 T = Dict{String,Float64}(

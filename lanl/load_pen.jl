@@ -11,8 +11,8 @@ using Distributed
 # Last oscillator is considered as the reference node.
 
 function load_pen(date::String)
-	th = readdlm("data_PEN/th_"*date*".csv",',')' * pi/180
-	fs = readdlm("data_PEN/fs_"*date*".csv",',')'
+	th = readdlm("data_pen/th_"*date*".csv",',')' * pi/180
+	fs = readdlm("data_pen/fs_"*date*".csv",',')'
 
 	N,T = size(fs)
 
@@ -39,7 +39,7 @@ function load_pen(date::String)
 	z2 = sort(union(z1,cc))
 	zc = setdiff((1:N),z2)
 	
-	writedlm("data_PEN/pen_"*date*"_ids.csv",zc,',')
+	writedlm("data_pen/pen_"*date*"_ids.csv",zc,',')
 
 	tth = th[:,1]
 	dth = th[:,2:end] - th[:,1:end-1]
@@ -63,13 +63,13 @@ end
 # Extracts phases and frequencies from the raw data of Pennsylvania.
 
 @everywhere function treat_pen(date::String)
-	x = readdir("data_PEN")
+	x = readdir("data_pen")
 
 	for f in x
 		if f[1:13] == date
 			@info "Start: "*f
 
-			y = Float64.(readdlm("data_PEN/"*f,',')[2:end,2:end])
+			y = Float64.(readdlm("data_pen/"*f,',')[2:end,2:end])
 	
 			N = Int(maximum(y[:,1])+1)
 			n,m = size(y)
@@ -86,10 +86,10 @@ end
 				th = [th T]
 			end
 	
-			open("data_PEN/fs_"*date*".csv","a") do f
+			open("data_pen/fs_"*date*".csv","a") do f
 				writedlm(f,fs',',')
 			end
-			open("data_PEN/th_"*date*".csv","a") do f
+			open("data_pen/th_"*date*".csv","a") do f
 				writedlm(f,th',',')
 			end
 
@@ -97,10 +97,5 @@ end
 		end
 	end
 end
-
-
-
-
-
 
 
