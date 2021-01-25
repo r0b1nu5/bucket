@@ -1,76 +1,89 @@
 using PyPlot, Statistics
 
 include("ksakaguchi.jl")
-include("tools.jl")
 
-n = 12
-
-th0 = Array(2pi/n*(1:n))
-th1 = copy(th0)
-th2 = copy(th0)
-
-L = cyqle(n)
+phi1 = -.6
+phi2 = 1.05
+phis = LinRange(phi1,phi2,300)
 
 a = .5
+g1 = -1.
+g2 = 1.
 
-om = [-1;1;zeros(n-2)]
+om = 2*rand(3)
+om .-= mean(om)
 
-bs = LinRange(.55,.8,100)
+V = [1,2,3]
+E = [(1,3),(2,3),(3,1),(3,2)]
 
-X = Array{Float64,2}(undef,n,0)
-Y = Array{Float64,2}(undef,n,0)
-ls1 = Array{Float64,2}(undef,n,0)
-ls2 = Array{Float64,2}(undef,n,0)
+L = [1. 0. -1.;0. 1. -1.;-1. -1. 2.]
 
-for b in bs
-	global th1,th2,X,Y,ls1,ls2
+n = 3
+m = 2
 
-	x = ksakaguchi(L,b*om,th1,a,false)
-	y = ksakaguchi(L,b*om,th2,0.,false)
+ps = Array{Float64,1}()
+fs = Array{Float64,2}(undef,2*m,0)
+
+best_phi = 0.
+best_dis = 1000.
+best_om2 = 0.
+
+for phi in phis
+	global f = zeros(2*m)	
+	global om2 = copy(om)
+
+	for i in 1:n-1
+		if om2[i]-g2 <= phi <= om2[i]-g1
+			f[i] = om2[i] - phi
+			f[i+m] = sin(-asin(f[i])-2*a)
+
+			global e = E[i]
+
+			for j in 1:n
+				if e[2] == j
+					global om2[j] -= f[i+m]
+				end
+			end
+		else
+			f = zeros(2*m)
+			break
+		end
+	end
 	
-	th1 = x[1][:,end]
-	X = [X th1]
-	th2 = y[1][:,end]
-	Y = [Y th2]
+	push!(ps,phi)
+	global fs = [fs f]
 
-	ls1 = [ls1 eigvals(jacobian(L,th1,a))]
-	ls2 = [ls2 eigvals(jacobian(L,th2,0.))]
+	dis = abs(om2[n] - phi)
+	if dis < best_dis
+		global best_phi = copy(phi)
+		global best_om2 = copy(om2[n])
+		global best_dis = copy(dis)
+	end
 end
 
-nn,T1 = size(X)
-dX = mod.(X - [X[2:end,:];X[[1,],:]] .+ pi,2pi) .- pi
-q1 = [winding(X[:,i],Array(1:n)) for i in 1:T1]
-nn,T2 = size(Y)
-dY = mod.(Y - [Y[2:end,:];Y[[1,],:]] .+ pi,2pi) .- pi
-q2 = [winding(Y[:,i],Array(1:n)) for i in 1:T2]
-
-figure()
-subplot(2,2,1)
-PyPlot.plot([bs[1],bs[end]],[pi/2+a,pi/2+a],"--b")
-PyPlot.plot([bs[1],bs[end]],[pi/2-a,pi/2-a],"--r")
-PyPlot.plot([bs[1],bs[end]],[-pi/2+a,-pi/2+a],"--b")
-PyPlot.plot([bs[1],bs[end]],[-pi/2-a,-pi/2-a],"--r")
-PyPlot.plot([bs[1],bs[end]],[pi/2,pi/2],"--k")
-PyPlot.plot([bs[1],bs[end]],[-pi/2,-pi/2],"--k")
-subplot(2,2,2)
-PyPlot.plot([bs[1],bs[end]],[pi/2,pi/2],"--k")
-PyPlot.plot([bs[1],bs[end]],[-pi/2,-pi/2],"--k")
-for i in 1:n
-	subplot(2,2,1)
-	PyPlot.plot(bs,dX[i,:])
-	subplot(2,2,2)
-	PyPlot.plot(bs,dY[i,:])
-	subplot(2,2,3)
-	PyPlot.plot(bs,ls1[i,:])
-	subplot(2,2,4)
-	PyPlot.plot(bs,ls2[i,:])
+ths,dhs,err,iter = ksakaguchi(L,om,zeros(n),a)
+ff = Array{Float64,1}()
+for e in E
+	push!(ff,sin(ths[e[1],end]-ths[e[2],end]-a))
 end
-#=
-subplot(2,2,3)
-PyPlot.plot(bs,q1)
-subplot(2,2,4)
-PyPlot.plot(bs,q2)
-=#
+
+PyPlot.plot(ps,ps,"--")
+for i in 1:2*m
+	PyPlot.plot(ps,fs[i,:],color="C$(i)")
+end
+#PyPlot.plot(ps,fs[end,:])
+
+if iter < 100000
+	d = mean(dhs[:,end])
+	for i in 1:2*m
+		PyPlot.plot(d,ff[i],"o",color="C$(i)")
+	end
+#	PyPlot.plot(d,ff[end],"o")
+end
+
+PyPlot.plot([best_phi,best_phi],[-1.,1.],"--k")
+PyPlot.plot([phi1,phi2],[best_om2,best_om2],"--k")
+
 
 
 
