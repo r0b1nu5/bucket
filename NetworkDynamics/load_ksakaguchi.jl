@@ -23,7 +23,7 @@ function ks_edge!(e, θ_s, θ_d, epar, t)
 end
 
 function ks_vertex!(dθ, θ, e_s, vpar, t)
-	dth .= vpar
+	dθ .= vpar
 	for edge in e_s
 		dθ .+= edge
 	end

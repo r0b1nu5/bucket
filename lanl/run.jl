@@ -1,8 +1,8 @@
 using Dates
 
 # Choose between l0 and l1 penalty.
-#approach = "l0"
-approach = "l1"
+approach = "l0"
+#approach = "l1"
 
 include("final_par.jl")
 
@@ -11,9 +11,9 @@ include("final_par.jl")
 @info "====================================================================="
 
 ids = [
-       "ntw3_1",
-       "ntw3_2",
-       "ntw3_3",
+#       "ntw3_1",
+#       "ntw3_2",
+#       "ntw3_3",
 #       "ntw20_1",
 #       "ntw20_2",
 #       "ntw20_3",
@@ -28,8 +28,8 @@ ids = [
 #       "pen_5",
 #       "pen_6",
 #       "pen_7",
-#       "pen_8"
-      ]
+#       "pen_8",
+]
 
 ks_ntw3 = (1,50,1)
 ks_ntw20 = (1,30,1)
@@ -56,7 +56,7 @@ files = Dict{String,String}(
 			    "pen_5" => "data_pen/Xs_2013-04-03_07.csv",
 			    "pen_6" => "data_pen/Xs_2013-07-30_01.csv",
 			    "pen_7" => "data_pen/Xs_2013-07-30_04.csv",
-			    "pen_8" => "datapenn/Xs_2013-07-30_09.csv"
+			    "pen_8" => "data_pen/Xs_2013-07-30_09.csv"
 			    )
 
 taus = Dict{String,Float64}(
