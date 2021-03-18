@@ -83,4 +83,3 @@ function L2B_ij(L::Array{Float64,2}, i0::Int64, j0::Int64)
 end
 
 
-				 

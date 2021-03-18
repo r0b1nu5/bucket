@@ -2,58 +2,127 @@ using Statistics, LinearAlgebra, Dates
 
 include("ksakaguchi.jl")
 
-function winding(th::Array{Float64,1}, C::Array{Int64,1})
-	th1 = th[C]
-	th2 = th[[C[2:end];C[1]]]
+function winding(θ::Array{Float64,1}, C::Array{Int64,1})
+	if length(θ) < 1
+		q = []
+	else
+		θ1 = θ[C]
+		θ2 = θ[[C[2:end];C[1]]]
 
-	dth = th2 - th1
+		dθ = θ1 - θ2
 
-	q = sum(mod.(dth .+ pi,2pi) .- pi)/(2pi)
+		q = round(Int,sum(mod.(dθ .+ π,2π) .- π)/(2π))
+	end
 
-	return round(Int,q)
+	return q
 end
 
-function jacobian(L::Array{Float64,2}, th::Array{Float64,1}, a::Float64)
-	n = length(th)
+# Computes the winding vector for cycles defined by the cycles in C.
+function winding(θ::Array{Float64,1}, C::Array{Array{Int64,1},1})
+	if length(C) < 1 || length(θ) < 1
+		qs = []
+	else
+		qs = [winding(θ,C[i]) for i in 1:length(C)]
+	end
+
+	return qs
+end
+
+# Computes the max (in abs value) angle difference, using the incidence matrix.
+function cohesiveness_inc(θ::Array{Float64,1}, B::Array{Float64,2})
+	return maximum(abs.(mod.(transpose(B)*θ .+ π,2π) .- π))
+end
+
+# Computes the max (in abs value) angle difference, using the adjacency/Laplacian matrix.
+function cohesiveness_adj(θ::Array{Float64,1}, A::Array{Float64,2})
+	n = length(θ)
+	
+	dθ = (θ*ones(1,n) - ones(n)*θ').*(abs.(A .* (1 .- diagm(0 => ones(n)))) .> 1e-8)
+
+	return maximum(dθ)
+end
+
+# Draws a random element of the winding cell of u
+# u: Winding vector
+# B: Incidence matrix (n x m)
+# T: Indices of the edges composing a spanning tree
+# C: cycle-edge incidence matrix (see Jafarpour et al. (2020))
+# TODO Are we really sampling the whole winding cell???
+function sample_winding_cell(u::Array{Int64,1}, B::Array{Float64,2}, T::Array{Int64,1}, C::Array{Float64,2}, max_attempt::Int64=1000)
+	n,m = size(B)
+
+	Bt = transpose(B)
+	Ttd = pinv(transpose(B[:,T]))
+	Cd = pinv(C)
+
+	c = 0
+	test = true
+	θ = Array{Float64,1}()
+
+	while c < max_attempt && test
+		c += 1
+
+		x = 2π*rand(n) .- π
+		x .-= mean(x)
+
+		y = Bt*x + 2π*Cd*u
+
+		if norm(y,Inf) < π
+			θ = Ttd*y[T]
+			θ = θ .- mean(θ)
+			test = false
+		end
+	end
+
+	@info "Number of attempts: $c"
+	if c == max_attempt
+		@info "WARNING: No sample found."
+	end
+
+	return θ
+end
+
+function jacobian(L::Array{Float64,2}, θ::Array{Float64,1}, α::Float64)
+	n = length(θ)
 
 	A = -L.*(1 .- diagm(0 => ones(n)))
 
-	dth = th*ones(1,n) - ones(n)*th'
+	dθ = θ*ones(1,n) - ones(n)*θ'
 
-	J = A.*cos.(dth .- a)
+	J = A.*cos.(dθ .- α)
 	J = J - diagm(0 => vec(sum(J,dims=2)))
 
 	return J
 end
 
-function freq_width(L::Array{Float64,2}, om0::Array{Float64,1}, th0::Array{Float64,1}, a::Float64, verb::Bool=false, res::Float64=.0005)
-	if norm(om0) < 1e-8
+function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, C::Array{Int64,1}, verb::Bool=false, res::Float64=.0005)
+	if norm(ω0) < 1e-8
 		@info "The frequency vector is close to zero."
 	end
 
-	n = length(th0)
+	n = length(θ0)
 	
-	om = om0 .- mean(om0)
-	om /= norm(om)
+	ω = ω0 .- mean(ω0)
+	ω /= norm(ω)
 
-	x = ksakaguchi(L,zeros(n),th0,a,true,false,.01,1e-6)
-	th1 = x[1][:,end]
-	th = copy(th1)
-	q0 = winding(th,Array(1:n))
+	x = ksakaguchi(L,zeros(n),θ0,α,true,false,.01,1e-6)
+	θ1 = x[1][:,end]
+	θ = copy(θ1)
+	q0 = winding(θ,C)
 
-	b = 0.
-	db = 1.
+	β = 0.
+	dβ = 1.
 
-	while db > res
+	while dβ > res
 		if verb
-			@info "b = $b, db = $db"
+			@info "β = $β, dβ = $dβ"
 		end
 
 		q = q0
 		it = 0
 		while q == q0 && it < 100000
-			b += db
-			x = ksakaguchi(L,b*om,th,a,true,false,.01,1e-6)
+			β += dβ
+			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
 			q = winding(x[1][:,end],Array(1:n))
 			it = x[4]
 			
@@ -61,27 +130,27 @@ function freq_width(L::Array{Float64,2}, om0::Array{Float64,1}, th0::Array{Float
 				@info "q = $q, it = $it"
 			end
 		end
-		th = x[1][:,1]
-		b -= db
-		db /= 10
+		θ = x[1][:,1]
+		β -= dβ
+		dβ /= 10
 	end
 
-	bmax = copy(b)
+	βmax = copy(β)
 	fmax = mean(x[2][:,end])
 
-	b = 0.
-	db = 1.
+	β = 0.
+	dβ = 1.
 
-	while db > res
+	while dβ > res
 		if verb
-			@info "b =$b, db = $db"
+			@info "β =$β, dβ = $dβ"
 		end
 
 		q = q0
 		it = 0
 		while q == q0 && it < 100000
-			b -= db
-			x = ksakaguchi(L,b*om,th,a,true,false,.01,1e-6)
+			β -= dβ
+			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
 			q = winding(x[1][:,end],Array(1:n))
 			it = x[4]
 
@@ -89,15 +158,15 @@ function freq_width(L::Array{Float64,2}, om0::Array{Float64,1}, th0::Array{Float
 				@info "q = $q, it = $it"
 			end
 		end
-		th = x[1][:,1]
-		b += db
-		db /= 10
+		θ = x[1][:,1]
+		β += dβ
+		dβ /= 10
 	end
 
-	bmin = copy(b)
+	βmin = copy(β)
 	fmin = mean(x[2][:,end])
 
-	return bmin,bmax,fmin,fmax
+	return βmin,βmax,fmin,fmax
 end
 
 

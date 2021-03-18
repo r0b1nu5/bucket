@@ -1,4 +1,7 @@
-Ns = [5,10,20,50,100,200,500,1000,2000,5000,10000]
+using Dates, PyPlot
+include("../ksakaguchi/ksakaguchi.jl")
+
+Ns = [5,10,20,50,100,200,500,1000,2000]
 
 T1 = Array{Float64,1}()
 T2 = Array{Float64,1}()
@@ -21,7 +24,7 @@ for n in Ns
 @info "$(now()) -- ND.jl, n=$n done."
 
 	t3 = time()
-	local xxx = ksakaguchi(L,om,th0,a,true,true,.01,-1.,4000)
+	local xxx = ksakaguchi(L,om,th0,.5,true,true,.01,-1.,4000)
 	t4 = time()
 @info "$(now()) -- Own, n=$n done."
 	

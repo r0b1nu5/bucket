@@ -5,27 +5,27 @@ using LightGraphs, OrdinaryDiffEq, NetworkDynamics
 #A = adjacency_matrix(g)
 #G = SimpleDiGraph(A)
 
-function load_ksakaguchi(G::SimpleDiGraph{Int64}, om::Array{Float64,1}, th0::Array{Float64,1}, tspan::Tuple{Float64,Float64}, a::Float64=.1, K::Float64=1.)
+function load_ksakaguchi(G::SimpleDiGraph{Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, t_span::Tuple{Float64,Float64}, α::Float64=.1, K::Float64=1.)
 	vertex! = ODEVertex(f! = ks_vertex!, dim=1)
-	edge! = StaticEdge(f! = ks_edge!, dim=1)
+	edge! = StaticEdge(f! = ks_edge!, dim=1, coupling = :directed)
 
 	ksakaguchi! = network_dynamics(vertex!, edge!, G)
 
-	vpar = om
-	epar = (K,a)
+	vpar = ω
+	epar = (K,α)
 	p = (vpar,epar)
 
-	return ODEProblem(ksakaguchi!, th0, tspan, p)
+	return ODEProblem(ksakaguchi!, θ0, t_span, p)
 end
 
-function ks_edge!(e, th_s, th_d, epar, t)
-	e .= -epar[1].*sin.(th_s .- th_d .- epar[2])
+function ks_edge!(e, θ_s, θ_d, epar, t)
+	e .= -epar[1].*sin.(-θ_s .+ θ_d .- epar[2])
 end
 
-function ks_vertex!(dth, th, e_s, e_d, vpar, t)
+function ks_vertex!(dθ, θ, e_s, vpar, t)
 	dth .= vpar
 	for edge in e_s
-		dth .+= edge
+		dθ .+= edge
 	end
 end
 
