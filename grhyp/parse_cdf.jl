@@ -62,13 +62,13 @@ function parse_cdf(file::String, name::String, bus_ids::Tuple{Int64,Int64}, line
 	G = G[ids,ids]
 	B = B[ids,ids]
 
-	writedlm("data/"*name*"_P.csb",P,',')
-	writedlm("data/"*name*"_Q.csb",Q,',')
-	writedlm("data/"*name*"_V.csb",V,',')
-	writedlm("data/"*name*"_t.csb",t,',')
-	writedlm("data/"*name*"_bt.csb",bt,',')
-	writedlm("data/"*name*"_G.csb",G,',')
-	writedlm("data/"*name*"_B.csb",B,',')
+	writedlm("data/"*name*"_P.csv",P,',')
+	writedlm("data/"*name*"_Q.csv",Q,',')
+	writedlm("data/"*name*"_V.csv",V,',')
+	writedlm("data/"*name*"_t.csv",t,',')
+	writedlm("data/"*name*"_bt.csv",bt,',')
+	writedlm("data/"*name*"_G.csv",G,',')
+	writedlm("data/"*name*"_B.csv",B,',')
 
 	return P,Q,V,t,bt,G,B
 end
