@@ -68,7 +68,7 @@ function sample_winding_cell(u::Array{Int64,1}, B::Array{Float64,2}, T::Array{In
 		y = Bt*x + 2π*Cd*u
 
 		if norm(y,Inf) < π
-			θ = Ttd*y[T]
+			Dθ = Ttd*y[T]
 			θ = θ .- mean(θ)
 			test = false
 		end
@@ -106,6 +106,7 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 	ω /= norm(ω)
 
 	x = ksakaguchi(L,zeros(n),θ0,α,true,false,.01,1e-6)
+#	ts,x = ksakaguchi_ND(L,zeros(n),θ0,α,(0.,10.))
 	θ1 = x[1][:,end]
 	θ = copy(θ1)
 	q0 = winding(θ,C)
@@ -123,6 +124,7 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 		while q == q0 && it < 100000
 			β += dβ
 			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
+#			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
 			q = winding(x[1][:,end],Array(1:n))
 			it = x[4]
 			
@@ -151,6 +153,7 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 		while q == q0 && it < 100000
 			β -= dβ
 			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
+#			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
 			q = winding(x[1][:,end],Array(1:n))
 			it = x[4]
 

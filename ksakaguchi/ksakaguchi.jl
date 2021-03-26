@@ -138,7 +138,7 @@ function ksakaguchi_ND(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Flo
 
 	G = SimpleDiGraph(A)
 
-	ks_sol = solve(load_ksakaguchi(G,ω,θ0,t_span,α,1.))
+	ks_sol = solve(load_ksakaguchi(G,ω,θ0,t_span,α,1.),Tsit5())
 
 	ts = ks_sol.t
 	T = length(ts)
@@ -159,7 +159,7 @@ function ksakaguchi_ND(L::SparseMatrixCSC{Float64,Int}, ω::Array{Float64,1}, θ
 
 	G = SimpleDiGraph(A)
 
-	ks_sol = solve(load_ksakaguchi(G,ω,θ0,t_span,α,1.))
+	ks_sol = solve(load_ksakaguchi(G,ω,θ0,t_span,α,1.),Tsit5())
 
 	ts = ks_sol.t
 	T = length(ts)
