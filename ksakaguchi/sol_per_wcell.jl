@@ -10,28 +10,30 @@ n = size(L)[1]
 
 ω = rand(n)
 ω .-= mean(ω)
-ω *= .5
+ω *= .1
 
-T = 1000.
+T = 50.
 α = .5
-α = 0.
+#α = 0.
 tol = 1e-2
 
 max_N = 30
-max_iter = 100
+max_iter = 10
 
+init = Array{Float64,2}(undef,n,0)
 sols = Array{Float64,2}(undef,n,0)
 us = Array{Int64,2}(undef,3,0)
 iter = 0
 
 while size(sols)[2] < max_N && iter < max_iter
-	global us,sols
+	global us,sols,init
 	global iter += 1
 
 	local θ0 = 2π*rand(n)
 
-	local ts,θ = ksakaguchi_ND(L,ω,θ0,α,(0.,T))
-	
+	local ts,θ = ksakaguchi_ND(L,ω,θ0,α,(0.,T),RK4())
+#	local θ,dθ,err,it = ksakaguchi(L,ω,θ0,α,true)
+
 	local θf = mod.(θ[:,end] .- θ[1,end],2π)
 
 	d = 1000.
@@ -43,9 +45,14 @@ while size(sols)[2] < max_N && iter < max_iter
 	end
 
 	if d > tol
+		init = [init θ0]
 		sols = [sols θf]
 		us = [us winding(θf,C)]
 	end
 end
 
+writedlm("temp_data/omega.csv",ω,',')
+writedlm("temp_data/sols.csv",sols,',')
+writedlm("temp_data/init.csv",init,',')
+writedlm("temp_data/us.csv",us,',')
 

@@ -131,14 +131,14 @@ function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, om::Array{Float64,1}, th0::
 end
 
 
-function ksakaguchi_ND(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, t_span::Tuple{Float64,Float64}, verb::Bool=false)
+function ksakaguchi_ND(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, t_span::Tuple{Float64,Float64}, algo::Any=RK4(), verb::Bool=false)
 	n = length(ω)
 
 	A = -L + diagm(0 => diag(L))
 
 	G = SimpleDiGraph(A)
 
-	ks_sol = solve(load_ksakaguchi(G,ω,θ0,t_span,α,1.),Tsit5())
+	ks_sol = solve(load_ksakaguchi(G,ω,θ0,t_span,α,1.),algo)
 
 	ts = ks_sol.t
 	T = length(ts)
@@ -152,14 +152,14 @@ function ksakaguchi_ND(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Flo
 end
 
 
-function ksakaguchi_ND(L::SparseMatrixCSC{Float64,Int}, ω::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, t_span::Tuple{Float64,Float64}, verb::Bool=false)
+function ksakaguchi_ND(L::SparseMatrixCSC{Float64,Int}, ω::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, t_span::Tuple{Float64,Float64}, algo::Any=RK4(), verb::Bool=false)
 	n = length(ω)
 
 	A = -L + spdiagm(0 => diag(L))
 
 	G = SimpleDiGraph(A)
 
-	ks_sol = solve(load_ksakaguchi(G,ω,θ0,t_span,α,1.),Tsit5())
+	ks_sol = solve(load_ksakaguchi(G,ω,θ0,t_span,α,1.),algo)
 
 	ts = ks_sol.t
 	T = length(ts)
