@@ -49,6 +49,10 @@ while size(sols)[2] < max_N && iter < max_iter
 		sols = [sols θf]
 		us = [us winding(θf,C)]
 	end
+
+	if iter%100 == 0
+		writedlm("temp_data/iter.csv",iter,',')
+	end
 end
 
 writedlm("temp_data/omega.csv",ω,',')
