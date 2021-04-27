@@ -49,7 +49,7 @@ for i in 1:N
 	end
 
 	if d > tol
-		init3 = [init3 θ1]
+		init3 = [init3 θ2]
 		sol3 = [sol3 θf]
 		us3 = [us3 winding(θf,C)]
 	end
