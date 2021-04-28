@@ -1,13 +1,11 @@
 include("ksakaguchi.jl")
 include("iterations.jl")
 
-L = readdlm("ntw_data/ntw10_L.csv",',')
-include("ntw_data/ntw10_cycles.jl")
-#ω = vec(readdlm("ntw_data/ntw10_ω1.csv",','))
-ω = rand(10)
+L = readdlm("ntw_data/ntw9_L.csv",',')
+include("ntw_data/ntw9_cycles.jl")
+ω = rand(9)
 ω .-= mean(ω)
-#θ0 = vec(readdlm("ntw_data/ntw10_θ1.csv",','))
-θ0 = 2π*rand(10)
+θ0 = 2π*rand(9)
 
 b,w = L2B(L) # Undirected incidence matrix
 B,Bout,Bin = L2B_bidir(L) # Directed incidence matrices

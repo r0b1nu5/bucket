@@ -1,6 +1,4 @@
-using Statistics, LinearAlgebra, Dates
-
-include("ksakaguchi.jl")
+using Statistics, LinearAlgebra, Dates, SparseArrays
 
 function winding(θ::Array{Float64,1}, C::Array{Int64,1})
 	if length(θ) < 1
@@ -95,83 +93,6 @@ function jacobian(L::Array{Float64,2}, θ::Array{Float64,1}, α::Float64)
 	return J
 end
 
-function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, C::Array{Int64,1}, verb::Bool=false, res::Float64=.0005)
-	if norm(ω0) < 1e-8
-		@info "The frequency vector is close to zero."
-	end
-
-	n = length(θ0)
-	
-	ω = ω0 .- mean(ω0)
-	ω /= norm(ω)
-
-	x = ksakaguchi(L,zeros(n),θ0,α,true,false,.01,1e-6)
-#	ts,x = ksakaguchi_ND(L,zeros(n),θ0,α,(0.,10.))
-	θ1 = x[1][:,end]
-	θ = copy(θ1)
-	q0 = winding(θ,C)
-
-	β = 0.
-	dβ = 1.
-
-	while dβ > res
-		if verb
-			@info "β = $β, dβ = $dβ"
-		end
-
-		q = q0
-		it = 0
-		while q == q0 && it < 100000
-			β += dβ
-			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
-#			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
-			q = winding(x[1][:,end],Array(1:n))
-			it = x[4]
-			
-			if verb
-				@info "q = $q, it = $it"
-			end
-		end
-		θ = x[1][:,1]
-		β -= dβ
-		dβ /= 10
-	end
-
-	βmax = copy(β)
-	fmax = mean(x[2][:,end])
-
-	β = 0.
-	dβ = 1.
-
-	while dβ > res
-		if verb
-			@info "β =$β, dβ = $dβ"
-		end
-
-		q = q0
-		it = 0
-		while q == q0 && it < 100000
-			β -= dβ
-			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
-#			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
-			q = winding(x[1][:,end],Array(1:n))
-			it = x[4]
-
-			if verb
-				@info "q = $q, it = $it"
-			end
-		end
-		θ = x[1][:,1]
-		β += dβ
-		dβ /= 10
-	end
-
-	βmin = copy(β)
-	fmin = mean(x[2][:,end])
-
-	return βmin,βmax,fmin,fmax
-end
-
 
 function cyqle(n::Int64, q::Int64=1)
 	A = zeros(n,n)
@@ -236,6 +157,110 @@ function gershgorin(M::Array{Float64,2})
 	return c,rh,rv
 end
 
+function dcc(x::Float64)
+	return mod(x + π,2π) - π
+end
 
+function dcc(x::Array{Float64,1})
+	return [dcc(x[i]) for i in 1:length(x)]
+end
+
+
+
+function L2B(L::Array{Float64,2})
+	n = size(L)[1]
+	
+	B = Array{Float64,2}(undef,n,0)
+	w = Array{Float64,1}(undef,0)
+	for i in 1:n-1
+		for j in i+1:n
+			if L[i,j] != 0.0
+				ed = zeros(n)
+				ed[i] = 1.0
+				ed[j] = -1.0
+				B = [B ed]
+				push!(w,-L[i,j])
+			end
+		end
+	end
+	
+	return B,w
+end
+
+function L2B(L::SparseMatrixCSC{Float64,Int})
+	n = size(L)[1]
+	
+	B = Array{Float64,2}(undef,n,0)
+	w = Array{Float64,1}(undef,0)
+	Bt = Array{Float64,2}(undef,0,n)
+	for i in 1:n-1
+		for j in i+1:n
+			if L[i,j] != 0.0
+				ed = zeros(n)
+				edt = zeros(1,n)
+				ed[i] = 1.0
+				edt[1,i] = 1.0
+				ed[j] = -1.0
+				edt[1,j] = -1.0
+				B = [B ed]
+				Bt = [Bt;edt]
+				push!(w,-L[i,j])
+			end
+		end
+	end
+	
+	return sparse(B),w,sparse(Bt)
+end
+
+function L2B_ij(L::Array{Float64,2}, i0::Int64, j0::Int64)
+	n = size(L)[1]
+
+	if i0 > j0
+		k = i0
+		i0 = copy(j0)
+		j0 = copy(i0)
+	end
+
+	B = Array{Float64,2}(undef,n,0)
+	w = Array{Float64,1}(undef,0)
+	c = 0
+	eij = 0
+	for i in 1:n-1
+		for j in i+1:n
+			if L[i,j] != 0.0 && i == i0 && j == j0
+				c += 1
+				eij = copy(c)
+				ed = zeros(n)
+				ed[i] = 1.0
+				ed[j] = -1.0
+				B = [B ed]
+				push!(w,-L[i,j])
+			elseif L[i,j] != 0.0
+				c += 1
+				ed = zeros(n)
+				ed[i] = 1.0
+				ed[j] = -1.0
+				B = [B ed]
+				push!(w,-L[i,j])
+			end
+		end
+	end
+
+	return B,w,eij
+end
+
+function L2B_bidir(L::Array{Float64,2})
+	b,w = L2B(L)
+
+	B1 = b.*(b .> 0)
+	B2 = -b.*(b .< 0)
+
+	Bout = [B1 B2]
+	Bin = [B2 B1]
+
+	B = Bout - Bin
+
+	return B,Bout,Bin
+end
 
 

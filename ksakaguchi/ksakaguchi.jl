@@ -1,8 +1,8 @@
 using DelimitedFiles, LinearAlgebra, LightGraphs, OrdinaryDiffEq, NetworkDynamics
 
-include("L2B.jl")
+include("tools.jl")
 
-function ksakaguchi(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float64,1}, a::Float64, save_history::Bool=false, verb::Bool=false, h::Float64=.01, thres::Float64=1e-5, max_iter::Int64=100000)
+function ksakaguchi(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, save_history::Bool=false, verb::Bool=false, h::Float64=.01, thres::Float64=1e-5, max_iter::Int64=100000)
 	B,w = L2B(L)
 	W = diagm(0 => w)
 	n,m = size(B)
@@ -12,10 +12,10 @@ function ksakaguchi(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float6
 	BB = [B -B]
 	WW = [W zeros(m,m);zeros(m,m) W]
 	
-	th = th0
-	ths = th0
+	θ = θ0
+	θs = θ0
 
-	dhs = Array{Float64,2}(undef,n,0)
+	dθs = Array{Float64,2}(undef,n,0)
 
 	err = 1000.
 	iter = 0
@@ -30,43 +30,43 @@ function ksakaguchi(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float6
 				@info "iter: $iter, err = $(round(err,digits=5))"
 			end
 			
-			writedlm("temp_data/temp_th_$c.csv",ths[:,1:end-1],',')
-			ths = ths[:,end]
+			writedlm("temp_data/temp_θ_$c.csv",θs[:,1:end-1],',')
+			θ = θs[:,end]
 
-			writedlm("temp_data/temp_dh_$c.csv",dhs[:,1:end],',')
-			dhs = Array{Float64,2}(undef,n,0)
+			writedlm("temp_data/temp_dθ_$c.csv",dθs[:,1:end],',')
+			dθs = Array{Float64,2}(undef,n,0)
 		end
 
-		k1 = om - B12*WW*sin.(BB'*th .- a)
-		k2 = om - B12*WW*sin.(BB'*(th + h/2*k1) .- a)
-		k3 = om - B12*WW*sin.(BB'*(th + h/2*k2) .- a)
-		k4 = om - B12*WW*sin.(BB'*(th + h*k3) .- a)
+		k1 = ω - B12*WW*(sin.(BB'*θ .- α) .+ sin(α))
+		k2 = ω - B12*WW*(sin.(BB'*(θ + h/2*k1) .- α) .+ sin(α))
+		k3 = ω - B12*WW*(sin.(BB'*(θ + h/2*k2) .- α) .+ sin(α))
+		k4 = ω - B12*WW*(sin.(BB'*(θ + h*k3) .- α) .+ sin(α))
 
-		dh = (k1 + 2*k2 + 2*k3 + k4)/6
+		dθ = (k1 + 2*k2 + 2*k3 + k4)/6
 
-		th += h*dh
+		θ += h*dθ
 
-		ths = [ths th]
-		dhs = [dhs dh]
+		θs = [θs θ]
+		dθs = [dθs dθ]
 
-		err = maximum(dh)-minimum(dh)
+		err = maximum(dθ)-minimum(dθ)
 	end
 
-	Ths = Array{Float64,2}(undef,n,0)
-	Dhs = Array{Float64,2}(undef,n,0)
+	Θs = Array{Float64,2}(undef,n,0)
+	dΘs = Array{Float64,2}(undef,n,0)
 	for i in 1:c
-		Ths = [Ths readdlm("temp_data/temp_th_$i.csv",',')]
-		rm("temp_data/temp_th_$i.csv")
-		Dhs = [Dhs readdlm("temp_data/temp_dh_$i.csv",',')]
-		rm("temp_data/temp_dh_$i.csv")
+		Θs = [Θs readdlm("temp_data/temp_θ_$i.csv",',')]
+		rm("temp_data/temp_θ_$i.csv")
+		dΘs = [dΘs readdlm("temp_data/temp_dθ_$i.csv",',')]
+		rm("temp_data/temp_dθ_$i.csv")
 	end
-	Ths = [Ths ths]
-	Dhs = [Dhs dhs]
+	Θs = [Θs θs]
+	dΘs = [dΘs dθs]
 
-	return Ths,Dhs,err,iter
+	return Θs,dΘs,err,iter
 end
 
-function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, om::Array{Float64,1}, th0::Array{Float64,1}, a::Float64, save_history::Bool=false, verb::Bool=false, h::Float64=.01, thres::Float64=1e-5, max_iter::Int64=100000)
+function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, ω::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, save_history::Bool=false, verb::Bool=false, h::Float64=.01, thres::Float64=1e-5, max_iter::Int64=100000)
 	B,w,Bt = L2B(L)
 	W = spdiagm(0 => w)
 	n,m = size(B)
@@ -76,10 +76,10 @@ function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, om::Array{Float64,1}, th0::
 	BB = [B -B]
 	WW = [W zeros(m,m);zeros(m,m) W]
 	
-	th = th0
-	ths = th0
+	θ = θ0
+	θs = θ0
 
-	dhs = Array{Float64,2}(undef,n,0)
+	dθs = Array{Float64,2}(undef,n,0)
 
 	err = 1000.
 	iter = 0
@@ -94,40 +94,40 @@ function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, om::Array{Float64,1}, th0::
 				@info "iter: $iter, err = $(round(err,digits=5))"
 			end
 			
-			writedlm("temp_data/temp_th_$c.csv",ths[:,1:end-1],',')
-			ths = ths[:,end]
+			writedlm("temp_data/temp_θ_$c.csv",θs[:,1:end-1],',')
+			θs = θs[:,end]
 
-			writedlm("temp_data/temp_dh_$c.csv",dhs[:,1:end],',')
-			dhs = Array{Float64,2}(undef,n,0)
+			writedlm("temp_data/temp_dθ_$c.csv",dθs[:,1:end],',')
+			dθs = Array{Float64,2}(undef,n,0)
 		end
 
-		k1 = om - B12*WW*sin.(BB'*th .- a)
-		k2 = om - B12*WW*sin.(BB'*(th + h/2*k1) .- a)
-		k3 = om - B12*WW*sin.(BB'*(th + h/2*k2) .- a)
-		k4 = om - B12*WW*sin.(BB'*(th + h*k3) .- a)
+		k1 = ω - B12*WW*(sin.(BB'*θ .- α) .+ sin(α))
+		k2 = ω - B12*WW*(sin.(BB'*(θ + h/2*k1) .- α) .+ sin(α))
+		k3 = ω - B12*WW*(sin.(BB'*(θ + h/2*k2) .- α) .+ sin(α))
+		k4 = ω - B12*WW*(sin.(BB'*(θ + h*k3) .- α) .+ sin(α))
 
-		dh = (k1 + 2*k2 + 2*k3 + k4)/6
+		dθ = (k1 + 2*k2 + 2*k3 + k4)/6
 
-		th += h*dh
+		θ += h*dθ
 
-		ths = [ths th]
-		dhs = [dhs dh]
+		θs = [θs θ]
+		dθs = [dθs dθ]
 
-		err = maximum(dh)-minimum(dh)
+		err = maximum(dθ)-minimum(dθ)
 	end
 
-	Ths = Array{Float64,2}(undef,n,0)
-	Dhs = Array{Float64,2}(undef,n,0)
+	Θs = Array{Float64,2}(undef,n,0)
+	dΘs = Array{Float64,2}(undef,n,0)
 	for i in 1:c
-		Ths = [Ths readdlm("temp_data/temp_th_$i.csv",',')]
-		rm("temp_data/temp_th_$i.csv")
-		Dhs = [Dhs readdlm("temp_data/temp_dh_$i.csv",',')]
-		rm("temp_data/temp_dh_$i.csv")
+		Θs = [Θs readdlm("temp_data/temp_θ_$i.csv",',')]
+		rm("temp_data/temp_θ_$i.csv")
+		dΘs = [dΘs readdlm("temp_data/temp_dθ_$i.csv",',')]
+		rm("temp_data/temp_dθ_$i.csv")
 	end
-	Ths = [Ths ths]
-	Dhs = [Dhs dhs]
+	Θs = [Θs θs]
+	dΘs = [dΘs dθs]
 
-	return Ths,Dhs,err,iter
+	return Θs,dΘs,err,iter
 end
 
 
@@ -251,9 +251,107 @@ function ks_vertex!(dθ, θ, e_s, vpar, t)
 end
 
 
+function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, C::Array{Int64,1}, verb::Bool=false, res::Float64=.0005)
+	if norm(ω0) < 1e-8
+		@info "The frequency vector is close to zero."
+	end
 
+	n = length(θ0)
+	
+	ω = ω0 .- mean(ω0)
+	ω /= norm(ω)
 
+	x = ksakaguchi(L,zeros(n),θ0,α,true,false,.01,1e-6)
+#	ts,x = ksakaguchi_ND(L,zeros(n),θ0,α,(0.,10.))
+	θ1 = x[1][:,end]
+	θ = copy(θ1)
+	q0 = winding(θ,C)
 
+	β = 0.
+	dβ = 1.
 
+	while dβ > res
+		if verb
+			@info "β = $β, dβ = $dβ"
+		end
+
+		q = q0
+		it = 0
+		while q == q0 && it < 100000
+			β += dβ
+			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
+#			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
+			q = winding(x[1][:,end],Array(1:n))
+			it = x[4]
+			
+			if verb
+				@info "q = $q, it = $it"
+			end
+		end
+		θ = x[1][:,1]
+		β -= dβ
+		dβ /= 10
+	end
+
+	βmax = copy(β)
+	fmax = mean(x[2][:,end])
+
+	β = 0.
+	dβ = 1.
+
+	while dβ > res
+		if verb
+			@info "β = $β, dβ = $dβ"
+		end
+
+		q = q0
+		it = 0
+		while  q == q0 && it < 100000
+			β -= dβ
+			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
+#			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
+			q = winding(x[1][:,end],Array(1:n))
+			it = x[4]
+
+			if verb
+				@info "q = $q, it = $it"
+			end
+		end
+		θ = x[1][:,1]
+		β += dβ
+		dβ /= 10
+	end
+
+	βmin = copy(β)
+	fmin = mean(x[2][:,end])
+
+	return βmin,βmax,fmin,max
+end
+
+# Loads the coupling function for the Kuramoto-Sakaguchi model.
+
+function h(x::Float64, α::Float64=.1)
+	return sin(x - α) + sin(α)
+end
+
+function h(x::Union{Array{Float64,1},LinRange{Float64}}, α::Float64=.1)
+	return [h(x[i]) for i in 1:length(x)]
+end
+
+function hi(f::Float64, α::Float64=.1)
+	return asin(f - sin(α)) + α
+end
+
+function hi(f::Union{Array{Float64,1},LinRange{Float64}}, α::Float64=.1)
+	return [hi(f[i]) for i in 1:length(f)]
+end
+
+function H(f::Float64, α::Float64=.1)
+	return h(-hi(f,α),α)
+end
+
+function H(f::Union{Array{Float64,1},LinRange{Float64}}, α::Float64=.1)
+	return [H(f[i]) for i in 1:length(f)]
+end
 
 
