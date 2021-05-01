@@ -18,7 +18,7 @@ n,m2 = size(b)
 α = .1 # Phase frustration
 γ = π/2 - α # Bound on the angle difference
 
-xxx = ksakaguchi(L,ω,θ0,α)
+xxx = ksakaguchi(L,ω,θ0,α,false,false,.01,1e-8)
 θf = xxx[1][:,end] # Real solution
 Δf = dcc(b'*θf) # Real angle differences
 Ff = h([Δf;-Δf]) # Real flows
@@ -57,27 +57,27 @@ dΔ24 = [norm(Δ2[:,t]-Δ4[:,t]) for t in 1:T]
 
 figure()
 subplot(1,3,1)
-PyPlot.semilogy((0:T),[df01;df1],label="||f - f*||")
-PyPlot.plot((0:T),[df01;df2],label="||f' - f*||")
-PyPlot.plot((1:T),dΔ1,label="||Δ - Δ*||")
-PyPlot.plot((1:T),dΔ2,label="||Δ' - Δ*||")
+PyPlot.semilogy((0:T),[df01;df1],label="||f - f*||",".")
+PyPlot.plot((0:T),[df01;df2],label="||f' - f*||",".")
+PyPlot.plot((1:T),dΔ1,label="||Δ - Δ*||",".")
+PyPlot.plot((1:T),dΔ2,label="||Δ' - Δ*||",".")
 legend()
 xlabel("iteration")
 ylabel("error")
 
 subplot(1,3,2)
-PyPlot.semilogy((0:T),[df02;df3],label="||f - f*||")
-PyPlot.plot((0:T),[df02;df4],label="||f' - f*||")
-PyPlot.plot((1:T),dΔ3,label="||Δ - Δ*||")
-PyPlot.plot((1:T),dΔ4,label="||Δ' - Δ*||")
+PyPlot.semilogy((0:T),[df02;df3],label="||f - f*||",".")
+PyPlot.plot((0:T),[df02;df4],label="||f' - f*||",".")
+PyPlot.plot((1:T),dΔ3,label="||Δ - Δ*||",".")
+PyPlot.plot((1:T),dΔ4,label="||Δ' - Δ*||",".")
 legend()
 xlabel("iteration")
 
 subplot(1,3,3)
-PyPlot.semilogy((0:T),[df00;df13],label="||f1 - f2||")
-PyPlot.plot((0:T),[df00;df24],label="||f1' - f2'||")
-PyPlot.plot((1:T),dΔ13,label="||Δ1 - Δ2||")
-PyPlot.plot((1:T),dΔ24,label="||Δ1' - Δ2'||")
+PyPlot.semilogy((0:T),[df00;df13],label="||f1 - f2||",".")
+PyPlot.plot((0:T),[df00;df24],label="||f1' - f2'||",".")
+PyPlot.plot((1:T),dΔ13,label="||Δ1 - Δ2||",".")
+PyPlot.plot((1:T),dΔ24,label="||Δ1' - Δ2'||",".")
 legend()
 xlabel("iteration")
 

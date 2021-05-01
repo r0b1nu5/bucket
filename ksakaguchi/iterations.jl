@@ -76,19 +76,11 @@ function iterations(f0::Array{Float64,1}, Bout::Array{Float64,2}, b::Array{Float
 		PyPlot.plot(Δf[i0],-Δf[i0],"o",color="C3",markersize=5.)
 
 		for t in 1:T
-			colo = "C$(mod(t-1,10))"
-
-			subplot(1,2,1)
-			PyPlot.plot(f1[i0,t],f1[i0+m2,t],"o",color=colo)
-			PyPlot.plot(f2[i0,t],f2[i0+m2,t],"o",color=colo)
 			x = [x;f1[i0,t];f2[i0,t]]
 			push!(X,f1[i0,t])
 			y = [y;f1[i0+m2,t];f2[i0+m2,t]]
 			push!(Y,f1[i0+m2,t])
 
-			subplot(1,2,2)
-			PyPlot.plot(Δ1[i0,t],Δ1[i0+m2,t],"o",color=colo)
-			PyPlot.plot(Δ2[i0,t],-Δ2[i0,t],"o",color=colo)
 			xx = [xx;Δ1[i0,t];Δ2[i0,t]]
 			push!(XX,Δ1[i0,t])
 			yy = [yy;Δ1[i0+m2,t];-Δ2[i0,t]]
@@ -108,6 +100,19 @@ function iterations(f0::Array{Float64,1}, Bout::Array{Float64,2}, b::Array{Float
 
 		xlabel("Δ_{ij}")
 		ylabel("Δ_{ji}")
+		
+		for t in 1:T
+			colo = "C$(mod(t-1,10))"
+
+			subplot(1,2,1)
+			PyPlot.plot(f1[i0,t],f1[i0+m2,t],"o",color=colo)
+			PyPlot.plot(f2[i0,t],f2[i0+m2,t],"o",color=colo)
+
+			subplot(1,2,2)
+			PyPlot.plot(Δ1[i0,t],Δ1[i0+m2,t],"o",color=colo)
+			PyPlot.plot(Δ2[i0,t],-Δ2[i0,t],"o",color=colo)
+		end
+
 	end
 	
 	return f1,f2,Δ1,Δ2
