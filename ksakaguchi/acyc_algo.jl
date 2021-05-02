@@ -4,8 +4,10 @@ function acyc_algo(L::Array{Float64,2}, H::Function, ω0::Array{Float64,1}, hγ:
 	B0,w = L2B(L)
 	n,m = size(B0)
 
+	keepon = true
 	if m != n-1
-		@info "The graph is not acyclic or not connected!"
+		@info "The graph is not acyclic or not connected: abording."
+		keepon = false
 	end
 
 	B,id = reorder_nodes(B0,Array(1:n))
@@ -31,7 +33,6 @@ function acyc_algo(L::Array{Float64,2}, H::Function, ω0::Array{Float64,1}, hγ:
 #	F[1+m] = (φ -> H(retro_function(1,ω,H,α,k,ki)(φ),α))
 #	F[1+m] = (φ -> H(F[1](φ),α))
 
-	keepon = true
 	i = 1
 	
 	while keepon && i < n-1
@@ -69,20 +70,17 @@ function acyc_algo(L::Array{Float64,2}, H::Function, ω0::Array{Float64,1}, hγ:
 	end
 
 	if keepon
-		jd = setdiff((B[n,1:m-1] .< -1e-8).*(1:m-1),[0,])
+		jd = setdiff((B[n,1:m] .< -1e-8).*(1:m),[0,])
 		if length(jd) == 0
-			Fn = (φ -> φ)
+			Fn = (φ -> ω[n] - φ)
 		else
-			Fn = (φ -> sum(F[j+m](φ) for j in jd) + φ)
+			Fn = (φ -> ω[n] - sum(F[j+m](φ) for j in jd) - φ)
 		end
 	
 		Fl = Fn(l[end])
 		Fu = Fn(u[end])
 	
-@info "l = $(l[end]), u = $(u[end])"
-@info "Fl = $Fl, Fu = $Fu"
-
-		if Fl <= ω[n] <= Fu
+		if min(Fl,Fu) <= 0. <= max(Fl,Fu)
 			φs = dichot(Fn,l[end],u[end])
 		else
 			@info "NO SOLUTION."
@@ -91,9 +89,9 @@ function acyc_algo(L::Array{Float64,2}, H::Function, ω0::Array{Float64,1}, hγ:
 	end
 
 	if keepon
-		return [F[i](φs) for i in 1:2*m], φs
+		return true, [F[i](φs) for i in 1:2*m], φs, l, u, B, id
 	else
-		return nothing
+		return false, [], Inf, Inf, -Inf, B, id
 	end
 end
 
