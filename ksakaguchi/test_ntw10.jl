@@ -3,11 +3,11 @@ include("iterations.jl")
 
 L = readdlm("ntw_data/ntw10_L.csv",',')
 include("ntw_data/ntw10_cycles.jl")
-#ω = vec(readdlm("ntw_data/ntw10_ω1.csv",','))
-ω = rand(10)
-ω .-= mean(ω)
-#θ0 = vec(readdlm("ntw_data/ntw10_θ1.csv",','))
-θ0 = 2π*rand(10)
+ω = vec(readdlm("ntw_data/ntw10_ω1.csv",','))
+#ω = rand(10)
+#ω .-= mean(ω)
+θ0 = vec(readdlm("ntw_data/ntw10_θ1.csv",','))
+#θ0 = 2π*rand(10)
 
 b,w = L2B(L) # Undirected incidence matrix
 B,Bout,Bin = L2B_bidir(L) # Directed incidence matrices
@@ -17,31 +17,35 @@ n,m2 = size(b)
 
 α = .1 # Phase frustration
 γ = π/2 - α # Bound on the angle difference
+hγ1 = h(-γ)
+hγ2 = h(γ)
 
 xxx = ksakaguchi(L,ω,θ0,α,false,false,.01,1e-8)
 θf = xxx[1][:,end] # Real solution
+uf = winding(θf,Σ) # Real winding vector
+
 Δf = dcc(b'*θf) # Real angle differences
 Ff = h([Δf;-Δf]) # Real flows
-uf = winding(θf,Σ) # Real winding vector
 
 #u = [0,1,0] # Tentative winding vector
 u = uf
 T = 200 # Number of iterations
-λ = 1. # Scaling parameter for the fixed point iteration Tu
+λ = .1 # Scaling parameter for the fixed point iteration Tu
 
-Lmin = 1.0*ones(m2) # Scaling for the cutset projection. Lower bounds on the coupling derivatives.
+#Lmin = 1.0*ones(m2) # Scaling for the cutset projection. Lower bounds on the coupling derivatives.
+Lmin = 1.0*ones(m)
 
  #=
-f01 = 2*γ*rand(m) .- γ
+f01 = (hγ2 - hγ1)*rand(m) .+ hγ1
 f01 = (-1. + sin(α))*ones(m) + .1*rand(m)
-f1,f2,Δ1,Δ2 = iterations(f01,Bout,b,ω,u,Lmin,γ,λ,T)
+f1,f2,Δ1,Δ2 = iterations1(f01,Bout,b,ω,u,Lmin,γ,λ,T)
 
-f02 = 2*γ*rand(m) .- γ
+f02 = (hγ2 - hγ1)*rand(m) .+ hγ1
 f02 = (-1. + sin(α))*ones(m) + .1*rand(m)
-f3,f4,Δ3,Δ4 = iterations(f02,Bout,b,ω,u,Lmin,γ,λ,T)
+f3,f4,Δ3,Δ4 = iterations1(f02,Bout,b,ω,u,Lmin,γ,λ,T)
 # =#
 
-# #=
+ #=
 Δ01 = 2*γ*rand(Int(m/2)) .- γ
 Δ01 = -2*γ .+ .1*rand(m2)
 f1,f2,Δ1,Δ2 = iterations2(Δ01,Bout,b,ω,u,Lmin,γ,λ,T)
@@ -49,15 +53,14 @@ f1,f2,Δ1,Δ2 = iterations2(Δ01,Bout,b,ω,u,Lmin,γ,λ,T)
 Δ02 = 2*γ*rand(Int(m/2)) .- γ
 Δ02 = -2*γ .+ .1*rand(m2)
 f3,f4,Δ3,Δ4 = iterations2(Δ02,Bout,b,ω,u,Lmin,γ,λ,T)
-# =#
 
 df1 = [norm(f1[:,t]-Ff) for t in 1:T]
 df2 = [norm(f2[:,t]-Ff) for t in 1:T]
-dΔ1 = [norm(Δ1[:,t] - [Δf;-Δf]) for t in 1:T]
-dΔ2 = [norm(Δ2[:,t] - Δf) for t in 1:T]
-
 df3 = [norm(f3[:,t]-Ff) for t in 1:T]
 df4 = [norm(f4[:,t]-Ff) for t in 1:T]
+
+dΔ1 = [norm(Δ1[:,t] - [Δf;-Δf]) for t in 1:T]
+dΔ2 = [norm(Δ2[:,t] - Δf) for t in 1:T]
 dΔ3 = [norm(Δ3[:,t] - [Δf;-Δf]) for t in 1:T]
 dΔ4 = [norm(Δ4[:,t] - Δf) for t in 1:T]
 
@@ -105,3 +108,63 @@ PyPlot.plot((1:T),dΔ24i,label="||Δ1' - Δ2'||_∞","-o")
 legend()
 xlabel("iteration")
 
+# =#
+
+
+# #=
+f01 = (hγ2 - hγ1)*rand(m) .+ hγ1
+#f1,f2,f3 = iterations3(f01,Bout,B,ω,u,Lmin,γ,λ,T)
+f1 = iterations4(f01,Bout,B,ω,u,Lmin,γ,λ,T)
+
+f02 = (hγ2 - hγ1)*rand(m) .+ hγ1
+#f4,f5,f6 = iterations3(f02,Bout,B,ω,u,Lmin,γ,λ,T)
+f4 = iterations4(f02,Bout,B,ω,u,Lmin,γ,λ,T)
+
+f2 = 0*f1
+f3 = 0*f1
+f5 = 0*f4
+f6 = 0*f4
+
+df1 = [norm(f1[:,t]-Ff) for t in 1:T]
+df2 = [norm(f2[:,t]-Ff) for t in 1:T]
+df3 = [norm(f3[:,t]-Ff) for t in 1:T]
+df4 = [norm(f4[:,t]-Ff) for t in 1:T]
+df5 = [norm(f5[:,t]-Ff) for t in 1:T]
+df6 = [norm(f6[:,t]-Ff) for t in 1:T]
+
+df14 = [norm(f1[:,t]-f4[:,t]) for t in 1:T]
+df25 = [norm(f2[:,t]-f5[:,t]) for t in 1:T]
+df36 = [norm(f3[:,t]-f6[:,t]) for t in 1:T]
+
+df14i = [norm(f1[:,t]-f4[:,t],Inf) for t in 1:T]
+df25i = [norm(f2[:,t]-f5[:,t],Inf) for t in 1:T]
+df36i = [norm(f3[:,t]-f6[:,t],Inf) for t in 1:T]
+
+figure()
+subplot(1,3,1)
+PyPlot.semilogy((1:T),df1,label="||f - f*||","o",color="C0")
+PyPlot.plot((1:T),df2,label="||f - f*||","o",color="C1")
+PyPlot.plot((1:T),df3,label="||f' - f*||","o",color="C2")
+PyPlot.plot((1:T),df4,label="||f - f*||","x",color="C0")
+PyPlot.plot((1:T),df5,label="||f - f*||","x",color="C1")
+PyPlot.plot((1:T),df6,label="||f' - f*||","x",color="C2")
+
+legend()
+xlabel("iteration")
+ylabel("error")
+
+subplot(1,3,2)
+PyPlot.semilogy((1:T),df14,label="||f1 - f2||_2","-o")
+PyPlot.plot((1:T),df25,label="||f1 - f2||_2","-o")
+PyPlot.plot((1:T),df36,label="||f1' - f2'||_2","-o")
+legend()
+xlabel("iteration")
+
+subplot(1,3,3)
+PyPlot.semilogy((1:T),df14i,label="||f1 - f2||_∞","-o")
+PyPlot.plot((1:T),df25i,label="||f1 - f2||_∞","-o")
+PyPlot.plot((1:T),df36i,label="||f1' - f2'||_∞","-o")
+legend()
+xlabel("iteration")
+
+# =#
