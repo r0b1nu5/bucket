@@ -31,54 +31,77 @@ T = 200 # Number of iterations
 
 Lmin = 1.0*ones(m2) # Scaling for the cutset projection. Lower bounds on the coupling derivatives.
 
+ #=
 f01 = 2*γ*rand(m) .- γ
+f01 = (-1. + sin(α))*ones(m) + .1*rand(m)
 f1,f2,Δ1,Δ2 = iterations(f01,Bout,b,ω,u,Lmin,γ,λ,T)
 
 f02 = 2*γ*rand(m) .- γ
+f02 = (-1. + sin(α))*ones(m) + .1*rand(m)
 f3,f4,Δ3,Δ4 = iterations(f02,Bout,b,ω,u,Lmin,γ,λ,T)
+# =#
 
-df01 = norm(f01 - Ff)
+# #=
+Δ01 = 2*γ*rand(Int(m/2)) .- γ
+Δ01 = -2*γ .+ .1*rand(m2)
+f1,f2,Δ1,Δ2 = iterations2(Δ01,Bout,b,ω,u,Lmin,γ,λ,T)
+
+Δ02 = 2*γ*rand(Int(m/2)) .- γ
+Δ02 = -2*γ .+ .1*rand(m2)
+f3,f4,Δ3,Δ4 = iterations2(Δ02,Bout,b,ω,u,Lmin,γ,λ,T)
+# =#
+
 df1 = [norm(f1[:,t]-Ff) for t in 1:T]
 df2 = [norm(f2[:,t]-Ff) for t in 1:T]
 dΔ1 = [norm(Δ1[:,t] - [Δf;-Δf]) for t in 1:T]
 dΔ2 = [norm(Δ2[:,t] - Δf) for t in 1:T]
 
-df02 = norm(f02 - Ff)
 df3 = [norm(f3[:,t]-Ff) for t in 1:T]
 df4 = [norm(f4[:,t]-Ff) for t in 1:T]
 dΔ3 = [norm(Δ3[:,t] - [Δf;-Δf]) for t in 1:T]
 dΔ4 = [norm(Δ4[:,t] - Δf) for t in 1:T]
 
-df00 = norm(f01 - f02)
 df13 = [norm(f1[:,t]-f3[:,t]) for t in 1:T]
 df24 = [norm(f2[:,t]-f4[:,t]) for t in 1:T]
 dΔ13 = [norm(Δ1[:,t]-Δ3[:,t]) for t in 1:T]
 dΔ24 = [norm(Δ2[:,t]-Δ4[:,t]) for t in 1:T]
 
+df13i = [norm(f1[:,t]-f3[:,t],Inf) for t in 1:T]
+df24i = [norm(f2[:,t]-f4[:,t],Inf) for t in 1:T]
+dΔ13i = [norm(Δ1[:,t]-Δ3[:,t],Inf) for t in 1:T]
+dΔ24i = [norm(Δ2[:,t]-Δ4[:,t],Inf) for t in 1:T]
+
 figure()
-subplot(1,3,1)
-PyPlot.semilogy((0:T),[df01;df1],label="||f - f*||",".")
-PyPlot.plot((0:T),[df01;df2],label="||f' - f*||",".")
-PyPlot.plot((1:T),dΔ1,label="||Δ - Δ*||",".")
-PyPlot.plot((1:T),dΔ2,label="||Δ' - Δ*||",".")
+subplot(1,4,1)
+PyPlot.semilogy((1:T),df1,label="||f - f*||","o")
+PyPlot.plot((1:T),df2,label="||f' - f*||","o")
+PyPlot.plot((1:T),dΔ1,label="||Δ - Δ*||","o")
+PyPlot.plot((1:T),dΔ2,label="||Δ' - Δ*||","o")
 legend()
 xlabel("iteration")
 ylabel("error")
 
-subplot(1,3,2)
-PyPlot.semilogy((0:T),[df02;df3],label="||f - f*||",".")
-PyPlot.plot((0:T),[df02;df4],label="||f' - f*||",".")
-PyPlot.plot((1:T),dΔ3,label="||Δ - Δ*||",".")
-PyPlot.plot((1:T),dΔ4,label="||Δ' - Δ*||",".")
+subplot(1,4,2)
+PyPlot.semilogy((1:T),df3,label="||f - f*||","o")
+PyPlot.plot((1:T),df4,label="||f' - f*||","o")
+PyPlot.plot((1:T),dΔ3,label="||Δ - Δ*||","o")
+PyPlot.plot((1:T),dΔ4,label="||Δ' - Δ*||","o")
 legend()
 xlabel("iteration")
 
-subplot(1,3,3)
-PyPlot.semilogy((0:T),[df00;df13],label="||f1 - f2||",".")
-PyPlot.plot((0:T),[df00;df24],label="||f1' - f2'||",".")
-PyPlot.plot((1:T),dΔ13,label="||Δ1 - Δ2||",".")
-PyPlot.plot((1:T),dΔ24,label="||Δ1' - Δ2'||",".")
+subplot(1,4,3)
+PyPlot.semilogy((1:T),df13,label="||f1 - f2||_2","-o")
+PyPlot.plot((1:T),df24,label="||f1' - f2'||_2","-o")
+PyPlot.plot((1:T),dΔ13,label="||Δ1 - Δ2||_2","-o")
+PyPlot.plot((1:T),dΔ24,label="||Δ1' - Δ2'||_2","-o")
 legend()
 xlabel("iteration")
 
+subplot(1,4,4)
+PyPlot.semilogy((1:T),df13i,label="||f1 - f2||_∞","-o")
+PyPlot.plot((1:T),df24i,label="||f1' - f2'||_∞","-o")
+PyPlot.plot((1:T),dΔ13i,label="||Δ1 - Δ2||_∞","-o")
+PyPlot.plot((1:T),dΔ24i,label="||Δ1' - Δ2'||_∞","-o")
+legend()
+xlabel("iteration")
 

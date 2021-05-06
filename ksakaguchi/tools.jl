@@ -266,7 +266,7 @@ end
 
 # Computes the out-incidence matrix of the bidirected counterpart of an undirected graph, based on the incidence matrix of the latter.
 
-function Bout(B::Array{Float64,2})
+function B2Bout(B::Array{Float64,2})
 	B1 = B.*(B .> 0.)
 	B2 = -B.*(B .< 0.)
 
@@ -275,7 +275,7 @@ end
 
 # Same for the in-incidence matrix.
 
-function Bin(B::Array{Float64,2})
+function B2Bin(B::Array{Float64,2})
 	B1 = B.*(B .> 0.)
 	B2 = -B.*(B .< 0.)
 
