@@ -16,25 +16,23 @@ end
 
 #=
 """
-	run_l0_par(id::String, Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	run_l0_par(id::String, Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::Array{Int64,1}, is_laplacian::Bool, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized verions of "run_l0".
 
 The parameter "id" identifies the system to be identified.
 """
 =#
-@everywhere function run_l0_par(id::String, Xs::Array{Float64,2}, tau::Float64, ls::Tuple{Int64,Int64,Int64}, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+@everywhere function run_l0_par(id::String, Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::Array{Int64,1}, is_laplacian::Bool, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+	writedlm("data/times.csv",[0.,0.],',')
+
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
 
-	lmin,lmax,dl = ls
-	kmin,kmax,dk = ks
-	kmax = min(kmax,round(Int,N/2))
-
 # Computing the needed inputs (time series, discrete derivative, and their Fourier transforms).
 	x = Xs[:,1:end-1]
-	Dx = (Xs[(n+1):(2*n),2:end] - Xs[(n+1):(2*n),1:end-1])/tau
+	Dx = (Xs[(n+1):(2*n),2:end] - Xs[(n+1):(2*n),1:end-1])/τ
 	xt = Array{Complex{Float64},2}(undef,nn,N)
 	for i in 1:nn
 		xt[i,:] = ifft(x[i,:])*sqrt(N)
@@ -45,15 +43,15 @@ The parameter "id" identifies the system to be identified.
 	end
 
 # Compute warm start
-#	XXX,A1h,a2h = get_Ah_correl(Xs,tau) # Performs poorly for Laplcian dynamics, warm start at zero is better.
+#	XXX,A1h,a2h = get_Ah_correl(Xs,τ) # Performs poorly for Laplcian dynamics, warm start at zero is better.
 	A1h = zeros(n,n)
 	a2h = ones(n)
 
 	args = Array{Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64},1}()
 
-	for l in lmin:dl:lmax
-		for k in kmin:dk:kmax
-			push!(args,(id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,mu,bp))
+	for l in ls
+		for k in ks
+			push!(args,(id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,μ,bp))
 		end
 	end
 
@@ -68,24 +66,23 @@ end
 
 #=
 """
-	run_l1_par(Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	run_l1_par(Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of "run_l1".
 
 The parameter "id" identifies the system to be identified.
 """
 =#
-@everywhere function run_l1_par(id::String, Xs::Array{Float64,2}, tau::Float64, ks::Tuple{Int64,Int64,Int64}, is_laplacian::Bool, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+@everywhere function run_l1_par(id::String, Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+	writedlm("data/times.csv",[0.,0.],',')
+
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
 
-	kmin,kmax,dk = ks
-	kmax = min(kmax,round(Int,N/2))
-
 # Computing the needed inputs (time series, discrete derivative, and their Fourier transforms).
 	x = Xs[:,1:end-1]
-	Dx = (Xs[(n+1):(2*n),2:end] - Xs[(n+1):(2*n),1:end-1])/tau
+	Dx = (Xs[(n+1):(2*n),2:end] - Xs[(n+1):(2*n),1:end-1])/τ
 	xt = Array{Complex{Float64},2}(undef,nn,N)
 	for i in 1:nn
 		xt[i,:] = ifft(x[i,:])*sqrt(N)
@@ -96,15 +93,15 @@ The parameter "id" identifies the system to be identified.
 	end
 
 # Compute warm start
-#	XXX,A1h,a2h = get_Ah_correl(Xs,tau) # Performs poorly.
+#	XXX,A1h,a2h = get_Ah_correl(Xs,τ) # Performs poorly.
 	A1h = zeros(n,n)
 	a2h = zeros(n)
 
 # Run the optimizations
 	args = Array{Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64},1}()
 
-	for k in kmin:dk:kmax
-		push!(args,(id,x,Dx,xt,Dxt,k,A1h,a2h,b,mu,bp))
+	for k in ks
+		push!(args,(id,x,Dx,xt,Dxt,k,A1h,a2h,b,μ,bp))
 	end
 
 	if is_laplacian
@@ -116,13 +113,13 @@ end
 
 #=
 """
-	Lmin_l0_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l0_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of "Lmin_l0", i.e., stores the data in files.
 """
 =#
 @everywhere function Lmin_l0_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
-	id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,mu,bp = tups
+	id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,μ,bp = tups
 	
 	t0 = time()
 	
@@ -140,7 +137,7 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 	glk = norm(Dxt[l,k+1])^2
 
 # Definition of the optimization problem.
-	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
+	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => μ, "bound_push" => bp))
 	@variable(system_id, A1[i = 1:n, j = i:n])
 	for i = 1:n-1
 		for j = i+1:n
@@ -149,34 +146,34 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 	end
 	@variable(system_id, a2[i = 1:n])
 	set_start_value.(a2,a2h)
-	@variable(system_id, gamma >= 0.)
-	set_start_value(gamma,1.)
+	@variable(system_id, γ >= 0.)
+	set_start_value(γ,1.)
 
-# tr(L^2*\th*\th^T)
+# tr(L^2*θ*θ^T)
 	@NLexpression(system_id, AtAS01, 
 		      sum(A1[i,j]*A1[j,m]*S0[m,i] for i = 1:n for j = i:n for m = j:n) + 
 		      sum(A1[i,j]*A1[m,j]*S0[m,i] for i = 1:n for j = i:n for m = 1:j-1) + 
 		      sum(A1[j,i]*A1[j,m]*S0[m,i] for i = 1:n for j = 1:i-1 for m = j:n) + 
 		      sum(A1[j,i]*A1[m,j]*S0[m,i] for i = 1:n for j = 1:i-1 for m = 1:j-1))
 
-# tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
+# tr(-L*D*ω*θ^T) = tr(-D*L*θ*ω^T)
 	@NLexpression(system_id, AtAS02, 
 		      sum(A1[i,j]*a2[j]*S0[n+j,i] for i = 1:n for j = i:n) + 
 		      sum(A1[j,i]*a2[j]*S0[n+j,i] for i = 1:n for j = 1:i-1))
 
-# tr(D^2*\om*\om^T)
+# tr(D^2*ω*ω^T)
 	@NLexpression(system_id, AtAS03, sum(a2[i]^2*S0[n+i,n+i] for i = 1:n))
 	
 # tr(A^T*A*S0)
 	@NLexpression(system_id, T1, AtAS01 + 2*AtAS02 + AtAS03)
 
 
-# tr(-L*\th*(D\om)^T)
+# tr(-L*θ*(Dω)^T)
 	@NLexpression(system_id, AS11, 
 		      sum(A1[i,j]*S1[j,i] for i = 1:n for j = i:n) + 
 		      sum(A1[j,i]*S1[j,i] for i =1:n for j = 1:i-1))
 
-# tr(-D*\om*(D\om)^T)
+# tr(-D*ω*(Dω)^T)
 	@NLexpression(system_id, AS12, sum(a2[i]*S1[n+i,i] for i = 1:n))
 
 # tr(A*S1)
@@ -205,10 +202,10 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 	@NLexpression(system_id, T4, sum(flk[i]*A1[l,i] for i = l:n) + sum(flk[i]*A1[i,l] for i = 1:l-1) + flk[n+l]*a2[l])
 
 
-	@NLexpression(system_id, g2, gamma^2)
+	@NLexpression(system_id, γ2, γ^2)
 
 	
-	@NLobjective(system_id, Min, T1 + 2*T2 + .5*g2 - 2*gamma/sqrt(N)*sqrt(T3 + 2*T4 + glk) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
+	@NLobjective(system_id, Min, T1 + 2*T2 + .5*γ2 - 2*γ/sqrt(N)*sqrt(T3 + 2*T4 + glk) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
 
 	optimize!(system_id)
 
@@ -221,24 +218,33 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 		mL[i,i] = value(A1[i,i])
 	end
 
-	@info "Full optimization took $(time() - t0)''."
+	t = time()-t0
+	TTMM = readdlm("data/times.csv",',')
+	TT = TTMM[1]
+	MM = TTMM[2]
+	avt = (TT*MM + t)/(MM+1)
+	writedlm("data/times.csv",[avt,MM+1],',')
+
+	@info "===================================================================================="
+	@info "Full optimization took $(round(t,digits=3))'', avg time is $(round(avt,digits=3))''."
+	@info "===================================================================================="
 
 	writedlm("data/"*id*"_l0_$(l).$(k)_obj.csv",objective_value(system_id),',')
 #	writedlm("data/"*id*"_l0_$(l).$(k)_A1.csv",mL,',')
 #	writedlm("data/"*id*"_l0_$(l).$(k)_a2.csv",value.(a2),',')
-#	writedlm("data/"*id*"_l0_$(l).$(k)_gamma.csv",value(gamma),',')
+#	writedlm("data/"*id*"_l0_$(l).$(k)_γ.csv",value(γ),',')
 end
 
 
 #=
 """
-	Lmin_l1_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l1_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of Lmin_l1.
 """
 =#
 @everywhere function Lmin_l1_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
-	id,x,Dx,xt,Dxt,k,A1h,a2h,b,mu,bp = tups
+	id,x,Dx,xt,Dxt,k,A1h,a2h,b,μ,bp = tups
 	
 	t0 = time()
 	
@@ -256,7 +262,7 @@ Parallelized version of Lmin_l1.
 	glk = [norm(Dxt[l,k+1])^2 for l = 1:n]
 
 # Definition of the optimization problem. 
-	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
+	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => μ, "bound_push" => bp))
 
 	@variable(system_id, A1[i = 1:n, j = i:n])
 	for i in 1:n
@@ -266,37 +272,37 @@ Parallelized version of Lmin_l1.
 	end
 	@variable(system_id, a2[i = 1:n])
 	set_start_value.(a2,a2h)
-	@variable(system_id, gamma[l = 1:n])
+	@variable(system_id, γ[l = 1:n])
 	for l in 1:n
-		@constraint(system_id, gamma[l] >= 0.)
+		@constraint(system_id, γ[l] >= 0.)
 	end
-	set_start_value.(gamma,ones(n))
+	set_start_value.(γ,ones(n))
 
-# tr(L^2*\th*\th^T)
+# tr(L^2*θ*θ^T)
 	@NLexpression(system_id, AtAS01, 
 		      sum(A1[i,j]*A1[j,m]*S0[m,i] for i = 1:n for j = i:n for m = j:n) + 
 		      sum(A1[i,j]*A1[m,j]*S0[m,i] for i = 1:n for j = i:n for m = 1:j-1) + 
 		      sum(A1[j,i]*A1[j,m]*S0[m,i] for i = 1:n for j = 1:i-1 for m = j:n) + 
 		      sum(A1[j,i]*A1[m,j]*S0[m,i] for i = 1:n for j = 1:i-1 for m = 1:j-1))
 
-# tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
+# tr(-L*D*ω*θ^T) = tr(-D*L*θ*ω^T)
 	@NLexpression(system_id, AtAS02, 
 		      sum(A1[i,j]*a2[j]*S0[n+j,i] for i = 1:n for j = i:n) + 
 		      sum(A1[j,i]*a2[j]*S0[n+j,i] for i = 1:n for j = 1:i-1))
 
-# tr(D^2*\om*\om^T)
+# tr(D^2*ω*ω^T)
 	@NLexpression(system_id, AtAS03, sum(a2[i]^2*S0[n+i,n+i] for i = 1:n))
 	
 # tr(A^T*A*S0)
 	@NLexpression(system_id, T1, AtAS01 + 2*AtAS02 + AtAS03)
 
 
-# tr(-L*\th*(D\om)^T)
+# tr(-L*θ*(Dω)^T)
 	@NLexpression(system_id, AS11, 
 		      sum(A1[i,j]*S1[j,i] for i = 1:n for j = i:n) + 
 		      sum(A1[j,i]*S1[j,i] for i =1:n for j = 1:i-1))
 
-# tr(-D*\om*(D\om)^T)
+# tr(-D*ω*(Dω)^T)
 	@NLexpression(system_id, AS12, sum(a2[i]*S1[n+i,i] for i = 1:n))
 
 # tr(A*S1)
@@ -325,10 +331,10 @@ Parallelized version of Lmin_l1.
 	@NLexpression(system_id, T4[l = 1:n], sum(flk[l][i]*A1[l,i] for i = l:n) + sum(flk[l][i]*A1[i,l] for i = 1:l-1) + flk[l][n+l]*a2[l])
 
 
-	@NLexpression(system_id, g2, sum(gamma[l]^2 for l = 1:n))
+	@NLexpression(system_id, γ2, sum(γ[l]^2 for l = 1:n))
 
 	
-	@NLobjective(system_id, Min, T1 + 2*T2 + .5*g2 - 2/sqrt(N)*sum(gamma[l]*sqrt(T3[l] + 2*T4[l] + glk[l]) for l = 1:n) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
+	@NLobjective(system_id, Min, T1 + 2*T2 + .5*γ2 - 2/sqrt(N)*sum(γ[l]*sqrt(T3[l] + 2*T4[l] + glk[l]) for l = 1:n) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
 
 	optimize!(system_id)
 
@@ -341,19 +347,28 @@ Parallelized version of Lmin_l1.
 		mL[i,i] = value(A1[i,i])
 	end
 	
-	@info "Full optimization took $(time() - t0)''."
+	t = time()-t0
+	TTMM = readdlm("data/times.csv",',')
+	TT = TTMM[1]
+	MM = TTMM[2]
+	avt = (TT*MM + t)/(MM+1)
+	writedlm("data/times.csv",[avt,MM+1],',')
+
+	@info "===================================================================================="
+	@info "Full optimization took $(round(t,digits=3))'', avg time is $(round(avt,digits=3))''."
+	@info "===================================================================================="
 	
 	writedlm("data/"*id*"_l1_$(k)_obj.csv",objective_value(system_id),',')
 #	writedlm("data/"*id*"_l1_$(k)_A1.csv",mL,',')
 #	writedlm("data/"*id*"_l1_$(k)_a2.csv",value.(a2),',')
-	writedlm("data/"*id*"_l1_$(k)_gamma.csv",value.(gamma),',')
+	writedlm("data/"*id*"_l1_$(k)_γ.csv",value.(γ),',')
 end
 
 #=
 """
     get_Ah_correl(Xs::Array{Float64,2}, dt::Float64)
 
-Estimates the dynamics matrix bases on Lokhov18.
+Estimates the dynamics matrix based on Lokhov18.
 
 _INPUT_:
 `Xs`: Time series of the phase angles (rows 1:n) and of the phase frequencies (n+1:2*n).
@@ -369,10 +384,10 @@ _OUTPUT_:
 	nn,T = size(Xs)
 	n = Int(nn/2)
 
-	S0 = Xs*Xs' ./ T
-	S1 = Xs[:,2:T]*Xs[:,1:T-1]' ./ (T-1)
+	Σ0 = Xs*Xs' ./ T
+	Σ1 = Xs[:,2:T]*Xs[:,1:T-1]' ./ (T-1)
 
-	Ah = S1*inv(S0)
+	Ah = Σ1*inv(Σ0)
 	Lh = -Ah[n+1:2*n,1:n]/dt
 	dh = (ones(n) - diag(Ah[n+1:2*n,n+1:2*n]))./dt
 
@@ -381,13 +396,13 @@ end
 
 #=
 """
-	Lmin_l0_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l0_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, with nonpositive off-diagonal terms.
 """
 =#
 @everywhere function Lmin_l0_lap_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
-	id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,mu,bp = tups
+	id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,μ,bp = tups
 	
 	t0 = time()
 	
@@ -405,7 +420,7 @@ Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	glk = norm(Dxt[l,k+1])^2
 
 # Definition of the optimization problem.
-	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
+	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => μ, "bound_push" => bp))
 	@variable(system_id, A1[i = 1:n-1, j = i+1:n])
 	for i = 1:n-1
 		for j = i+1:n
@@ -415,10 +430,10 @@ Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	end
 	@variable(system_id, a2[i = 1:n])
 	set_start_value.(a2,a2h)
-	@variable(system_id, gamma >= 0.)
-	set_start_value(gamma,1.)
+	@variable(system_id, γ >= 0.)
+	set_start_value(γ,1.)
 
-# tr(L^2*\th*\th^T)
+# tr(L^2*θ*θ^T)
 	@NLexpression(system_id, AtAS01, 
 		      sum(A1[j,i]*A1[m,j]*(S0[m,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for m = 1:j-1) + 
 		      sum(A1[j,i]*A1[j,m]*(S0[m,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for m = j+1:n) -
@@ -429,24 +444,24 @@ Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 		      sum(A1[i,j]*A1[m,i]*(S0[m,i]-S0[i,i]) for i = 1:n for j = i+1:n for m = 1:i-1) -
 		      sum(A1[i,j]*A1[i,m]*(S0[m,i]-S0[i,i]) for i = 1:n for j = i+1:n for m = i+1:n))
 
-# tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
+# tr(-L*D*ω*θ^T) = tr(-D*L*θ*ω^T)
 	@NLexpression(system_id, AtAS02, 
 		      sum(A1[j,i]*(a2[j]*S0[n+j,i]-a2[i]*S0[n+i,i]) for i = 1:n for j = 1:i-1) + 
 		      sum(A1[i,j]*(a2[j]*S0[n+j,i]-a2[i]*S0[n+i,i]) for i = 1:n for j = i+1:n))
 
-# tr(D^2*\om*\om^T)
+# tr(D^2*ω*ω^T)
 	@NLexpression(system_id, AtAS03, sum(a2[i]^2*S0[n+i,n+i] for i = 1:n))
 	
 # tr(A^T*A*S0)
 	@NLexpression(system_id, T1, AtAS01 + 2*AtAS02 + AtAS03)
 
 
-# tr(-L*\th*(D\om)^T)
+# tr(-L*θ*(Dω)^T)
 	@NLexpression(system_id, AS11, 
 		      sum(A1[i,j]*(S1[j,i]-S1[i,i]) for i = 1:n for j = i+1:n) + 
 		      sum(A1[j,i]*(S1[j,i]-S1[i,i]) for i = 1:n for j = 1:i-1))
 
-# tr(-D*\om*(D\om)^T)
+# tr(-D*ω*(Dω)^T)
 	@NLexpression(system_id, AS12, sum(a2[i]*S1[n+i,i] for i = 1:n))
 
 # tr(A*S1)
@@ -476,10 +491,10 @@ Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	@NLexpression(system_id, T4, sum((flk[i]-flk[l])*A1[l,i] for i = l+1:n) + sum((flk[i]-flk[l])*A1[i,l] for i = 1:l-1) + flk[n+l]*a2[l])
 
 
-	@NLexpression(system_id, g2, gamma^2)
+	@NLexpression(system_id, γ2, γ^2)
 
 	
-	@NLobjective(system_id, Min, T1 + 2*T2 + .5*g2 - 2*gamma/sqrt(N)*sqrt(T3 + 2*T4 + glk) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
+	@NLobjective(system_id, Min, T1 + 2*T2 + .5*γ2 - 2*γ/sqrt(N)*sqrt(T3 + 2*T4 + glk) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
 
 	optimize!(system_id)
 
@@ -494,24 +509,33 @@ Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 		mL[i,i] = -sum(mL[i,j] for j = 1:n)
 	end
 
-	@info "Full optimization took $(time() - t0)''."
+	t = time()-t0
+	TTMM = readdlm("data/times.csv",',')
+	TT = TTMM[1]
+	MM = TTMM[2]
+	avt = (TT*MM + t)/(MM+1)
+	writedlm("data/times.csv",[avt,MM+1],',')
+
+	@info "===================================================================================="
+	@info "Full optimization took $(round(t,digits=3))'', avg time is $(round(avt,digits=3))''."
+	@info "===================================================================================="
 
 	writedlm("data/"*id*"_lap0_$(l).$(k)_obj.csv",objective_value(system_id),',')
 #	writedlm("data/"*id*"_lap0_$(l).$(k)_A1.csv",mL,',')
 #	writedlm("data/"*id*"_lap0_$(l).$(k)_a2.csv",value.(a2),',')
-#	writedlm("data/"*id*"_lap0_$(l).$(k)_gamma.csv",value(gamma),',')
+#	writedlm("data/"*id*"_lap0_$(l).$(k)_γ.csv",value(γ),',')
 end
 
 
 #=
 """
-	Lmin_l1_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., mu::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l1_lap_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, with nonpositive off-diagonal terms.
 """
 =#
 @everywhere function Lmin_l1_lap_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
-	id,x,Dx,xt,Dxt,k,A1h,a2h,b,mu,bp = tups
+	id,x,Dx,xt,Dxt,k,A1h,a2h,b,μ,bp = tups
 	
 	t0 = time()
 	
@@ -529,7 +553,7 @@ Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	glk = [norm(Dxt[l,k+1])^2 for l = 1:n]
 
 # Definition of the optimization problem.
-	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => mu, "bound_push" => bp))
+	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => μ, "bound_push" => bp))
 	@variable(system_id, A1[i = 1:n-1, j = i+1:n])
 	for i = 1:n-1
 		for j = i+1:n
@@ -539,13 +563,13 @@ Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	end
 	@variable(system_id, a2[i = 1:n])
 	set_start_value.(a2,a2h)
-	@variable(system_id, gamma[l = 1:n])
+	@variable(system_id, γ[l = 1:n])
 	for l in 1:n
-		@constraint(system_id, gamma[l] >= 0.)
+		@constraint(system_id, γ[l] >= 0.)
 	end
-	set_start_value.(gamma,ones(n))
+	set_start_value.(γ,ones(n))
 
-# tr(L^2*\th*\th^T)
+# tr(L^2*θ*θ^T)
 	@NLexpression(system_id, AtAS01, 
 		      sum(A1[j,i]*A1[m,j]*(S0[m,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for m = 1:j-1) + 
 		      sum(A1[j,i]*A1[j,m]*(S0[m,i]-S0[j,i]) for i = 1:n for j = 1:i-1 for m = j+1:n) -
@@ -556,24 +580,24 @@ Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 		      sum(A1[i,j]*A1[m,i]*(S0[m,i]-S0[i,i]) for i = 1:n for j = i+1:n for m = 1:i-1) -
 		      sum(A1[i,j]*A1[i,m]*(S0[m,i]-S0[i,i]) for i = 1:n for j = i+1:n for m = i+1:n))
 
-# tr(-L*D*\om*\th^T) = tr(-D*L*\th*\om^T)
+# tr(-L*D*ω*θ^T) = tr(-D*L*θ*ω^T)
 	@NLexpression(system_id, AtAS02, 
 		      sum(A1[j,i]*(a2[j]*S0[n+j,i]-a2[i]*S0[n+i,i]) for i = 1:n for j = 1:i-1) + 
 		      sum(A1[i,j]*(a2[j]*S0[n+j,i]-a2[i]*S0[n+i,i]) for i = 1:n for j = i+1:n))
 
-# tr(D^2*\om*\om^T)
+# tr(D^2*ω*ω^T)
 	@NLexpression(system_id, AtAS03, sum(a2[i]^2*S0[n+i,n+i] for i = 1:n))
 	
 # tr(A^T*A*S0)
 	@NLexpression(system_id, T1, AtAS01 + 2*AtAS02 + AtAS03)
 
 
-# tr(-L*\th*(D\om)^T)
+# tr(-L*θ*(Dω)^T)
 	@NLexpression(system_id, AS11, 
 		      sum(A1[i,j]*(S1[j,i]-S1[i,i]) for i = 1:n for j = i+1:n) + 
 		      sum(A1[j,i]*(S1[j,i]-S1[i,i]) for i = 1:n for j = 1:i-1))
 
-# tr(-D*\om*(D\om)^T)
+# tr(-D*ω*(Dω)^T)
 	@NLexpression(system_id, AS12, sum(a2[i]*S1[n+i,i] for i = 1:n))
 
 # tr(A*S1)
@@ -603,10 +627,10 @@ Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	@NLexpression(system_id, T4[l = 1:n], sum((flk[l][i]-flk[l][l])*A1[l,i] for i = l+1:n) + sum((flk[l][i]-flk[l][l])*A1[i,l] for i = 1:l-1) + flk[l][n+l]*a2[l])
 
 
-	@NLexpression(system_id, g2, sum(gamma[l]^2 for l = 1:n))
+	@NLexpression(system_id, γ2, sum(γ[l]^2 for l = 1:n))
 
 	
-	@NLobjective(system_id, Min, T1 + 2*T2 + .5*g2 - 2/sqrt(N)*sum(gamma[l]*sqrt(T3[l] + 2*T4[l] + glk[l]) for l = 1:n) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
+	@NLobjective(system_id, Min, T1 + 2*T2 + .5*γ2 - 2/sqrt(N)*sum(γ[l]*sqrt(T3[l] + 2*T4[l] + glk[l]) for l = 1:n) + b*sum(abs(A1[i,j]) for i = 1:n-1 for j = i+1:n))
 
 	optimize!(system_id)
 
@@ -621,11 +645,20 @@ Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 		mL[i,i] = -sum(mL[i,j] for j = 1:n)
 	end
 
-	@info "Full optimization took $(time() - t0)''."
+	t = time()-t0
+	TTMM = readdlm("data/times.csv",',')
+	TT = TTMM[1]
+	MM = TTMM[2]
+	avt = (TT*MM + t)/(MM+1)
+	writedlm("data/times.csv",[avt,MM+1],',')
+
+	@info "===================================================================================="
+	@info "Full optimization took $(round(t,digits=3))'', avg time is $(round(avt,digits=3))''."
+	@info "===================================================================================="
 
 	writedlm("data/"*id*"_lap2_$(k)_obj.csv",objective_value(system_id),',')
 #	writedlm("data/"*id*"_lap2_$(k)_A1.csv",mL,',')
 #	writedlm("data/"*id*"_lap2_$(k)_a2.csv",value.(a2),',')
-	writedlm("data/"*id*"_lap2_$(k)_gamma.csv",value.(gamma),',')
+	writedlm("data/"*id*"_lap2_$(k)_γ.csv",value.(γ),',')
 end
 

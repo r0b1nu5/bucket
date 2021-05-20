@@ -336,7 +336,7 @@ function iterations4(f0::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Floa
 		@info "iter = $t"
 
 		ff = [ff f]
-		f = Tu_dir(f,u,P,C,λ)
+		f = Tu_dir(f,u,P,C,λ*diagm(0 => ones(m)))
 	end
 
 	if plot
@@ -396,11 +396,11 @@ function dir_cycle_proj(B::Array{Float64,2}, Lmin::Array{Float64,1})
 	m = length(Lmin)
 
 	Im = diagm(0 => ones(m))
-	L = diagm(0 => Lmin)
+	D = diagm(0 => Lmin)
 
 	Bout = B.*(B .> 0.)
 
-	return Im - L*B'*pinv(Bout*L*B')*Bout
+	return Im - D*B'*pinv(Bout*D*B')*Bout
 end
 
 
@@ -412,14 +412,14 @@ function Tu(Δ1::Array{Float64,1}, Δ2::Array{Float64,1}, u::Array{Int64,1}, P::
 	return Δ - λ*diagm(0 => ones(m2))*P*(Δ - 2π*pinv(C)*u)
 end
 
-function Tu_dir(f::Array{Float64,1}, u::Array{Int64,1}, P::Array{Float64,2}, C::Array{Float64,2}, λ::Float64=1.)
+function Tu_dir(f::Array{Float64,1}, u::Array{Int64,1}, P::Array{Float64,2}, C::Array{Float64,2}, D::Array{Float64,2})
 	m = length(f)
 
 	Δ = dcc(hi(f))
 
 	Cdu = pinv(C)*u
 
-	return f - λ*P*(Δ - 2π*[Cdu;-Cdu])
+	return f - P*D*(Δ - 2π*[Cdu;-Cdu])
 end
 
 function πω(f0::Array{Float64,1}, Bout::Array{Float64,2}, ω::Array{Float64,1}, hγ::Tuple{Float64,Float64})

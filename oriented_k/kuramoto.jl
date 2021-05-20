@@ -1,10 +1,10 @@
-using LinearAlgebra
+using LinearAlgebra, PyPlot
 
 include("tools.jl")
 
 # DIRECTED VERSION OF THE KURAMOTO MODEL.
 
-function kuramoto(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float64,1}, h::Float64=.01, eps::Float64=1e-6, max_iter::Int64=Int(1e6))
+function kuramoto(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float64,1}, h::Float64=.01, eps::Float64=1e-6, max_iter::Int64=Int(1e6), doplot::Bool=true)
 	n = length(th0)
 
 	B,S,T,w = L2B_dir(L)
@@ -40,6 +40,16 @@ function kuramoto(L::Array{Float64,2}, om::Array{Float64,1}, th0::Array{Float64,
 		th1 = copy(th2)
 		ths = [ths th1]
 		dths = [dths dth]
+	end
+
+	if doplot
+		figure()
+		for i in 1:n
+			subplot(1,2,1)
+			PyPlot.plot(ths[i,:])
+			subplot(1,2,2)
+			PyPlot.plot(dths[i,:])
+		end
 	end
 
 	return ths,dths,iter
