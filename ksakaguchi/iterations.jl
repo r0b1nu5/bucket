@@ -392,6 +392,16 @@ function cycle_proj(b::Array{Float64,2}, Lmin::Array{Float64,1})
 	return I2 - L2*b'*pinv(b*L2*b')*b
 end
 
+function dir_cycle_proj(B::Array{Float64,2})
+	n,m = size(B)
+
+	Im = diagm(0 => ones(m))
+
+	Bout = B.*(B .> 0.)
+
+	return Im - B'*pinv(Bout*B')*Bout
+end
+
 function dir_cycle_proj(B::Array{Float64,2}, Lmin::Array{Float64,1})
 	m = length(Lmin)
 
