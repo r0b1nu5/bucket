@@ -120,6 +120,10 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 =#
 @everywhere function Lmin_l0_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
 	id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,μ,bp = tups
+
+	@info "===================================================================================="
+	@info "Computing "*id*" with ℓ0 optimization: ℓ = $l, k = $k."
+	@info "===================================================================================="
 	
 	t0 = time()
 	
@@ -232,7 +236,7 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 	writedlm("data/"*id*"_l0_$(l).$(k)_obj.csv",objective_value(system_id),',')
 #	writedlm("data/"*id*"_l0_$(l).$(k)_A1.csv",mL,',')
 #	writedlm("data/"*id*"_l0_$(l).$(k)_a2.csv",value.(a2),',')
-#	writedlm("data/"*id*"_l0_$(l).$(k)_γ.csv",value(γ),',')
+#	writedlm("data/"*id*"_l0_$(l).$(k)_g.csv",value(γ),',')
 end
 
 
@@ -245,6 +249,10 @@ Parallelized version of Lmin_l1.
 =#
 @everywhere function Lmin_l1_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
 	id,x,Dx,xt,Dxt,k,A1h,a2h,b,μ,bp = tups
+	
+	@info "===================================================================================="
+	@info "Computing "*id*" with ℓ1 optimization: k = $k."
+	@info "===================================================================================="
 	
 	t0 = time()
 	
@@ -361,7 +369,7 @@ Parallelized version of Lmin_l1.
 	writedlm("data/"*id*"_l1_$(k)_obj.csv",objective_value(system_id),',')
 #	writedlm("data/"*id*"_l1_$(k)_A1.csv",mL,',')
 #	writedlm("data/"*id*"_l1_$(k)_a2.csv",value.(a2),',')
-	writedlm("data/"*id*"_l1_$(k)_γ.csv",value.(γ),',')
+	writedlm("data/"*id*"_l1_$(k)_g.csv",value.(γ),',')
 end
 
 #=
@@ -523,7 +531,7 @@ Same as Lmin_l0_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	writedlm("data/"*id*"_lap0_$(l).$(k)_obj.csv",objective_value(system_id),',')
 #	writedlm("data/"*id*"_lap0_$(l).$(k)_A1.csv",mL,',')
 #	writedlm("data/"*id*"_lap0_$(l).$(k)_a2.csv",value.(a2),',')
-#	writedlm("data/"*id*"_lap0_$(l).$(k)_γ.csv",value(γ),',')
+#	writedlm("data/"*id*"_lap0_$(l).$(k)_g.csv",value(γ),',')
 end
 
 
@@ -659,6 +667,6 @@ Same as Lmin_l1_par, but assumes that the dynamics matrix (A1) is a Laplacian, w
 	writedlm("data/"*id*"_lap2_$(k)_obj.csv",objective_value(system_id),',')
 #	writedlm("data/"*id*"_lap2_$(k)_A1.csv",mL,',')
 #	writedlm("data/"*id*"_lap2_$(k)_a2.csv",value.(a2),',')
-	writedlm("data/"*id*"_lap2_$(k)_γ.csv",value.(γ),',')
+	writedlm("data/"*id*"_lap2_$(k)_g.csv",value.(γ),',')
 end
 

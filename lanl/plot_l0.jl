@@ -1,6 +1,6 @@
 using PyPlot, DelimitedFiles
 
-to_plot = [("pen_2",2),]
+to_plot = [("naspi_1_",1),("naspi_2_",1)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -29,7 +29,9 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("pen_6",1) => (1500,11000,1000),
 							 ("pen_7",1) => (1500,11000,1000),
 							 ("pen_8",1) => (1500,11000,1000),
-							 ("pen_8",2) => (9000,10000,50)
+							 ("pen_8",2) => (9000,10000,50),
+							 ("naspi_1_",1) => (1,100,1),
+							 ("naspi_2_",1) => (1,100,1)
 							 )
 
 ns = Dict{String,Int64}(
@@ -51,10 +53,12 @@ ns = Dict{String,Int64}(
 			"pen_5" => 130,
 			"pen_6" => 137,
 			"pen_7" => 136,
-			"pen_8" => 134
+			"pen_8" => 134,
+			"naspi_1_" => 58,
+			"naspi_2_" => 58
 			)
 
-node_ids = Dict{String,Array{Int64,1}}(
+node_ids = Dict{String,Array{Any,1}}(
 				       "ntw3_1" => [1,2,3],
 				       "ntw3_2" => [1,2,3],
 				       "ntw3_3" => [1,2,3],
@@ -73,7 +77,9 @@ node_ids = Dict{String,Array{Int64,1}}(
 				       "pen_5" => vec(Int.(readdlm("data_pen/pen_2013-04-03_07_ids.csv",',').-1)),
 				       "pen_6" => vec(Int.(readdlm("data_pen/pen_2013-07-30_01_ids.csv",',').-1)),
 				       "pen_7" => vec(Int.(readdlm("data_pen/pen_2013-07-30_04_ids.csv",',').-1)),
-				       "pen_8" => vec(Int.(readdlm("data_pen/pen_2013-07-30_09_ids.csv",',').-1))
+				       "pen_8" => vec(Int.(readdlm("data_pen/pen_2013-07-30_09_ids.csv",',').-1)), 
+				       "naspi_1_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_2_" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",','))
 				       )
 
 T = Dict{String,Float64}(
@@ -95,7 +101,9 @@ T = Dict{String,Float64}(
 		       "pen_5" => 1260.,
 		       "pen_6" => 660.,
 		       "pen_7" => 1260.,
-		       "pen_8" => 1260.
+		       "pen_8" => 1260.,
+		       "naspi_1_" => 56.6, 
+		       "naspi_2_" => 1778/30
 		       )
 
 
@@ -116,10 +124,8 @@ for ntw_run in to_plot
 
 	Lmi,iii = findmin(L)
 
-#	node_id = iii[1]
 	node_id = node_ids[ntw][iii[1]]
-#	freq = ks[iii[2]]
-	freq = ks[iii[2]]/T[ntw]
+	freq = round(ks[iii[2]]/T[ntw],digits=3)
 	
 	figure("ntw: "*ntw*", run: $run")
 	for i in 1:length(ls)
@@ -130,7 +136,7 @@ for ntw_run in to_plot
 	twiny()
 	PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
 	xlabel("k")
-	title("Node id: $(node_id), frequency: $freq")
+	title("Node id: $(node_id) \n frequency: $freq [Hz]")
 end
 
 					   
