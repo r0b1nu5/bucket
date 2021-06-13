@@ -965,3 +965,10 @@ function Lmin_l1_lap(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Comple
 end
 
 
+function hms(T::Union{Int64,Float64})
+	h = floor(Int64,T/3600)
+	m = floor(Int64,(T - h*3600)/60)
+	s = round(Int64,T - h*3600 - m*60)
+
+	return h,m,s
+end

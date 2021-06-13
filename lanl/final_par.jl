@@ -24,8 +24,6 @@ The parameter "id" identifies the system to be identified.
 """
 =#
 @everywhere function run_l0_par(id::String, Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::Array{Int64,1}, is_laplacian::Bool, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
-	writedlm("data/times.csv",[0.,0.],',')
-
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -55,6 +53,8 @@ The parameter "id" identifies the system to be identified.
 		end
 	end
 
+	writedlm("data/times_l0.csv",[0.,0.,length(args)],',')
+
 	if is_laplacian
 		pmap(Lmin_l0_lap_par,args)
 	else
@@ -74,8 +74,6 @@ The parameter "id" identifies the system to be identified.
 """
 =#
 @everywhere function run_l1_par(id::String, Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
-	writedlm("data/times.csv",[0.,0.],',')
-
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -103,6 +101,8 @@ The parameter "id" identifies the system to be identified.
 	for k in ks
 		push!(args,(id,x,Dx,xt,Dxt,k,A1h,a2h,b,μ,bp))
 	end
+
+	writedlm("data/times_l1.csv",[0.,0.,length(args)],',')
 
 	if is_laplacian
 		pmap(Lmin_l1_lap_par,args)
@@ -223,14 +223,18 @@ Parallelized version of "Lmin_l0", i.e., stores the data in files.
 	end
 
 	t = time()-t0
-	TTMM = readdlm("data/times.csv",',')
-	TT = TTMM[1]
-	MM = TTMM[2]
+	TMN = readdlm("data/times_l0.csv",',')
+	TT = TMN[1]
+	MM = TMN[2]
+	NN = TMN[3]
 	avt = (TT*MM + t)/(MM+1)
-	writedlm("data/times.csv",[avt,MM+1],',')
+	avT = avt*(NN - MM)
+	Ho,Mi,Se = hms(avT)
+
+	writedlm("data/times_l0.csv",[avt,MM+1,NN],',')
 
 	@info "===================================================================================="
-	@info "Full optimization took $(round(t,digits=3))'', avg time is $(round(avt,digits=3))''."
+	@info "Full optimization took $(round(t,digits=3))'', avg time is $(round(avt,digits=3))'', ERT: $(Ho)h:$(Mi)m:$(Se)s."
 	@info "===================================================================================="
 
 	writedlm("data/"*id*"_l0_$(l).$(k)_obj.csv",objective_value(system_id),',')
@@ -356,14 +360,18 @@ Parallelized version of Lmin_l1.
 	end
 	
 	t = time()-t0
-	TTMM = readdlm("data/times.csv",',')
-	TT = TTMM[1]
-	MM = TTMM[2]
+	TMN = readdlm("data/times_l1.csv",',')
+	TT = TMN[1]
+	MM = TMN[2]
+	NN = TMN[3]
 	avt = (TT*MM + t)/(MM+1)
-	writedlm("data/times.csv",[avt,MM+1],',')
+	avT = avt*(NN - MM)
+	Ho,Mi,Se = hms(avT)
+
+	writedlm("data/times_l1.csv",[avt,MM+1,NN],',')
 
 	@info "===================================================================================="
-	@info "Full optimization took $(round(t,digits=3))'', avg time is $(round(avt,digits=3))''."
+	@info "Full optimization took $(round(t,digits=3))'', avg time is $(round(avt,digits=3))'', ERT: $(Ho)h:$(Mi)m:$(Se)s."
 	@info "===================================================================================="
 	
 	writedlm("data/"*id*"_l1_$(k)_obj.csv",objective_value(system_id),',')

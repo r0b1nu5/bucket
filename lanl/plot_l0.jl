@@ -1,6 +1,6 @@
 using PyPlot, DelimitedFiles
 
-to_plot = [("naspi_1_",1),("naspi_2_",1)]
+to_plot = [("naspi_7_",1),("naspi_8_",1),("naspi_9_",1),("naspi_10_",1),]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -31,7 +31,18 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("pen_8",1) => (1500,11000,1000),
 							 ("pen_8",2) => (9000,10000,50),
 							 ("naspi_1_",1) => (1,100,1),
-							 ("naspi_2_",1) => (1,100,1)
+							 ("naspi_2_",1) => (1,100,1),
+							 ("naspi_3_",1) => (1,100,1),
+							 ("naspi_4_",1) => (1,100,1),
+							 ("naspi_5_",1) => (1,100,1),
+							 ("naspi_6_",1) => (1,100,1),
+							 ("naspi_7_",1) => (1,100,1),
+							 ("naspi_8_",1) => (1,100,1),
+							 ("naspi_9_",1) => (1,100,1),
+							 ("naspi_10_",1) => (1,100,1),
+							 ("naspi_11_",1) => (1,100,1),
+							 ("naspi_12_",1) => (1,100,1),
+							 ("naspi_13_",1) => (1,100,1)
 							 )
 
 ns = Dict{String,Int64}(
@@ -55,7 +66,18 @@ ns = Dict{String,Int64}(
 			"pen_7" => 136,
 			"pen_8" => 134,
 			"naspi_1_" => 58,
-			"naspi_2_" => 58
+			"naspi_2_" => 58,
+			"naspi_3_" => 58,
+			"naspi_4_" => 58,
+			"naspi_5_" => 58,
+			"naspi_6_" => 58,
+			"naspi_7_" => 58,
+			"naspi_8_" => 58,
+			"naspi_9_" => 58,
+			"naspi_10_" => 51,
+			"naspi_11_" => 58,
+			"naspi_12_" => 58,
+			"naspi_13_" => 58
 			)
 
 node_ids = Dict{String,Array{Any,1}}(
@@ -79,7 +101,18 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "pen_7" => vec(Int.(readdlm("data_pen/pen_2013-07-30_04_ids.csv",',').-1)),
 				       "pen_8" => vec(Int.(readdlm("data_pen/pen_2013-07-30_09_ids.csv",',').-1)), 
 				       "naspi_1_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
-				       "naspi_2_" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",','))
+				       "naspi_2_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_3_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_4_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_5_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_6_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_7_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_8_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_9_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_10_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",','))[1:51],
+				       "naspi_11_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_12_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_13_" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",','))
 				       )
 
 T = Dict{String,Float64}(
@@ -103,7 +136,18 @@ T = Dict{String,Float64}(
 		       "pen_7" => 1260.,
 		       "pen_8" => 1260.,
 		       "naspi_1_" => 56.6, 
-		       "naspi_2_" => 1778/30
+		       "naspi_2_" => 1778/30,
+		       "naspi_3_" => 1758/30,
+		       "naspi_4_" => 1898/30,
+		       "naspi_5_" => 1698/30,
+		       "naspi_6_" => 1778/30,
+		       "naspi_7_" => 1848/30,
+		       "naspi_8_" => 1848/30,
+		       "naspi_9_" => 1788/30,
+		       "naspi_10_" => 1798/30,
+		       "naspi_11_" => 1798/30,
+		       "naspi_12_" => 1898/30,
+		       "naspi_13_" => 1598/30
 		       )
 
 
@@ -126,8 +170,22 @@ for ntw_run in to_plot
 
 	node_id = node_ids[ntw][iii[1]]
 	freq = round(ks[iii[2]]/T[ntw],digits=3)
+
+	sort_nodes = sortslices([L[:,iii[2]] node_ids[ntw]],dims=1)
 	
-	figure("ntw: "*ntw*", run: $run")
+	figure("[ℓ0] ntw: "*ntw*", run: $run")
+	
+	subplot2grid((1,7),(0,0),colspan=3)
+	for i in 1:length(ls)
+		PyPlot.plot(ks/T[ntw],L[i,:],"-o",label="l = $(ls[i])")
+	end
+	xlabel("freq")
+	ylabel("objective")
+	twiny()
+	PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
+	xlabel("k")
+	
+	subplot2grid((1,7),(0,3),colspan=3)
 	for i in 1:length(ls)
 		PyPlot.plot(ks/T[ntw],L[i,:],"-o",label="l = $(ls[i])")
 	end
@@ -137,6 +195,14 @@ for ntw_run in to_plot
 	PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
 	xlabel("k")
 	title("Node id: $(node_id) \n frequency: $freq [Hz]")
+	
+	subplot2grid((1,7),(0,6),colspan=1)
+	for i in 1:length(ls)
+		PyPlot.text(0,-i,sort_nodes[i,2])
+	end
+	axis([-.1,1.1,-59,0])
+	xticks([])
+	yticks([])
 end
 
 					   
