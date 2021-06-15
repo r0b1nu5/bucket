@@ -1,8 +1,8 @@
 using Dates
 
 # Choose between l0 and l1 penalty.
-approach = "l0"
-#approach = "l1"
+#approach = "l0"
+approach = "l1"
 
 include("final_par.jl")
 
@@ -20,7 +20,7 @@ ids = [
 #       "ntw20_4",
 #       "ieee57_1",
 #       "ieee57_2",
-#	"uk_1"
+	"uk_1"
 #	"pen_1",
 #       "pen_2",
 #       "pen_3",
@@ -29,7 +29,7 @@ ids = [
 #       "pen_6",
 #       "pen_7",
 #       "pen_8",
-       "naspi_1",
+#       "naspi_1",
 #       "naspi_2",
 #       "naspi_3",
 #       "naspi_4",
@@ -63,7 +63,7 @@ files = Dict{String,String}(
 			    "ntw20_2" => "data_melvyn/time_series_20_0.100000_0.010000_0.010000.csv",
 			    "ntw20_3" => "data_melvyn/time_series_20_0.100000_0.100000_0.005000.csv",
 			    "ntw20_4" => "data_melvyn/time_series_20_0.100000_0.100000_0.010000.csv",
-			    "uk_1" => "data_melvyn/uk_time_series.csv",
+			    "uk_1" => "data_melvyn/uk_Xs.csv",
 			    "ieee57_1" => "data_melvyn/time_series_57_0.100000_0.010000_0.010000.csv",
 			    "ieee57_2" => "data_melvyn/time_series_57_0.100000_0.010000_0.100000.csv",
 			    "pen_1" => "data_pen/Xs_2013-01-15_00.csv",
@@ -102,7 +102,7 @@ taus = Dict{String,Float64}(
 			    "ntw20_4" => 1e-3,
 			    "ieee57_1" => 1e-3,
 			    "ieee57_2" => 1e-3,
-			    "uk_1" => 1e-3,
+			    "uk_1" => .01,
 			    "pen_1" => 1/30,
 			    "pen_2" => 1/30,
 			    "pen_3" => 1/30,

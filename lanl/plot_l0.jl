@@ -1,6 +1,7 @@
 using PyPlot, DelimitedFiles
 
-to_plot = [("naspi_7_",1),("naspi_8_",1),("naspi_9_",1),("naspi_10_",1),]
+to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
+to_plot = [("ntw3_1",1),("ntw3_2",1),("ntw3_3",1)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -42,7 +43,9 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("naspi_10_",1) => (1,100,1),
 							 ("naspi_11_",1) => (1,100,1),
 							 ("naspi_12_",1) => (1,100,1),
-							 ("naspi_13_",1) => (1,100,1)
+							 ("naspi_13_",1) => (1,100,1),
+							 ("mysterious_forcing_UK",1) => (1,10,1),
+							 ("mysterious_forcing_57",1) => (1,10,1)
 							 )
 
 ns = Dict{String,Int64}(
@@ -77,7 +80,9 @@ ns = Dict{String,Int64}(
 			"naspi_10_" => 51,
 			"naspi_11_" => 58,
 			"naspi_12_" => 58,
-			"naspi_13_" => 58
+			"naspi_13_" => 58,
+			"mysterious_forcing_UK" => 120,
+			"mysterious_forcing_57" => 57,
 			)
 
 node_ids = Dict{String,Array{Any,1}}(
@@ -112,7 +117,9 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "naspi_10_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",','))[1:51],
 				       "naspi_11_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
 				       "naspi_12_" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
-				       "naspi_13_" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",','))
+				       "naspi_13_" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",',')),
+				       "mysterious_forcing_UK" => Array(1:120),
+				       "mysterious_forcing_57" => Array(1:57),
 				       )
 
 T = Dict{String,Float64}(
@@ -147,7 +154,9 @@ T = Dict{String,Float64}(
 		       "naspi_10_" => 1798/30,
 		       "naspi_11_" => 1798/30,
 		       "naspi_12_" => 1898/30,
-		       "naspi_13_" => 1598/30
+		       "naspi_13_" => 1598/30,
+		       "mysterious_forcing_UK" => 50000*.01,
+		       "mysterious_forcing_57" => 200000*2e-3,
 		       )
 
 

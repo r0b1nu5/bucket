@@ -1,8 +1,6 @@
 using PyPlot, DelimitedFiles
 
-to_plot = [("naspi_a1",1),
-	   #("naspi_1",1),("naspi_2",1),("naspi_3",1),("naspi_4",1),("naspi_5",1),("naspi_6",1),("naspi_7",1),("naspi_8",1),("naspi_9",1),("naspi_10",1),("naspi_11",1),("naspi_12",1),("naspi_13",1),("naspi_a1",1),("naspi_a2",1),("naspi_a3",1),
-	  ]
+to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -48,6 +46,8 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("naspi_a1",1) => (1,100,1),
 							 ("naspi_a2",1) => (1,100,1),
 							 ("naspi_a3",1) => (1,100,1),
+							 ("mysterious_forcing_UK",1) => (31,120,1),
+							 ("mysterious_forcing_57",1) => (1,57,1),
 							 )
 
 ns = Dict{String,Int64}(
@@ -86,6 +86,8 @@ ns = Dict{String,Int64}(
 			"naspi_a1" => 58,
 			"naspi_a2" => 58,
 			"naspi_a3" => 58,
+			"mysterious_forcing_UK" => 120,
+			"mysterious_forcing_57" => 57,
 			)
 
 node_ids = Dict{String,Array{Any,1}}(
@@ -124,6 +126,8 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "naspi_a1" => vec(readdlm("data_naspi/naspi_ids_A1.csv",',')),
 				       "naspi_a2" => vec(readdlm("data_naspi/naspi_ids_A2.csv",',')),
 				       "naspi_a3" => vec(readdlm("data_naspi/naspi_ids_A3.csv",',')),
+				       "mysterious_forcing_UK" => Array(1:120),
+				       "mysterious_forcing_57" => Array(1:57),
 				       )
 
 T = Dict{String,Float64}(
@@ -162,6 +166,8 @@ T = Dict{String,Float64}(
 		       "naspi_a1" => 1598/30,
 		       "naspi_a2" => 1598/30,
 		       "naspi_a3" => 1598/30,
+		       "mysterious_forcing_UK" => 50000*.01,
+		       "mysterious_forcing_57" => 200000*2e-3,
 		       )
 
 
@@ -191,7 +197,15 @@ for ntw_run in to_plot
 	
 	figure("[ℓ1] ntw: "*ntw*", run: $run")
 
-	subplot2grid((1,10),(0,0),colspan=9)
+	subplot2grid((1,20),(0,0),colspan=9)
+	PyPlot.plot(ks/T[ntw],L,"-o")
+	xlabel("freq")
+	ylabel("obj")
+	twiny()
+	PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
+	xlabel("k")
+
+	subplot2grid((1,20),(0,10),colspan=9)
 	for i in 1:length(ks)
 		α = cmap(1 - (L[i] - Lma)/(Lmi - Lma))
 		PyPlot.plot(1:length(γ[i]),γ[i],color=α)
@@ -205,7 +219,7 @@ for ntw_run in to_plot
 	ylabel("amplitude")
 	title("Node id: $(node_id) \n frequency: $freq [Hz]")
 
-	subplot2grid((1,10),(0,9),colspan=1)
+	subplot2grid((1,20),(0,19),colspan=1)
 	yticks([])
 	twinx()
 	for ll in LinRange(Lmi,Lma,1000)
