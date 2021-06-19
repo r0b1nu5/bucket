@@ -1,5 +1,7 @@
 using PowerModels, PyPlot, SparseArrays
 
+include("tools.jl")
+
 function load_rate(nd::Dict{String,Any}, do_plot::Bool=true)
 	θ = angle_vec(nd)
 	L = get_L(nd)
@@ -43,6 +45,74 @@ function load_rate(θ::Array{Float64,1}, L::SparseMatrixCSC{Float64,Int64}, angb
 end
 
 
+function dist_ratio(Lw::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=false)
+	Ω = res_dist(Array(Lw))
+	D = geo_dist(Lw)
+
+	K = Ω./D
+
+	if do_plot
+		n = size(Lw)[1]
+		figure()
+		for i in 1:n
+			k = sort(K[:,i])
+			subplot(1,2,1)
+			PyPlot.semilogy(1:n,k)
+			subplot(1,2,2)
+			PyPlot.semilogy(1:n-1,k[2:end]-k[1:end-1])
+		end
+	end
+
+	return K
+end
+
+function dist_ratio(I::Array{Int64,1}, Lw::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=false)
+	n = size(Lw)[1]
+
+	Ω = res_dist(Array(Lw))
+	ΩI = Ω[:,I]
+
+	DI = Array{Float64,2}(undef,n,0)
+	for i in I
+		DI = [DI geo_dist(i,Lw)]
+	end
+
+	KI = ΩI./DI
+
+	if do_plot
+		n = size(Lw)[1]
+		figure()
+		for i in length(I)
+			k = sort(KI[:,i])
+			subplot(1,2,1)
+			PyPlot.semilogy(1:n,k,label="i = $(I[i])")
+			subplot(1,2,2)
+			PyPlot.semilogy(1:n-1,k[2:end]-k[1:end-1])
+		end
+	end
+
+	return KI
+end
+
+function dist_ratio(i::Int64, Lw::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=false)
+	Ω = res_dist(Array(Lw))
+	Di = geo_dist(i,Lw)
+
+	k = Ω[:,i]./Di
+
+	if do_plot
+		kk = sort(k)
+		figure()
+		subplot(1,2,1)
+		PyPlot.plot(1:length(k),kk)
+		subplot(1,2,2)
+		PyPlot.plot(1:length(k)-1,kk[2:end]-kk[1:end-1])
+	end
+
+	return k
+end
+
+
 function angle_vec(nd::Dict{String,Any})
 	θ = Array{Float64,1}()
 
@@ -54,6 +124,19 @@ function angle_vec(nd::Dict{String,Any})
 
 	return θ
 end
+
+function volt_vec(nd::Dict{String,Any})
+	v = Array{Float64,1}()
+
+	i2b = calc_admittance_matrix(nd).idx_to_bus
+
+	for i in 1:length(i2b)
+		push!(v,nd["bus"]["$(i2b[i])"]["vm"])
+	end
+
+	return v
+end
+
 
 function angdiff_bound(nd::Dict{String,Any})
 	n = length(nd["bus"])
@@ -103,6 +186,42 @@ function get_L(nd::Dict{String,Any})
 
 	return sparse([I2;I3],[J2;J3],[-V2;V3])
 end
+
+function get_weighted_L(nd::Dict{String,Any})
+	n = length(nd["bus"])
+
+	Lw = calc_admittance_matrix(nd).matrix
+	Aw = spdiagm(0 => diag(Lw)) - Lw
+	B = imag.(Aw)
+	
+	θ = angle_vec(nd)
+	v = volt_vec(nd)
+
+	return get_weighted_L(B,θ,v)
+end
+
+
+function get_weighted_L(BB::SparseMatrixCSC{Float64,Int64}, θ::Array{Float64,1}, v::Array{Float64,1})
+	n = size(BB)[1]
+
+	BB = abs.(BB - spdiagm(0 => diag(BB)))
+	I,J,B = findnz(BB)
+
+	Ri = spzeros(n,n)
+
+	for k in 1:length(I)
+		i = I[k]
+		j = J[k]
+
+		Ri[i,j] = B[k]*v[i]*v[j]*cos(θ[i] - θ[j])
+	end
+
+	D = spdiagm(0 => vec(sum(Ri,dims=1)))
+
+	return D - Ri
+end
+
+
 
 
 
