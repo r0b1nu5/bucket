@@ -29,9 +29,9 @@ function ksakaguchi(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Float6
 			if verb
 				@info "iter: $iter, err = $(round(err,digits=5))"
 			end
-			
+	
 			writedlm("temp_data/temp_θ_$c.csv",θs[:,1:end-1],',')
-			θ = θs[:,end]
+			θs = θs[:,end]
 
 			writedlm("temp_data/temp_dθ_$c.csv",dθs[:,1:end],',')
 			dθs = Array{Float64,2}(undef,n,0)
@@ -327,6 +327,20 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 
 	return βmin,βmax,fmin,max
 end
+
+function ks_flows(θ::Array{Float64,1}, L::Array{Float64,2}, α::Float64)
+	B,w = L2B(L)
+	W = diagm(0 => w)
+	n,m = size(B)
+	B1 = B.*(B .> 0)
+	B2 = -B.*(B .< 0)
+	B12 = [B1 B2]
+	BB = [B -B]
+	WW = [W zeros(m,m);zeros(m,m) W]
+	
+	return WW*(sin.(BB'*θ .- α) .+ sin(α))
+end
+
 
 # Loads the coupling function for the Kuramoto-Sakaguchi model.
 

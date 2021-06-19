@@ -1,11 +1,11 @@
 using Statistics, LinearAlgebra, Dates, SparseArrays
 
-function winding(θ::Array{Float64,1}, C::Array{Int64,1})
+function winding(θ::Array{Float64,1}, Σ::Array{Int64,1})
 	if length(θ) < 1
 		q = []
 	else
-		θ1 = θ[C]
-		θ2 = θ[[C[2:end];C[1]]]
+		θ1 = θ[Σ]
+		θ2 = θ[[Σ[2:end];Σ[1]]]
 
 		dθ = θ1 - θ2
 
@@ -16,11 +16,11 @@ function winding(θ::Array{Float64,1}, C::Array{Int64,1})
 end
 
 # Computes the winding vector for cycles defined by the cycles in C.
-function winding(θ::Array{Float64,1}, C::Array{Array{Int64,1},1})
-	if length(C) < 1 || length(θ) < 1
+function winding(θ::Array{Float64,1}, Σ::Array{Array{Int64,1},1})
+	if length(Σ) < 1 || length(θ) < 1
 		qs = []
 	else
-		qs = [winding(θ,C[i]) for i in 1:length(C)]
+		qs = [winding(θ,Σ[i]) for i in 1:length(Σ)]
 	end
 
 	return qs
@@ -281,3 +281,26 @@ function B2Bin(B::Array{Float64,2})
 
 	return [B1 B2]
 end
+
+function proj_mtx(B::Array{Float64,2}, Bout::Array{Float64,2}, D::Array{Float64,2})
+	n,m = size(B)
+
+	Id = diagm(0 => ones(m))
+
+	PD = Id - D*B'*pinv(Bout*D*B')*Bout
+
+	Q = 2*PD'*PD + Id - PD - PD'
+
+	return PD,Q
+end
+
+
+function rand_Q(n::Int64)
+	R = 2*rand(n,n) .- 1
+	while minimum(abs.(eigvals(R))) < 1e-8
+		R = 2*rand(n,n) .- 1
+	end
+
+	return R'*R
+end
+

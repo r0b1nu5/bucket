@@ -318,7 +318,7 @@ function iterations3(f0::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Floa
 	return f1,f2,f3
 end
 
-function iterations4(f0::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, Lmin::Array{Float64,1}, γ::Float64, λ::Float64=.01, T::Int64=100, plot::Bool=true)
+function iterations4(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, Lmin::Array{Float64,1}, γ::Float64, λ::Float64=.01, T::Int64=100, plot::Bool=true)
 	n,m = size(Bout)
 	m2 = Int(m/2)
 
@@ -328,19 +328,29 @@ function iterations4(f0::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Floa
 	P = dir_cycle_proj(B,Lmin)
 
 	f = πω(f0,Bout,ω,(hγm,hγp))
+	@info "$(f[1])"
 
 	ff = Array{Float64,2}(undef,m,0)
-	ff = [ff f]
+#	ff = [ff f]
+
+	dmax = Array{Float64,1}()
+	dmin = Array{Float64,1}()
 
 	for t in 1:T
 		@info "iter = $t"
 
 		ff = [ff f]
 		f = Tu_dir(f,u,P,C,λ*diagm(0 => ones(m)))
+		@info "$(maximum(f)/hγp):$(minimum(f)/(-hγm))"
+		
+		dx = 1 ./(sqrt.(1 .- (f .- sin(.1)).^2))
+		push!(dmax,maximum(dx))
+		push!(dmin,minimum(dx))
 	end
 
 	if plot
 		i0 = 1
+		Δf = B'*θf
 		Δs = LinRange(-π/2+α,π/2-α,200)
 		X = Array{Float64,1}()
 		push!(X,f0[i0])
@@ -375,6 +385,10 @@ function iterations4(f0::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Floa
 #			subplot(1,2,1)
 			PyPlot.plot(ff[i0,t],ff[i0+m2,t],"o",color=colo)
 		end
+
+		figure()
+		PyPlot.plot(1:length(dmax),(dmax+dmin)./(dmax-dmin),"o")
+
 
 	end
 	
@@ -449,8 +463,12 @@ function πω(f0::Array{Float64,1}, Bout::Array{Float64,2}, ω::Array{Float64,1}
 	sup1 = max.((f1 + Ω) .- hγ[2],0.)
 	is1 = max.(inf1,sup1)
 	ma,ima = findmax(is1)
-
-	δ = abs((abs(f1[ima])-ma)/f1[ima])
+	
+	if abs(f1[ima]) > 1e-8
+		δ = abs((abs(f1[ima])-ma)/f1[ima])
+	else
+		δ = 1.
+	end
 
 	f2 = δ*f1
 
