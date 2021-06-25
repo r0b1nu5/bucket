@@ -311,10 +311,10 @@ function iterations3(f0::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Floa
 			PyPlot.plot(f3[i0,t],f3[i0+m2,t],"o",color=colo)
 		end
 
+		title("u = $u")
+
 	end
 	
-	title("u = $u")
-
 	return f1,f2,f3
 end
 
@@ -386,13 +386,13 @@ function iterations4(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Fl
 			PyPlot.plot(ff[i0,t],ff[i0+m2,t],"o",color=colo)
 		end
 
+#=
 		figure()
 		PyPlot.plot(1:length(dmax),(dmax+dmin)./(dmax-dmin),"o")
+=#
 
-
-	end
-	
-	title("u = $u")
+		title("u = $u")
+	end	
 
 	return ff
 end
@@ -463,14 +463,14 @@ function πω(f0::Array{Float64,1}, Bout::Array{Float64,2}, ω::Array{Float64,1}
 	sup1 = max.((f1 + Ω) .- hγ[2],0.)
 	is1 = max.(inf1,sup1)
 	ma,ima = findmax(is1)
-	
-	if abs(f1[ima]) > 1e-8
-		δ = abs((abs(f1[ima])-ma)/f1[ima])
-	else
-		δ = 1.
-	end
 
+	δ = 1.
 	f2 = δ*f1
+	δδ = .001
+	while sum(hγ[1] .< (f2 + Ω) .< hγ[2]) < m
+		δ -= δδ
+		f2 = δ*f1
+	end
 
 	f3 = f2 + Ω
 

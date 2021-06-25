@@ -4,13 +4,12 @@ include("tools.jl")
 
 function load_rate(nd::Dict{String,Any}, do_plot::Bool=true)
 	θ = angle_vec(nd)
-	L = get_L(nd)
 	angbnd = angdiff_bound(nd)
 
-	return load_rate(θ,L,angbnd,do_plot)
+	return load_rate(θ,angbnd,do_plot)
 end
 
-function load_rate(θ::Array{Float64,1}, L::SparseMatrixCSC{Float64,Int64}, angbnd::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=true)
+function load_rate(θ::Array{Float64,1}, angbnd::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=true)
 	n = length(θ)
 
 	I,J,V = findnz(angbnd)
