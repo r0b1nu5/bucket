@@ -397,6 +397,92 @@ function iterations4(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Fl
 	return ff
 end
 
+function iterations5(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, Lmin::Array{Float64,1}, γ::Float64, λ::Float64=.01, T::Int64=100, plot::Bool=true)
+	n,m = size(Bout)
+	m2 = Int(m/2)
+
+	hγm = h(-γ)
+	hγp = h(γ)
+
+	Bod = pinv(Bout)
+
+	A = [kerrange(Bout) Bod*ones(n)]
+
+	Ω = Bod*ω
+
+	Π = A*pinv(A)
+
+	f = πω(f0,Bout,ω,(hγm,hγp))
+	@info "$(f[1])"
+
+	ff = Array{Float64,2}(undef,m,0)
+#	ff = [ff f]
+
+	dmax = Array{Float64,1}()
+	dmin = Array{Float64,1}()
+
+	for t in 1:T
+		@info "iter = $t"
+
+		ff = [ff f]
+		f = Tu_dir(f,u,Π,C,λ*diagm(0 => ones(m)))
+		@info "$(maximum(f)/hγp):$(minimum(f)/(-hγm))"
+		
+		dx = 1 ./(sqrt.(1 .- (f .- sin(.1)).^2))
+		push!(dmax,maximum(dx))
+		push!(dmin,minimum(dx))
+	end
+
+	if plot
+		i0 = 1
+		Δf = B'*θf
+		Δs = LinRange(-π/2+α,π/2-α,200)
+		X = Array{Float64,1}()
+		push!(X,f0[i0])
+		Y = Array{Float64,1}()
+		push!(Y,f0[i0+m2])
+
+		figure()
+		
+#		subplot(1,2,1)
+		PyPlot.plot(h(Δs),h(-Δs),"--k")
+		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C8",markersize=20.)
+		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C1",markersize=13.)
+		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C3",markersize=5.)
+		PyPlot.plot(f0[i0],f0[i0+m2],"ok")
+
+		for t in 1:T
+			push!(X,ff[i0,t])
+			push!(Y,ff[i0+m2,t])
+		end
+
+#		subplot(1,2,1)
+		PyPlot.plot(X,Y,"-k")
+		
+		xlabel("f_e")
+		ylabel("f_{\bar{e}}")
+	
+		PyPlot.plot(f0[i0],f0[i0+m2],"ok")
+
+		for t in 1:T
+			colo = "C$(mod(t-1,10))"
+
+#			subplot(1,2,1)
+			PyPlot.plot(ff[i0,t],ff[i0+m2,t],"o",color=colo)
+		end
+
+#=
+		figure()
+		PyPlot.plot(1:length(dmax),(dmax+dmin)./(dmax-dmin),"o")
+=#
+
+		title("u = $u")
+	end	
+
+	return ff
+end
+
+
 function cycle_proj(b::Array{Float64,2}, Lmin::Array{Float64,1})
 	m2 = length(Lmin)
 

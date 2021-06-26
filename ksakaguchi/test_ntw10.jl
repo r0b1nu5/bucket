@@ -113,14 +113,14 @@ xlabel("iteration")
 
 # #=
 f01 = (hγ2 - hγ1)*rand(m) .+ hγ1
-f01 = (hγ2 - hγ1)*(.1*rand(m) .+ .9) .+ hγ1
+#f01 = (hγ2 - hγ1)*(.1*rand(m) .+ .9) .+ hγ1
 #f1,f2,f3 = iterations3(f01,Bout,B,ω,u,Lmin,γ,λ,T)
-f1 = iterations4(f01,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
+f1 = iterations5(f01,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
 
 f02 = (hγ2 - hγ1)*rand(m) .+ hγ1
-f02 = (hγ2 - hγ1)*(.1*rand(m)) .+ hγ1
+#f02 = (hγ2 - hγ1)*(.1*rand(m)) .+ hγ1
 #f4,f5,f6 = iterations3(f02,Bout,B,ω,u,Lmin,γ,λ,T)
-f4 = iterations4(f02,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
+f4 = iterations5(f02,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
 
 f2 = 0*f1
 f3 = 0*f1
@@ -134,7 +134,7 @@ df4 = [norm(f4[:,t]-Ff) for t in 1:T]
 df5 = [norm(f5[:,t]-Ff) for t in 1:T]
 df6 = [norm(f6[:,t]-Ff) for t in 1:T]
 
-#=
+# #=
 df14 = [norm(f1[:,t]-f4[:,t]) for t in 1:T]
 df25 = [norm(f2[:,t]-f5[:,t]) for t in 1:T]
 df36 = [norm(f3[:,t]-f6[:,t]) for t in 1:T]
@@ -142,8 +142,9 @@ df36 = [norm(f3[:,t]-f6[:,t]) for t in 1:T]
 df14i = [norm(f1[:,t]-f4[:,t],Inf) for t in 1:T]
 df25i = [norm(f2[:,t]-f5[:,t],Inf) for t in 1:T]
 df36i = [norm(f3[:,t]-f6[:,t],Inf) for t in 1:T]
-=#
+# =#
 
+ #=
 P = dir_cycle_proj(B,ones(m))
 R = pinv(P)*P
 
@@ -154,6 +155,7 @@ df36 = [norm(R*(f3[:,t]-f6[:,t])) for t in 1:T]
 df14i = [norm(R*(f1[:,t]-f4[:,t]),Inf) for t in 1:T]
 df25i = [norm(R*(f2[:,t]-f5[:,t]),Inf) for t in 1:T]
 df36i = [norm(R*(f3[:,t]-f6[:,t]),Inf) for t in 1:T]
+# =#
 
 figure()
 subplot(1,3,1)
