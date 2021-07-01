@@ -360,6 +360,15 @@ function hi(f::Union{Array{Float64,1},LinRange{Float64}}, α::Float64=.1)
 	return [hi(f[i]) for i in 1:length(f)]
 end
 
+function hi(f::Array{Float64,2}, α::Float64=.1)
+	h = Array{Float64,2}(undef,size(f)[1],0)
+	for j in 1:size(f)[2]
+		h = [h hi(f[:,j])]
+	end
+
+	return h
+end
+
 function H(f::Float64, α::Float64=.1)
 	return h(-hi(f,α),α)
 end

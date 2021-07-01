@@ -175,6 +175,7 @@ T = Dict{String,Float64}(
 Ls = Dict{String,Array{Float64,1}}()
 γs = Dict{String,Array{Array{Float64,1},1}}()
 cmap = get_cmap("plasma")
+
 for ntw_run in to_plot
 	ntw,run = ntw_run
 	Ks = kss[ntw_run]
@@ -198,7 +199,7 @@ for ntw_run in to_plot
 	figure("[ℓ1] ntw: "*ntw*", run: $run")
 
 	subplot2grid((1,20),(0,0),colspan=9)
-	PyPlot.plot(ks/T[ntw],L,"-o")
+	PyPlot.plot(ks/T[ntw],L,"-o",color=cmap(.4))
 	xlabel("freq")
 	ylabel("obj")
 	twiny()

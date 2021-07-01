@@ -328,13 +328,12 @@ function iterations4(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Fl
 	P = dir_cycle_proj(B,Lmin)
 
 	f = πω(f0,Bout,ω,(hγm,hγp))
-	@info "$(f[1])"
 
 	ff = Array{Float64,2}(undef,m,0)
 #	ff = [ff f]
 
-	dmax = Array{Float64,1}()
-	dmin = Array{Float64,1}()
+#	dmax = Array:{Float64,1}()
+#	dmin = Array{Float64,1}()
 
 	for t in 1:T
 		@info "iter = $t"
@@ -343,9 +342,9 @@ function iterations4(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Fl
 		f = Tu_dir(f,u,P,C,λ*diagm(0 => ones(m)))
 		@info "$(maximum(f)/hγp):$(minimum(f)/(-hγm))"
 		
-		dx = 1 ./(sqrt.(1 .- (f .- sin(.1)).^2))
-		push!(dmax,maximum(dx))
-		push!(dmin,minimum(dx))
+#		dx = 1 ./(sqrt.(1 .- (f .- sin(.1)).^2))
+#		push!(dmax,maximum(dx))
+#		push!(dmin,minimum(dx))
 	end
 
 	if plot
@@ -397,40 +396,34 @@ function iterations4(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Fl
 	return ff
 end
 
-function iterations5(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, Lmin::Array{Float64,1}, γ::Float64, λ::Float64=.01, T::Int64=100, plot::Bool=true)
+function iterations4_fail(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, Lmin::Array{Float64,1}, γ::Float64, λ::Float64=.01, T::Int64=100, plot::Bool=true)
 	n,m = size(Bout)
 	m2 = Int(m/2)
 
 	hγm = h(-γ)
 	hγp = h(γ)
 
-	Bod = pinv(Bout)
+	P = dir_cycle_proj(B,Lmin)
 
-	A = [kerrange(Bout) Bod*ones(n)]
-
-	Ω = Bod*ω
-
-	Π = A*pinv(A)
-
-	f = πω(f0,Bout,ω,(hγm,hγp))
-	@info "$(f[1])"
+#	f = πω(f0,Bout,ω,(hγm,hγp))
+	f = f0
 
 	ff = Array{Float64,2}(undef,m,0)
 #	ff = [ff f]
 
-	dmax = Array{Float64,1}()
-	dmin = Array{Float64,1}()
+#	dmax = Array:{Float64,1}()
+#	dmin = Array{Float64,1}()
 
 	for t in 1:T
 		@info "iter = $t"
 
 		ff = [ff f]
-		f = Tu_dir(f,u,Π,C,λ*diagm(0 => ones(m)))
+		f = Tu_dir(f,u,P,C,λ*diagm(0 => ones(m)))
 		@info "$(maximum(f)/hγp):$(minimum(f)/(-hγm))"
 		
-		dx = 1 ./(sqrt.(1 .- (f .- sin(.1)).^2))
-		push!(dmax,maximum(dx))
-		push!(dmin,minimum(dx))
+#		dx = 1 ./(sqrt.(1 .- (f .- sin(.1)).^2))
+#		push!(dmax,maximum(dx))
+#		push!(dmin,minimum(dx))
 	end
 
 	if plot
@@ -482,6 +475,13 @@ function iterations5(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Fl
 	return ff
 end
 
+function check_monotonicity(ff1::Array{Float64,2}, ff2::Array{Float64,2}, P::Array{Float64,2})
+	bool1 = ff1 .< ff2
+	bool2 = dcc(hi(ff1)) .< dcc(hi(ff2))
+	bool3 = P*dcc(ff1) .< P*dcc(ff2)
+
+	return (bool1==bool2), (bool1==bool3), (bool2==bool3)
+end
 
 function cycle_proj(b::Array{Float64,2}, Lmin::Array{Float64,1})
 	m2 = length(Lmin)
@@ -537,7 +537,10 @@ function πω(f0::Array{Float64,1}, Bout::Array{Float64,2}, ω::Array{Float64,1}
 	
 	Bod = pinv(Bout)
 
-	A = [kerrange(Bout) Bod*ones(n)]
+	a = Bod*ones(n)
+	a /= norm(a)
+
+	A = [kerrange(Bout) a]
 
 	Ω = Bod*ω
 	O = Bod*ones(n)
@@ -563,3 +566,22 @@ function πω(f0::Array{Float64,1}, Bout::Array{Float64,2}, ω::Array{Float64,1}
 	return f3
 end
 
+function rand_init(ω::Array{Float64,1}, Bout::Array{Float64,2}, hγ::Tuple{Float64,Float64})
+	n,m = size(Bout)
+
+	Bod = pinv(Bout)
+
+	A = [kerrange(Bout) Bod*ones(n)]
+
+	Ω = Bod*ω
+
+	n,p = size(A)
+
+	f = 2*A*(2*rand(p) .- 1) + Ω
+	
+	while sum(hγ[1] .< f .< hγ[2]) < m
+		f = 2*A*(2*rand(p) .- 1) + Ω
+	end
+
+	return f
+end

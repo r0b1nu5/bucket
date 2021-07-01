@@ -165,6 +165,14 @@ function dcc(x::Array{Float64,1})
 	return [dcc(x[i]) for i in 1:length(x)]
 end
 
+function dcc(x::Array{Float64,2})
+	d = Array{Float64,2}(undef,size(x)[1],0)
+	for j in 1:size(x)[2]
+		d = [d dcc(x[:,j])]
+	end
+	
+	return d
+end
 
 
 function L2B(L::Array{Float64,2})
@@ -302,5 +310,28 @@ function rand_Q(n::Int64)
 	end
 
 	return R'*R
+end
+
+
+function find_ortho_vec(A::Array{Float64,2})
+	n,m = size(A)
+
+	ma = -1.
+	v = zeros(n)
+
+	while ma < 1e-8
+		v = 2*rand(n) .- 1
+
+		for i in 1:m
+			u = A[:,i]
+			u /= norm(u)
+			v -= dot(v,u)*u
+		end
+
+		v /= norm(v)
+		ma = maximum(abs.(v))
+	end
+
+	return v
 end
 

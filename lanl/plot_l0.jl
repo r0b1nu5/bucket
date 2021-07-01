@@ -2,6 +2,7 @@ using PyPlot, DelimitedFiles
 
 to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
 #to_plot = [("ntw3_1",1),("ntw3_2",1),("ntw3_3",1)]
+#to_plot = [("mysterious_forcing",1),]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -45,7 +46,8 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("naspi_12_",1) => (1,100,1),
 							 ("naspi_13_",1) => (1,100,1),
 							 ("mysterious_forcing_UK",1) => (1,10,1),
-							 ("mysterious_forcing_57",1) => (1,10,1)
+							 ("mysterious_forcing_57",1) => (1,10,1),
+							 ("mysterious_forcing",1) => (1,1500,1)
 							 )
 
 ns = Dict{String,Int64}(
@@ -83,6 +85,7 @@ ns = Dict{String,Int64}(
 			"naspi_13_" => 58,
 			"mysterious_forcing_UK" => 120,
 			"mysterious_forcing_57" => 57,
+			"mysterious_forcing" => 23,
 			)
 
 node_ids = Dict{String,Array{Any,1}}(
@@ -120,6 +123,7 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "naspi_13_" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",',')),
 				       "mysterious_forcing_UK" => Array(1:120),
 				       "mysterious_forcing_57" => Array(1:57),
+				       "mysterious_forcing" => Array(1:23),
 				       )
 
 T = Dict{String,Float64}(
@@ -157,11 +161,14 @@ T = Dict{String,Float64}(
 		       "naspi_13_" => 1598/30,
 		       "mysterious_forcing_UK" => 50000*.01,
 		       "mysterious_forcing_57" => 200000*2e-3,
+		       "mysterious_forcing" => 3000*.1
 		       )
 
 
 
 Ls = Dict{String,Array{Float64,2}}()
+cmap = get_cmap("plasma")
+
 for ntw_run in to_plot
 	ntw,run = ntw_run
 	ls = 1:ns[ntw]
@@ -180,13 +187,14 @@ for ntw_run in to_plot
 	node_id = node_ids[ntw][iii[1]]
 	freq = round(ks[iii[2]]/T[ntw],digits=3)
 
-	sort_nodes = sortslices([L[:,iii[2]] node_ids[ntw]],dims=1)
+	sort_nodes = sortslices([L[:,iii[2]] node_ids[ntw] Array(1:length(ls))],dims=1)
 	
 	figure("[ℓ0] ntw: "*ntw*", run: $run")
 	
 	subplot2grid((1,7),(0,0),colspan=3)
 	for i in 1:length(ls)
-		PyPlot.plot(ks/T[ntw],L[i,:],"-o",label="l = $(ls[i])")
+		j = sort_nodes[i,3]
+		PyPlot.plot(ks/T[ntw],L[j,:],"-o",label="l = $(ls[j])",color=cmap((i-1)/(length(ls)-1)))
 	end
 	xlabel("freq")
 	ylabel("objective")
@@ -196,7 +204,8 @@ for ntw_run in to_plot
 	
 	subplot2grid((1,7),(0,3),colspan=3)
 	for i in 1:length(ls)
-		PyPlot.plot(ks/T[ntw],L[i,:],"-o",label="l = $(ls[i])")
+		j = sort_nodes[i,3]
+		PyPlot.plot(ks/T[ntw],L[j,:],"-o",label="l = $(ls[j])",color=cmap((i-1)/(length(ls)-1)))
 	end
 	xlabel("freq")
 	ylabel("objective")
@@ -206,12 +215,15 @@ for ntw_run in to_plot
 	title("Node id: $(node_id) \n frequency: $freq [Hz]")
 	
 	subplot2grid((1,7),(0,6),colspan=1)
-	for i in 1:length(ls)
-		PyPlot.text(0,-i,sort_nodes[i,2])
-	end
-	axis([-.1,1.1,-59,0])
 	xticks([])
 	yticks([])
+	twinx()
+	yticks(-ls,sort_nodes[ls,2])
+	for i in 1:length(ls)
+		PyPlot.plot([0,1],[-i,-i],color=cmap((i-1)/(length(ls)-1)),linewidth=2)
+#		PyPlot.text(0,-i,sort_nodes[i,2])
+	end
+	axis([-.1,1.1,-maximum(ls)-1,-minimum(ls)+1])
 end
 
 					   

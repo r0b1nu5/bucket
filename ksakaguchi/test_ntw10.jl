@@ -34,6 +34,7 @@ T = 200 # Number of iterations
 
 #Lmin = 1.0*ones(m2) # Scaling for the cutset projection. Lower bounds on the coupling derivatives.
 Lmin = 1.0*ones(m)
+P = dir_cycle_proj(B,Lmin)
 
  #=
 f01 = (hγ2 - hγ1)*rand(m) .+ hγ1
@@ -113,14 +114,19 @@ xlabel("iteration")
 
 # #=
 f01 = (hγ2 - hγ1)*rand(m) .+ hγ1
-#f01 = (hγ2 - hγ1)*(.1*rand(m) .+ .9) .+ hγ1
+#f01 = hγ1 .+ .01*rand(m)
+#f01 = [hγ1 .+ .01*rand(m2);hγ2 .- .01*rand(m2)]
 #f1,f2,f3 = iterations3(f01,Bout,B,ω,u,Lmin,γ,λ,T)
-f1 = iterations5(f01,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
+f1 = iterations4(f01,θf,Bout,B,ω,u,Lmin,γ,λ,T,true)
 
 f02 = (hγ2 - hγ1)*rand(m) .+ hγ1
-#f02 = (hγ2 - hγ1)*(.1*rand(m)) .+ hγ1
+#f02 = hγ1 .+ .01*rand(m)
+#f02 = [hγ1 .+ .01*rand(m2);hγ2 .- .01*rand(m2)]
 #f4,f5,f6 = iterations3(f02,Bout,B,ω,u,Lmin,γ,λ,T)
-f4 = iterations5(f02,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
+f4 = iterations4(f02,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
+
+t1,t2,t3 = check_monotonicity(f1,f4,P)
+@info "$t1, $t2, $t3"
 
 f2 = 0*f1
 f3 = 0*f1
