@@ -475,6 +475,80 @@ function iterations4_fail(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Arr
 	return ff
 end
 
+function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, C::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, ρ1::Float64, ρ2::Float64, T::Int64=100, plot::Bool=true, verb::Bool=false)
+	n,m = size(Bout)
+	m2 = Int(m/2)
+
+	hγm = h(-γ)
+	hγp = h(γ)
+
+	b = B[:,1:m2]
+	P = cycle_proj(b,ones(m2))
+#	X = diagm(0 => ones(n)) - ones(n,n)/n
+	Cdag = pinv(C)
+
+	Δ = Δ0
+	Δs = Array{Float64,2}(undef,m2,0)
+
+	for t in 1:T
+		if verb
+			@info "iter = $t"
+		end
+
+		Δs = [Δs Δ]
+		
+		Δ = Su(Δ,ω,b,Bout,P,Cdag,u,ρ1,ρ2)
+	end
+
+	if plot
+		i0 = 1
+		Δf = B'*θf
+		γs = LinRange(-π/2+α,π/2-α,200)
+		x = Array{Float64,1}()
+		push!(x,h(Δ0[i0]))
+		y = Array{Float64,1}()
+		push!(y,h(-Δ0[i0]))
+
+		figure()
+		
+#		subplot(1,2,1)
+		PyPlot.plot(h(γs),h(-γs),"--k")
+		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C8",markersize=20.)
+		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C1",markersize=13.)
+		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C3",markersize=5.)
+
+		for t in 1:T
+			push!(x,h(Δs[i0,t]))
+			push!(y,h(-Δs[i0,t]))
+		end
+
+#		subplot(1,2,1)
+		PyPlot.plot(x,y,"-k")
+		
+		xlabel("f_e")
+		ylabel("f_{\bar{e}}")
+	
+		PyPlot.plot(h(Δ0[i0]),h(-Δ0[i0]),"ok")
+		for t in 1:T
+			colo = "C$(mod(t-1,10))"
+
+#			subplot(1,2,1)
+			PyPlot.plot(h(Δs[i0,t]),h(-Δs[i0,t]),"o",color=colo)
+		end
+
+#=
+		figure()
+		PyPlot.plot(1:length(dmax),(dmax+dmin)./(dmax-dmin),"o")
+=#
+
+		title("u = $u")
+	end	
+
+	return Δs
+end
+
+
+
 function check_monotonicity(ff1::Array{Float64,2}, ff2::Array{Float64,2}, P::Array{Float64,2})
 	bool1 = ff1 .< ff2
 	bool2 = dcc(hi(ff1)) .< dcc(hi(ff2))
@@ -482,7 +556,7 @@ function check_monotonicity(ff1::Array{Float64,2}, ff2::Array{Float64,2}, P::Arr
 
 	return (bool1==bool2), (bool1==bool3), (bool2==bool3)
 end
-
+#
 function cycle_proj(b::Array{Float64,2}, Lmin::Array{Float64,1})
 	m2 = length(Lmin)
 
@@ -513,6 +587,10 @@ function dir_cycle_proj(B::Array{Float64,2}, Lmin::Array{Float64,1})
 	return Im - D*B'*pinv(Bout*D*B')*Bout
 end
 
+		
+function Su(Δ::Array{Float64,1}, ω::Array{Float64,1}, b::Array{Float64,2}, Bout::Array{Float64,2}, P::Array{Float64,2}, Cdag::Array{Float64,2}, u::Array{Int64,1}, ρ1::Float64, ρ2::Float64)
+	return Δ + ρ1*pinv(b)*(ω - Bout*h([Δ;-Δ])) - ρ2*P*(Δ - 2π*Cdag*u)
+end
 
 function Tu(Δ1::Array{Float64,1}, Δ2::Array{Float64,1}, u::Array{Int64,1}, P::Array{Float64,2}, C::Array{Float64,2}, λ::Float64=1.)
 	m2 = length(Δ1)

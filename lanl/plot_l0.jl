@@ -1,8 +1,7 @@
 using PyPlot, DelimitedFiles
 
 to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
-#to_plot = [("ntw3_1",1),("ntw3_2",1),("ntw3_3",1)]
-#to_plot = [("mysterious_forcing",1),]
+#to_plot = [("pen_2",2),]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -45,7 +44,7 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("naspi_11_",1) => (1,100,1),
 							 ("naspi_12_",1) => (1,100,1),
 							 ("naspi_13_",1) => (1,100,1),
-							 ("mysterious_forcing_UK",1) => (1,10,1),
+							 ("mysterious_forcing_UK",1) => (1,20,1),
 							 ("mysterious_forcing_57",1) => (1,10,1),
 							 ("mysterious_forcing",1) => (1,1500,1)
 							 )

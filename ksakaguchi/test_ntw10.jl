@@ -29,7 +29,7 @@ Ff = h([Δf;-Δf]) # Real flows
 
 #u = [0,1,0] # Tentative winding vector
 u = uf
-T = 200 # Number of iterations
+T = 1000 # Number of iterations
 λ = .1 # Scaling parameter for the fixed point iteration Tu
 
 #Lmin = 1.0*ones(m2) # Scaling for the cutset projection. Lower bounds on the coupling derivatives.
@@ -113,18 +113,30 @@ xlabel("iteration")
 
 
 # #=
-f01 = (hγ2 - hγ1)*rand(m) .+ hγ1
+#f01 = (hγ2 - hγ1)*rand(m) .+ hγ1
 #f01 = hγ1 .+ .01*rand(m)
 #f01 = [hγ1 .+ .01*rand(m2);hγ2 .- .01*rand(m2)]
 #f1,f2,f3 = iterations3(f01,Bout,B,ω,u,Lmin,γ,λ,T)
-f1 = iterations4(f01,θf,Bout,B,ω,u,Lmin,γ,λ,T,true)
+#f1 = iterations4(f01,θf,Bout,B,ω,u,Lmin,γ,λ,T,true)
 
-f02 = (hγ2 - hγ1)*rand(m) .+ hγ1
+ρ1 = .1
+ρ2 = .1
+
+Δ01 = (2*rand(m2) .- 1)*γ
+Δ1 = iterations5(Δ01,θf,Bout,B,C,ω,u,ρ1,ρ2,T,false)
+f1 = h([Δ1;-Δ1])
+
+#f02 = (hγ2 - hγ1)*rand(m) .+ hγ1
 #f02 = hγ1 .+ .01*rand(m)
 #f02 = [hγ1 .+ .01*rand(m2);hγ2 .- .01*rand(m2)]
 #f4,f5,f6 = iterations3(f02,Bout,B,ω,u,Lmin,γ,λ,T)
-f4 = iterations4(f02,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
+#f4 = iterations4(f02,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
 
+Δ02 = (2*rand(m2) .- 1)*γ
+Δ4 = iterations5(Δ02,θf,Bout,B,C,ω,u,ρ1,ρ2,T,false)
+f4 = h([Δ4;-Δ4])
+
+##=
 t1,t2,t3 = check_monotonicity(f1,f4,P)
 @info "$t1, $t2, $t3"
 
