@@ -1,3 +1,5 @@
+using PyPlot
+
 function get_rgb(qmin::Int,qmax::Int)
 	rgb = Dict{Int,Tuple{Float64,Float64,Float64}}()
 	
