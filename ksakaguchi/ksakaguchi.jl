@@ -1,4 +1,4 @@
-using DelimitedFiles, LinearAlgebra, LightGraphs, OrdinaryDiffEq, NetworkDynamics
+using DelimitedFiles, LinearAlgebra, LightGraphs, OrdinaryDiffEq, NetworkDynamics, PyPlot
 
 include("tools.jl")
 
@@ -384,6 +384,80 @@ end
 
 function H(f::Union{Array{Float64,1},LinRange{Float64}}, α::Float64=.1)
 	return [H(f[i]) for i in 1:length(f)]
+end
+
+
+function ksakaguchi_2nd(L::Array{Float64,2}, ω::Array{Float64,1}, d::Array{Float64,1}, θ0::Array{Float64,1}, θd0::Array{Float64,1}, α::Float64, save_history::Bool=false, verb::Bool=false, h::Float64=.01, thres::Float64=1e-5, max_iter::Int64=100000)
+	B,w = L2B(L)
+	W = diagm(0 => w)
+	n,m = size(B)
+	B1 = B.*(B .> 0)
+	B2 = -B.*(B .< 0)
+	B12 = [B1 B2]
+	BB = [B -B]
+	WW = [W zeros(m,m);zeros(m,m) W]
+	D = diagm(0 => d)
+	
+	x = [θ0;θd0]
+	xs = x
+
+	dxs = Array{Float64,2}(undef,2*n,0)
+
+	err = 1000.
+	iter = 0
+	c = 0
+
+	while err > thres && iter < max_iter
+		iter += 1
+
+		if iter%1000 == 0
+			c += 1
+			if verb
+				@info "iter: $iter, err = $(round(err,digits=5))"
+			end
+	
+			writedlm("temp_data/temp_x_$c.csv",xs[:,1:end-1],',')
+			xs = xs[:,end]
+
+			writedlm("temp_data/temp_dx_$c.csv",dxs[:,1:end],',')
+			dxs = Array{Float64,2}(undef,2*n,0)
+		end
+
+		θ = x[1:n]
+		θd = x[(n+1):(2*n)]
+
+		k11 = θd
+		k21 = ω - D*θd - B12*WW*(sin.(BB'*θ .- α) .+ sin(α))
+		k12 = θd + h/2*k21
+		k22 = ω - D*(θd + h/2*k21) - B12*WW*(sin.(BB'*(θ + h/2*k11) .- α) .+ sin(α))
+		k13 = θd + h/2*k22
+		k23 = ω - D*(θd + h/2*k22) - B12*WW*(sin.(BB'*(θ + h/2*k12) .- α) .+ sin(α))
+		k14 = θd + h*k23
+		k24 = ω - D*(θd + h*k23) - B12*WW*(sin.(BB'*(θ + h*k13) .- α) .+ sin(α))
+
+		dθ = (k11 + 2*k12 + 2*k13 + k14)/6
+		dθd = (k21 + 2*k22 + 2*k23 + k24)/6
+		dx = [dθ;dθd]
+		x += h*dx
+
+		xs = [xs x]
+		dxs = [dxs dx]
+
+		err = maximum(dx)-minimum(dx)
+	end
+
+	Xs = Array{Float64,2}(undef,2*n,0)
+	dXs = Array{Float64,2}(undef,2*n,0)
+	for i in 1:c
+		Xs = [Xs readdlm("temp_data/temp_x_$i.csv",',')]
+		rm("temp_data/temp_x_$i.csv")
+		dXs = [dXs readdlm("temp_data/temp_dx_$i.csv",',')]
+		rm("temp_data/temp_dx_$i.csv")
+	end
+	Xs = [Xs xs]
+	dXs = [dXs dxs]
+
+	return Xs,dXs,err,iter
 end
 
 

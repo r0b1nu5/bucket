@@ -45,7 +45,7 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("naspi_12_",1) => (1,100,1),
 							 ("naspi_13_",1) => (1,100,1),
 							 ("mysterious_forcing_UK",1) => (1,20,1),
-							 ("mysterious_forcing_57",1) => (1,10,1),
+							 ("mysterious_forcing_57",1) => (1,100,1),
 							 ("mysterious_forcing",1) => (1,1500,1)
 							 )
 
