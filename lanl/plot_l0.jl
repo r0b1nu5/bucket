@@ -1,6 +1,7 @@
 using PyPlot, DelimitedFiles
 
 to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
+to_plot = [("ntw20_multisine",1),("ntw20_saw",1),("ntw20_step",1)]
 #to_plot = [("pen_2",2),]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
@@ -46,7 +47,10 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("naspi_13_",1) => (1,100,1),
 							 ("mysterious_forcing_UK",1) => (1,20,1),
 							 ("mysterious_forcing_57",1) => (1,100,1),
-							 ("mysterious_forcing",1) => (1,1500,1)
+							 ("mysterious_forcing",1) => (1,1500,1),
+							 ("ntw20_multisine",1) => (10,200,10),
+							 ("ntw20_saw",1) => (10,200,10),
+							 ("ntw20_step",1) => (10,200,10),
 							 )
 
 ns = Dict{String,Int64}(
@@ -85,6 +89,9 @@ ns = Dict{String,Int64}(
 			"mysterious_forcing_UK" => 120,
 			"mysterious_forcing_57" => 57,
 			"mysterious_forcing" => 23,
+			"ntw20_multisine" => 20,
+			"ntw20_saw" => 20,
+			"ntw20_step" => 20,
 			)
 
 node_ids = Dict{String,Array{Any,1}}(
@@ -123,6 +130,9 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "mysterious_forcing_UK" => Array(1:120),
 				       "mysterious_forcing_57" => Array(1:57),
 				       "mysterious_forcing" => Array(1:23),
+				       "ntw20_multisine" => Array(1:20),
+				       "ntw20_saw" => Array(1:20),
+				       "ntw20_step" => Array(1:20),
 				       )
 
 T = Dict{String,Float64}(
@@ -160,7 +170,10 @@ T = Dict{String,Float64}(
 		       "naspi_13_" => 1598/30,
 		       "mysterious_forcing_UK" => 50000*.01,
 		       "mysterious_forcing_57" => 200000*2e-3,
-		       "mysterious_forcing" => 3000*.1
+		       "mysterious_forcing" => 3000*.1,
+		       "ntw20_multisine" => 100.,
+		       "ntw20_saw" => 100.,
+		       "ntw20_step" => 100.,
 		       )
 
 
@@ -192,7 +205,7 @@ for ntw_run in to_plot
 	
 	subplot2grid((1,7),(0,0),colspan=3)
 	for i in 1:length(ls)
-		j = sort_nodes[i,3]
+		j = Int64(sort_nodes[i,3])
 		PyPlot.plot(ks/T[ntw],L[j,:],"-o",label="l = $(ls[j])",color=cmap((i-1)/(length(ls)-1)))
 	end
 	xlabel("freq")

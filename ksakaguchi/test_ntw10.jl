@@ -123,7 +123,7 @@ xlabel("iteration")
 ρ2 = .1
 
 Δ01 = (2*rand(m2) .- 1)*γ
-Δ1 = iterations5(Δ01,θf,Bout,B,C,ω,u,ρ1,ρ2,T,false)
+Δ1 = iterations5(Δ01,θf,Bout,B,C,ω,u,ρ1,T,false)
 f1 = h([Δ1;-Δ1])
 
 #f02 = (hγ2 - hγ1)*rand(m) .+ hγ1
@@ -133,7 +133,7 @@ f1 = h([Δ1;-Δ1])
 #f4 = iterations4(f02,θf,Bout,B,ω,u,Lmin,γ,λ,T,false)
 
 Δ02 = (2*rand(m2) .- 1)*γ
-Δ4 = iterations5(Δ02,θf,Bout,B,C,ω,u,ρ1,ρ2,T,false)
+Δ4 = iterations5(Δ02,θf,Bout,B,C,ω,u,ρ1,T,false)
 f4 = h([Δ4;-Δ4])
 
 ##=

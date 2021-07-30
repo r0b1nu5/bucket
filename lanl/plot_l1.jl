@@ -1,6 +1,7 @@
 using PyPlot, DelimitedFiles
 
 to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
+to_plot = [("ntw20_multisine",1),("ntw20_saw",1),("ntw20_step",1)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -48,6 +49,9 @@ kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("naspi_a3",1) => (1,100,1),
 							 ("mysterious_forcing_UK",1) => (1,120,1),
 							 ("mysterious_forcing_57",1) => (1,57,1),
+							 ("ntw20_multisine",1) => (10,200,10),
+							 ("ntw20_saw",1) => (10,200,10),
+							 ("ntw20_step",1) => (10,200,10),
 							 )
 
 ns = Dict{String,Int64}(
@@ -88,6 +92,9 @@ ns = Dict{String,Int64}(
 			"naspi_a3" => 58,
 			"mysterious_forcing_UK" => 120,
 			"mysterious_forcing_57" => 57,
+			"ntw20_multisine" => 20,
+			"ntw20_saw" => 20,
+			"ntw20_step" => 20,
 			)
 
 node_ids = Dict{String,Array{Any,1}}(
@@ -128,6 +135,9 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "naspi_a3" => vec(readdlm("data_naspi/naspi_ids_A3.csv",',')),
 				       "mysterious_forcing_UK" => Array(1:120),
 				       "mysterious_forcing_57" => Array(1:57),
+				       "ntw20_multisine" => Array(1:20),
+				       "ntw20_saw" => Array(1:20),
+				       "ntw20_step" => Array(1:20),
 				       )
 
 T = Dict{String,Float64}(
@@ -168,6 +178,9 @@ T = Dict{String,Float64}(
 		       "naspi_a3" => 1598/30,
 		       "mysterious_forcing_UK" => 50000*.01,
 		       "mysterious_forcing_57" => 200000*2e-3,
+		       "ntw20_multisine" => 100.,
+		       "ntw20_saw" => 100.,
+		       "ntw20_step" => 100.,
 		       )
 
 
@@ -207,19 +220,19 @@ for ntw_run in to_plot
 	xlabel("k")
 
 	subplot2grid((1,20),(0,10),colspan=9)
-	for i in 1:length(ks)
-		α = cmap(1 - (L[i] - Lma)/(Lmi - Lma))
-		PyPlot.plot(1:length(γ[i]),γ[i],color=α)
-	end
-	PyPlot.plot(jjj,γ[iii][jjj],"or",markersize=10)
-	PyPlot.plot(jjj,γ[iii][jjj],"ow",markersize=7)
+#	for i in 1:length(ks)
+#		α = cmap(1 - (L[i] - Lma)/(Lmi - Lma))
+#		PyPlot.plot(1:length(γ[i]),γ[i],color=α)
+#	end
+#	PyPlot.plot(jjj,γ[iii][jjj],"or",markersize=10)
+#	PyPlot.plot(jjj,γ[iii][jjj],"ow",markersize=7)
 	PyPlot.plot(1:length(γ[iii]),γ[iii],"-o",color=cmap(0.),label="Min objective, k = $(ks[iii])")
-	PyPlot
 	legend()
 	xlabel("node idx")
 	ylabel("amplitude")
 	title("Node id: $(node_id) \n frequency: $freq [Hz]")
 
+#=
 	subplot2grid((1,20),(0,19),colspan=1)
 	yticks([])
 	twinx()
@@ -230,6 +243,7 @@ for ntw_run in to_plot
 	axis([0,1,Lmi,Lma])
 	xticks([])
 	ylabel("obj")
+=#
 end
 
 					   

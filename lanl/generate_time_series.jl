@@ -99,7 +99,7 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 	return Xf
 end
 
-function generate_multiforced_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, forcing::Tuple{Array{Float64,1}, Array{Float64,1}, Array{Float64,1}}, T::Int64, dt::Float64, sig::Array{Float64,1},save::Bool = true)
+function generate_multisine_time_series(ntw::String, L::Array{Float64,2}, m::Array{Float64,1}, d::Array{Float64,1}, forcing::Tuple{Array{Float64,1}, Array{Float64,1}, Array{Float64,1}}, T::Int64, dt::Float64, sig::Array{Float64,1},save::Bool = true)
 	n = size(L)[1]
 	script_id = rand(1:1000)
 	
@@ -146,7 +146,7 @@ function generate_multiforced_time_series(ntw::String, L::Array{Float64,2}, m::A
 	end
 	
 	if save
-		writedlm("data/"*ntw*"_multiforced_$(maximum(abs.(f)))_$(T)_$(dt).csv",Xf,',')
+		writedlm("data/"*ntw*"_multisine_$(maximum(abs.(f)))_$(T)_$(dt).csv",Xf,',')
 	end
 	
 	return Xf

@@ -475,7 +475,7 @@ function iterations4_fail(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Arr
 	return ff
 end
 
-function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, C::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, ρ1::Float64, ρ2::Float64, T::Int64=100, plot::Bool=true, verb::Bool=false)
+function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, C::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, δ::Float64, T::Int64=100, plot::Bool=true, verb::Bool=false)
 	n,m = size(Bout)
 	m2 = Int(m/2)
 
@@ -487,7 +487,9 @@ function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{F
 #	X = diagm(0 => ones(n)) - ones(n,n)/n
 	Cdag = pinv(C)
 
-	Δ = Δ0
+	Ld = pinv(b*b')
+
+	Δ = b'*Ld*b*Δ0 + 2π*Cdag*u
 	Δs = Array{Float64,2}(undef,m2,0)
 
 	for t in 1:T
@@ -497,7 +499,7 @@ function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{F
 
 		Δs = [Δs Δ]
 		
-		Δ = Su(Δ,ω,b,Bout,P,Cdag,u,ρ1,ρ2)
+		Δ = Su(Δ,ω,b,Bout,P,Ld,δ)
 	end
 
 	if plot
@@ -588,8 +590,8 @@ function dir_cycle_proj(B::Array{Float64,2}, Lmin::Array{Float64,1})
 end
 
 		
-function Su(Δ::Array{Float64,1}, ω::Array{Float64,1}, b::Array{Float64,2}, Bout::Array{Float64,2}, P::Array{Float64,2}, Cdag::Array{Float64,2}, u::Array{Int64,1}, ρ1::Float64, ρ2::Float64)
-	return Δ + ρ1*pinv(b)*(ω - Bout*h([Δ;-Δ])) - ρ2*P*(Δ - 2π*Cdag*u)
+function Su(Δ::Array{Float64,1}, ω::Array{Float64,1}, b::Array{Float64,2}, Bout::Array{Float64,2}, P::Array{Float64,2}, D::Array{Float64,2}, δ::Float64)
+	return Δ - δ*b'*D*(Bout*h([Δ;-Δ]) - ω)
 end
 
 function Tu(Δ1::Array{Float64,1}, Δ2::Array{Float64,1}, u::Array{Int64,1}, P::Array{Float64,2}, C::Array{Float64,2}, λ::Float64=1.)

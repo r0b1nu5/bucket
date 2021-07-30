@@ -10,13 +10,13 @@ function generate_distr(n_year::Int64, ppyear::Int64, ρ0::Float64, amin::Int64=
 	authors = Dict{Int64,Any}() # contains the list of all authors with their academic age and the number of papers published
 	p0 = floor(Int64,ppyear/6)
 	for i in 1:p0
-		authors[i] = Dict{String,Any}()
+		authors[i] = Dict{String,Int64}()
 		authors[i]["age"] = 1
 		authors[i]["npaper"] = 1
-		authors[i+p0] = Dict{String,Any}()
+		authors[i+p0] = Dict{String,Int64}()
 		authors[i+p0]["age"] = 1
 		authors[i+p0]["npaper"] = 2
-		authors[i+2*p0] = Dict{String,Any}()
+		authors[i+2*p0] = Dict{String,Int64}()
 		authors[i+2*p0]["age"] = 1
 		authors[i+2*p0]["npaper"] = 3
 	end
@@ -34,16 +34,19 @@ function generate_distr(n_year::Int64, ppyear::Int64, ρ0::Float64, amin::Int64=
 		γ = gamma(Ns)
 
 		for k in 1:length(Ns)
-			Tk = get_Tk(k,Ns[k],γ,n_old)
+			Tk = get_Tk(k,Ns[k],γ,ppyear)
 
 			ages = get_ages(authors,authks[k])
-
-			for p in 1:Tk
-				id = rand_age(ages,ρ,amin,amax)
-				if id == 0
-					authors[length(authors)+1] = Dict{String,Any}("age" => 1, "npaper" => 1)
-				else
-					authors[authks[k][id]]["npaper"] += 1
+			
+			if length(ages) > 0
+				ids = rand_age(Tk,ages,ρ,amin,amax)
+				
+				for i in ids
+					if i == 0
+						authors[length(authors)+1] = Dict{String,Any}("age" => 1, "npaper" => 1)
+					else
+						authors[authks[k][i]]["npaper"] += 1
+					end
 				end
 			end
 		end
@@ -102,9 +105,9 @@ function share(a::Array{Int64,1}, amin::Int64=40, amax::Int64=60)
 	return [share(a[i],amin,amax) for i in 1:length(a)]
 end
 
-# atributes a new paper to an author considering their age. 
+# atributes p new paper to an author considering their age. 
 # with proba ρ, the paper is atributed to a new author.
-function rand_age(ages::Array{Int64,1}, ρ::Float64, amin::Int64=40, amax::Int64=60)
+function rand_age(p::Int64, ages::Array{Int64,1}, ρ::Float64, amin::Int64=40, amax::Int64=60)
 	sh = share(ages,amin,amax)
 	ids = Array{Int64,1}()
 	for i in 1:length(ages)
@@ -114,8 +117,8 @@ function rand_age(ages::Array{Int64,1}, ρ::Float64, amin::Int64=40, amax::Int64
 	n_new = floor(Int64,ρ*length(ids))+1
 	ids = [zeros(Int64,n_new);ids]
 
-	x = rand()
-	ix = ceil(Int64,x*length(ids))
+	x = rand(p)
+	ix = ceil.(Int64,x*length(ids))
 
 	return ids[ix]
 end
