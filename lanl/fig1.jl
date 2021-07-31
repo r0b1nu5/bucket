@@ -38,29 +38,33 @@ figure("fig1_$(run)",(19,4.5))
 
 subplot2grid((2,44),(0,0),colspan=10,rowspan=1)
 for i in 1:3
-	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i,1:51]))
+	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i,1:51]),color=cmap((i-1)/2))
 end
+PyPlot.text(.95,5500.,"(a)")
 
 subplot2grid((2,44),(1,0),colspan=10,rowspan=1)
 for i in 1:3
-	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i+3,1:51]))
+	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i+3,1:51]),color=cmap((i-1)/2))
 end
+PyPlot.text(.95,19000.,"(b)")
 
 subplot2grid((2,44),(0,11),colspan=10,rowspan=2)
 for i in 1:3
-	PyPlot.plot(ks/T,L0[i,:],"-")
+	PyPlot.plot(ks/T,L0[i,:],"-",color=cmap((i-1)/2))
 end
+PyPlot.text(.95,-14.57,"(c)")
 xlabel("freq")
 ylabel("obj")
 
 subplot2grid((2,44),(0,22),colspan=10,rowspan=2)
-PyPlot.plot(ks/T,L1,color="C3")
+PyPlot.plot(ks/T,L1,color=cmap(.4))
 #= 
 for i in 1:length(L1)
 	α = cmap(1 - (L1[i] - Lma)/(Lmi - Lma))
 	PyPlot.plot(ks[i]/T,L1[i],".",color=α)
 end
 =#
+PyPlot.text(.95,-14.57,"(d)")
 xlabel("freq")
 ylabel("obj")
 
@@ -69,6 +73,7 @@ for i in 1:length(γ1)
 	α = cmap(1 - (L1[i] - Lma)/(Lmi - Lma))
 	PyPlot.plot(1:length(γ1[i]),γ1[i],"o",color=α)
 end
+PyPlot.text(2.9,.85,"(e)")
 xlabel("node id")
 ylabel("amplitude")
 

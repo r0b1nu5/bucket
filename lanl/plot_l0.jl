@@ -2,7 +2,7 @@ using PyPlot, DelimitedFiles
 
 to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
 to_plot = [("ntw20_multisine",1),("ntw20_saw",1),("ntw20_step",1)]
-#to_plot = [("pen_2",2),]
+to_plot = [("pen_2",2),]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),

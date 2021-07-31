@@ -1,13 +1,13 @@
 using PyPlot, DelimitedFiles
 
-figure("fig5")
+figure("fig5",(15.,10.))
 cmap = get_cmap("plasma")
 
 f = .3
 t = LinRange(0,10,200)
 
 # Multi-sine
-subplot2grid((3,38),(0,0),colspan=9)
+subplot2grid((3,40),(0,0),colspan=9)
 PyPlot.plot(t,sin.(2π*f*t) + sin.(4π*f*t) + sin.(6π*f*t))
 
 # l0
@@ -23,7 +23,7 @@ Lmi,iii = findmin(L)
 freq = round(ks[iii[2]]/100.,digits=3)
 sort_nodes = sortslices([L[:,iii[2]] Array(1:20) Array(1:length(ls))],dims=1)
 
-subplot2grid((3,38),(0,9),colspan=9)
+subplot2grid((3,40),(0,10),colspan=9)
 for i in 1:length(ls)
 	j = Int.(sort_nodes[i,3])
 	PyPlot.plot(ks/100.,L[j,:],"-",color=cmap((i-1)/(length(ls)-1)))
@@ -46,7 +46,7 @@ Lma = maximum(L)
 nma,jjj = findmax(γ[iii])
 freq = round(ks[iii]/100.,digits=3)
 
-subplot2grid((3,38),(0,18),colspan=9)
+subplot2grid((3,40),(0,20),colspan=9)
 PyPlot.plot(ks/100.,L,"-",color=cmap(.4))
 xlabel("freq")
 ylabel("obj")
@@ -54,7 +54,7 @@ twiny()
 PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
 xlabel("k")
 
-subplot2grid((3,38),(0,27),colspan=9)
+subplot2grid((3,40),(0,30),colspan=9)
 #for j in 1:length(ks)
 #	α = cmap(1 - (L[j] - Lma)/(Lmi - Lma))
 #	PyPlot.plot(1:length(γ[i]),γ[i],color=α)
@@ -82,7 +82,7 @@ ylabel("obj")
 
 
 # Saw
-subplot2grid((3,38),(1,0),colspan=9)
+subplot2grid((3,40),(1,0),colspan=9)
 PyPlot.plot(t,2*mod.(f*t,1.) .- 1)
 
 # l0
@@ -98,7 +98,7 @@ Lmi,iii = findmin(L)
 freq = round(ks[iii[2]]/100.,digits=3)
 sort_nodes = sortslices([L[:,iii[2]] Array(1:20) Array(1:length(ls))],dims=1)
 
-subplot2grid((3,38),(1,9),colspan=9)
+subplot2grid((3,40),(1,10),colspan=9)
 for i in 1:length(ls)
 	j = Int.(sort_nodes[i,3])
 	PyPlot.plot(ks/100.,L[j,:],"-",color=cmap((i-1)/(length(ls)-1)))
@@ -121,7 +121,7 @@ Lma = maximum(L)
 nma,jjj = findmax(γ[iii])
 freq = round(ks[iii]/100.,digits=3)
 
-subplot2grid((3,38),(1,18),colspan=9)
+subplot2grid((3,40),(1,20),colspan=9)
 PyPlot.plot(ks/100.,L,"-",color=cmap(.4))
 xlabel("freq")
 ylabel("obj")
@@ -129,7 +129,7 @@ twiny()
 PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
 xlabel("k")
 
-subplot2grid((3,38),(1,27),colspan=9)
+subplot2grid((3,40),(1,30),colspan=9)
 #for j in 1:length(ks)
 #	α = cmap(1 - (L[j] - Lma)/(Lmi - Lma))
 #	PyPlot.plot(1:length(γ[i]),γ[i],color=α)
@@ -155,7 +155,7 @@ ylabel("obj")
 
 
 # Step
-subplot2grid((3,38),(2,0),colspan=9)
+subplot2grid((3,40),(2,0),colspan=9)
 PyPlot.plot(t,2*mod.(floor.(f*t*2),2).-1)
 
 # l0
@@ -171,7 +171,7 @@ Lmi,iii = findmin(L)
 freq = round(ks[iii[2]]/100.,digits=3)
 sort_nodes = sortslices([L[:,iii[2]] Array(1:20) Array(1:length(ls))],dims=1)
 
-subplot2grid((3,38),(2,9),colspan=9)
+subplot2grid((3,40),(2,10),colspan=9)
 for i in 1:length(ls)
 	j = Int.(sort_nodes[i,3])
 	PyPlot.plot(ks/100.,L[j,:],"-",color=cmap((i-1)/(length(ls)-1)))
@@ -194,7 +194,7 @@ Lma = maximum(L)
 nma,jjj = findmax(γ[iii])
 freq = round(ks[iii]/100.,digits=3)
 
-subplot2grid((3,38),(2,18),colspan=9)
+subplot2grid((3,40),(2,20),colspan=9)
 PyPlot.plot(ks/100.,L,"-",color=cmap(.4))
 xlabel("freq")
 ylabel("obj")
@@ -202,7 +202,7 @@ twiny()
 PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
 xlabel("k")
 
-subplot2grid((3,38),(2,27),colspan=9)
+subplot2grid((3,40),(2,30),colspan=9)
 #for j in 1:length(ks)
 #	α = cmap(1 - (L[j] - Lma)/(Lmi - Lma))
 #	PyPlot.plot(1:length(γ[i]),γ[i],color=α)
