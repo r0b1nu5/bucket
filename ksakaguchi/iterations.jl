@@ -475,12 +475,12 @@ function iterations4_fail(f0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Arr
 	return ff
 end
 
-function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, C::Array{Float64,2}, ω::Array{Float64,1}, u::Array{Int64,1}, δ::Float64, T::Int64=100, plot::Bool=true, verb::Bool=false)
+function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, C::Array{Float64,2}, ω::Array{Float64,1}, α::Float64, u::Array{Int64,1}, δ::Float64, T::Int64=100, plot::Bool=true, verb::Bool=false)
 	n,m = size(Bout)
 	m2 = Int(m/2)
 
-	hγm = h(-γ)
-	hγp = h(γ)
+	hγm = h(-γ,α)
+	hγp = h(γ,α)
 
 	b = B[:,1:m2]
 	P = cycle_proj(b,ones(m2))
@@ -499,7 +499,7 @@ function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{F
 
 		Δs = [Δs Δ]
 		
-		Δ = Su(Δ,ω,b,Bout,P,Ld,δ)
+		Δ = Sω(Δ,ω,b,Bout,P,Ld,δ,α,(-γ,γ),(hγm,hγp),10.)
 	end
 
 	if plot
@@ -514,14 +514,14 @@ function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{F
 		figure()
 		
 #		subplot(1,2,1)
-		PyPlot.plot(h(γs),h(-γs),"--k")
-		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C8",markersize=20.)
-		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C1",markersize=13.)
-		PyPlot.plot(h(Δf[i0]),h(-Δf[i0]),"o",color="C3",markersize=5.)
+		PyPlot.plot(h(γs,α),h(-γs,α),"--k")
+		PyPlot.plot(h(Δf[i0],α),h(-Δf[i0],α),"o",color="C8",markersize=20.)
+		PyPlot.plot(h(Δf[i0],α),h(-Δf[i0],α),"o",color="C1",markersize=13.)
+		PyPlot.plot(h(Δf[i0],α),h(-Δf[i0],α),"o",color="C3",markersize=5.)
 
 		for t in 1:T
-			push!(x,h(Δs[i0,t]))
-			push!(y,h(-Δs[i0,t]))
+			push!(x,h(Δs[i0,t],α))
+			push!(y,h(-Δs[i0,t],α))
 		end
 
 #		subplot(1,2,1)
@@ -530,12 +530,12 @@ function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{F
 		xlabel("f_e")
 		ylabel("f_{\bar{e}}")
 	
-		PyPlot.plot(h(Δ0[i0]),h(-Δ0[i0]),"ok")
+		PyPlot.plot(h(Δ0[i0],α),h(-Δ0[i0],α),"ok")
 		for t in 1:T
 			colo = "C$(mod(t-1,10))"
 
 #			subplot(1,2,1)
-			PyPlot.plot(h(Δs[i0,t]),h(-Δs[i0,t]),"o",color=colo)
+			PyPlot.plot(h(Δs[i0,t],α),h(-Δs[i0,t],α),"o",color=colo)
 		end
 
 #=
@@ -590,8 +590,8 @@ function dir_cycle_proj(B::Array{Float64,2}, Lmin::Array{Float64,1})
 end
 
 		
-function Su(Δ::Array{Float64,1}, ω::Array{Float64,1}, b::Array{Float64,2}, Bout::Array{Float64,2}, P::Array{Float64,2}, D::Array{Float64,2}, δ::Float64)
-	return Δ - δ*b'*D*(Bout*h([Δ;-Δ]) - ω)
+function Sω(Δ::Array{Float64,1}, ω::Array{Float64,1}, b::Array{Float64,2}, Bout::Array{Float64,2}, P::Array{Float64,2}, D::Array{Float64,2}, δ::Float64, α::Float64, γ::Tuple{Float64,Float64}=(-Inf,Inf), hγ::Tuple{Float64,Float64}=(0.,0.), s::Float64=1.)
+	return Δ - δ*b'*D*(Bout*hs([Δ;-Δ],α,γ,hγ,s) - ω)
 end
 
 function Tu(Δ1::Array{Float64,1}, Δ2::Array{Float64,1}, u::Array{Int64,1}, P::Array{Float64,2}, C::Array{Float64,2}, λ::Float64=1.)
@@ -665,3 +665,12 @@ function rand_init(ω::Array{Float64,1}, Bout::Array{Float64,2}, hγ::Tuple{Floa
 
 	return f
 end
+
+function hs(x::Float64, α::Float64, γ::Tuple{Float64,Float64}, hγ::Tuple{Float64,Float64}, s::Float64=1.)
+	return (s*(x - γ[1]) + hγ[1])*(x < γ[1]) + h(x,α)*(γ[1] <= x <= γ[2]) + (s*(x - γ[2]) + hγ[2])*(x > γ[2])
+end
+
+function hs(x::Array{Float64,1}, α::Float64, γ::Tuple{Float64,Float64}, hγ::Tuple{Float64,Float64}, s::Float64=1.)
+	return [hs(x[i],α,γ,hγ,s) for i in 1:length(x)]
+end
+	

@@ -56,7 +56,7 @@ ylabel("amplitude")
 ntw = "uk"
 n = 120
 ls = 1:n
-ks0 = 1:10
+ks0 = 1:50
 ks1 = 1:50
 T = 50000*.01
 file = "mysterious_forcing_UK"
@@ -83,7 +83,7 @@ subplot2grid((2,4),(0,2),colspan=1,rowspan=2)
 for i in 1:length(ls)
 	PyPlot.plot(ks0/T,L0[i,:],"-o",color=cmap((i-1)/(length(ls)-1)))
 end
-PyPlot.text(.018,-2.1091,"(d)")
+PyPlot.text(.095,-2.1091,"(d)")
 xlabel("freq")
 ylabel("obj")
 

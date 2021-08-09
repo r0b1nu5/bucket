@@ -5,6 +5,7 @@ gs_failure/data/
 gs_failure/figs/
 K_player/figures/
 K_player/refs/
+K_player/synth_data/
 ksakaguchi/data/
 ksakaguchi/temp_data/
 lanl/code_naspi*
@@ -20,6 +21,7 @@ lanl/export2cluster.sh
 lanl/failed/
 lanl/figs/
 lanl/Mas16/
+lanl/pennsylvania*
 lanl/send/
 line_rank/data/
 machine_learning/data1/
