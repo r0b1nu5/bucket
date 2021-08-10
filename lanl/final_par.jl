@@ -92,8 +92,8 @@ The parameter "id" identifies the system to be identified.
 
 # Compute warm start
 #	XXX,A1h,a2h = get_Ah_correl(Xs,τ) # Performs poorly.
-	A1h = zeros(n,n)
-	a2h = zeros(n)
+	A1h = .1*ones(n,n) #zeros(n,n)
+	a2h = .1*ones(n) #zeros(n)
 
 # Run the optimizations
 	args = Array{Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64},1}()
