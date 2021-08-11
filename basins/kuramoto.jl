@@ -2,9 +2,12 @@ using PyPlot, DelimitedFiles, LinearAlgebra, SparseArrays
 
 include("L2B.jl")
 
-function kuramoto(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, h::Float64=.1, max_iter::Int64=10000, tol::Float64=1e-4)
+# Runs RK4 simulation of the Kuramoto model on a cycle.
+# Returns the final state.
+function kuramoto(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, verb::Bool=false, h::Float64=.1, max_iter::Int64=10000, tol::Float64=1e-6)
 	B,w,Bt = L2B(L)
 	W = spdiagm(0 => w)
+	BW = B*W
 
 	n,m = size(B)
 
@@ -14,14 +17,15 @@ function kuramoto(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0:
 
 	while err > tol && iter < max_iter
 		iter += 1
-		if iter%1000 == 0
+		if verb && iter%1000 == 0
 			@info "iter = $iter"
 		end
 
-		k1 = ω - B*W*sin.(Bt*θ)
-		k2 = ω - B*W*sin.(Bt*(θ + h/2*k1))
-		k3 = ω - B*W*sin.(Bt*(θ + h/2*k2))
-		k4 = ω - B*W*sin.(Bt*(θ + h*k3))
+		Btθ = Bt*θ
+		k1 = ω - BW*sin.(Btθ)
+		k2 = ω - BW*sin.(Btθ + h/2*Bt*k1)
+		k3 = ω - BW*sin.(Btθ + h/2*Bt*k2)
+		k4 = ω - BW*sin.(Btθ + h*Bt*k3)
 
 		dθ = (k1 + 2*k2 + 2*k3 + k4)/6
 
@@ -35,9 +39,12 @@ function kuramoto(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0:
 	return θ
 end
 
-function kuramoto_series(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, h::Float64=.1, max_iter::Int64=10000, tol::Float64=1e-4)
+# Runs RK4 simulation of the Kuramoto model on a cycle. 
+# Returns the whole time series.
+function kuramoto_series(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, h::Float64=.1, max_iter::Int64=10000, tol::Float64=1e-6)
 	B,w,Bt = L2B(L)
 	W = spdiagm(0 => w)
+	BW = B*W
 
 	n,m = size(B)
 
@@ -54,10 +61,11 @@ function kuramoto_series(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1
 
 		θs = [θs θ]
 
-		k1 = ω - B*W*sin.(Bt*θ)
-		k2 = ω - B*W*sin.(Bt*(θ + h/2*k1))
-		k3 = ω - B*W*sin.(Bt*(θ + h/2*k2))
-		k4 = ω - B*W*sin.(Bt*(θ + h*k3))
+		Btθ = Bt*θ
+		k1 = ω - BW*sin.(Btθ)
+		k2 = ω - BW*sin.(Btθ + h/2*Bt*k1)
+		k3 = ω - BW*sin.(Btθ + h/2*Bt*k2)
+		k4 = ω - BW*sin.(Btθ + h*Bt*k3)
 
 		dθ = (k1 + 2*k2 + 2*k3 + k4)/6
 
@@ -70,20 +78,25 @@ function kuramoto_series(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1
 	return θs
 end
 
+# Computes the winding number of θ around cycle cyc.
 function winding(θ::Array{Float64,1}, cyc::Array{Int64,1})
 	dθ = mod.(θ[[cyc[2:end];cyc[1]]] - θ[cyc] .+ π,2π) .- π
 
 	return round(Int64,sum(dθ)/(2π))
 end
 
+# Computes the winding vector around cycles in cyc.
 function winding(θ::Array{Float64,1}, cyc::Array{Array{Int64,1},1})
 	return [winding(θ,c) for c in cyc]
 end
 
+# Computes the distance between θ1 and θ2 on the torus.
 function dist(θ1::Array{Float64,1}, θ2::Array{Float64,1})
 	return torus_norm(θ1 - θ2)
 end
 
+# Computes the torus norm an angle vector, modulo constant shift. 
+# Makes sure that the vector has components between -π and π, and is orhtogonal to the constant vector.
 function torus_norm(θ::Array{Float64,1}, max_iter::Int64=100)
 	θ1 = θ
 	θ2 = θ
@@ -104,6 +117,7 @@ function torus_norm(θ::Array{Float64,1}, max_iter::Int64=100)
 	return norm(θ2)
 end
 
+# Computes the distance between an angle vector θ and the splay state with winding number q.
 function dist2splay(θ::Array{Float64,1}, q::Int64)
 	n = length(θ)
 
@@ -118,6 +132,12 @@ function dist2splay(θ::Array{Float64,1}, q::Int64)
 	return no
 end
 	
+# Computes the winding number of the basin where θ lies.
+function basin_test(θ::Vector{Float64}, L::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64})
+	θf = kuramoto(L,ω,θ)
+	
+	return winding(θf)
+end
 
 
 
