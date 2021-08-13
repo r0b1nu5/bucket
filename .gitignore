@@ -6,7 +6,7 @@ gs_failure/data/
 gs_failure/figs/
 K_player/figures/
 K_player/refs/
-K_player/synth_data/
+K_player/data/synth*
 ksakaguchi/data/
 ksakaguchi/temp_data/
 lanl/code_naspi*

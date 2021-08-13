@@ -2,7 +2,7 @@ using PyPlot, DelimitedFiles
 
 #to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
 #to_plot = [("mysterious_forcing",1),]
-to_plot = [("mysterious_forcing_PEN2",1), ("mysterious_forcing_PEN3",1)]
+to_plot = [("pen_2",2), ("pen_3",2), ("pen_4",2), ("pen_5",2)]
 #to_plot = [("ntw20_multisine",1),("ntw20_saw",1),("ntw20_step",1)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
@@ -125,12 +125,17 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "ieee57_2" => Array(1:57),
 				       "pen_1" => vec(Int.(readdlm("data_pen/pen_2013-01-15_00_ids.csv",',').-1)),
 				       "pen_2" => vec(Int.(readdlm("data_pen/pen_2013-03-10_04_ids.csv",',').-1)),
+				       "mysterious_forcing_PEN2" => vec(Int.(readdlm("data_pen/pen_2013-03-10_04_ids.csv",',').-1)),
 				       "pen_3" => vec(Int.(readdlm("data_pen/pen_2013-04-03_02_ids.csv",',').-1)),
+				       "mysterious_forcing_PEN3" => vec(Int.(readdlm("data_pen/pen_2013-04-03_02_ids.csv",',').-1)),
 				       "pen_4" => vec(Int.(readdlm("data_pen/pen_2013-04-03_03_ids.csv",',').-1)),
+				       "mysterious_forcing_PEN4" => vec(Int.(readdlm("data_pen/pen_2013-04-03_03_ids.csv",',').-1)),
 				       "pen_5" => vec(Int.(readdlm("data_pen/pen_2013-04-03_07_ids.csv",',').-1)),
+				       "mysterious_forcing_PEN5" => vec(Int.(readdlm("data_pen/pen_2013-04-03_07_ids.csv",',').-1)),
 				       "pen_6" => vec(Int.(readdlm("data_pen/pen_2013-07-30_01_ids.csv",',').-1)),
 				       "pen_7" => vec(Int.(readdlm("data_pen/pen_2013-07-30_04_ids.csv",',').-1)),
-				       "pen_8" => vec(Int.(readdlm("data_pen/pen_2013-07-30_09_ids.csv",',').-1)), 
+				       "pen_8" => vec(Int.(readdlm("data_pen/pen_2013-07-30_09_ids.csv",',').-1)),
+				       "mysterious_forcing_PEN8" => vec(Int.(readdlm("data_pen/pen_2013-07-30_09_ids.csv",',').-1)),
 				       "naspi_1" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
 				       "naspi_2" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",',')),
 				       "naspi_3" => vec(readdlm("data_naspi/naspi_ids_Case3.csv",',')),
@@ -150,11 +155,6 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "mysterious_forcing_UK" => Array(1:120),
 				       "mysterious_forcing_57" => Array(1:57),
 				       "mysterious_forcing" => Array(1:99),
-				       "mysterious_forcing_PEN2" => Array(1:ns["mysterious_forcing_PEN2"]),
-				       "mysterious_forcing_PEN3" => Array(1:ns["mysterious_forcing_PEN3"]),
-				       "mysterious_forcing_PEN4" => Array(1:ns["mysterious_forcing_PEN4"]),
-				       "mysterious_forcing_PEN5" => Array(1:ns["mysterious_forcing_PEN5"]),
-				       "mysterious_forcing_PEN8" => Array(1:ns["mysterious_forcing_PEN8"]),
 				       "ntw20_multisine" => Array(1:20),
 				       "ntw20_saw" => Array(1:20),
 				       "ntw20_step" => Array(1:20),
@@ -235,9 +235,9 @@ for ntw_run in to_plot
 	node_id = node_ids[ntw][jjj]
 	freq = round(ks[iii]/T[ntw],digits=3)
 	
-	figure("[ℓ1] ntw: "*ntw*", run: $run")
+	figure("[ℓ1] ntw: "*ntw*", run: $run",(10.,4.))
 
-	subplot2grid((1,20),(0,0),colspan=9)
+	subplot2grid((1,21),(0,0),colspan=9)
 	PyPlot.plot(ks/T[ntw],L,"-o",color=cmap(.4))
 	xlabel("freq")
 	ylabel("obj")
@@ -245,7 +245,7 @@ for ntw_run in to_plot
 	PyPlot.plot([ks[1],ks[end]],[Lmi,Lmi],"--k")
 	xlabel("k")
 
-	subplot2grid((1,20),(0,10),colspan=9)
+	subplot2grid((1,21),(0,11),colspan=9)
 #	for i in 1:length(ks)
 #		α = cmap(1 - (L[i] - Lma)/(Lmi - Lma))
 #		PyPlot.plot(1:length(γ[i]),γ[i],color=α)

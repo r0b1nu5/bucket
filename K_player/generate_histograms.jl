@@ -11,16 +11,7 @@ number_sample = 2500
 precision = 1e-4
 
 ############## JOURNALS TO USE ########################################
-#js = [used_journals[parse(Int,ARGS[1])],]
-#js = [used_journals[jn],]
-#js = ["bmj", "food_chem_tox", "medical_ped_onc", "pnas", "pre", "chaos", "ieee_trans_autom_control", "nature", "energy", "lancet", "neng_j_med", "science", "scientometrics"]
-#js = ["prl", "prd"]
-#js = ["prl_reduced", "prd_reduced"]
-#js = ["j_acs",]
-
-#js = journals_short
-js = journals_red_short
-js = ["science_1940",]
+js = ["synth01_200_10000_70", "synth01_2000_1000_70", "synth02_200_10000_70", "synth03_200_10000_70"]
 
 ################ DO / DON'T LIST #######################################
 plots = true
@@ -71,9 +62,15 @@ for j in js
 	
 ############## PLOT HISTOGRAM ##################################
 	if plots
+		if haskey(journals_colors,j)
+			col = journals_colors[j][1]
+		else
+			col = "C0"
+		end
+
 		for i in 1:size(num)[2]
 			figure(j)
-			PyPlot.plot([num[1,i],num[1,i]],[1e-8,num[2,i]/n_data],linewidth=2,color=journals_colors[j][1])
+			PyPlot.plot([num[1,i],num[1,i]],[1e-8,num[2,i]/n_data],linewidth=2,color=col)
 		end
 # ============ power law ===============================
 		s = new_mle_pl(num)
@@ -118,7 +115,13 @@ for j in js
 =#
 		@info "==========================================="
 		
-		title(journals_code[j]*", max. # articles predicted: $(ceil(Int,max_k))")
+		if haskey(journals_code,j)
+			jcode = journals_code[j]
+		else
+			jcode = "SYNTH"
+		end
+
+		title(jcode*", max. # articles predicted: $(ceil(Int,max_k))")
 		xlabel("Number of articles")
 		ylabel("Number of authors")
 		axis([.9*mi,2*ma,.5/sum(num[2,:]),2.])
