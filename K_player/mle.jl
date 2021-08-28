@@ -134,7 +134,7 @@ end
 	
 
 function polylog(s::Float64,z::Complex{Float64})
-	Li = gamma(1-s)/(2pi)^(1-s)*((im)^(1-s)*zeta(1-s,.5+log(-z)/(2pi*im)) + (im)^(s-1)*zeta(1-s,.5-log(-z)/(2pi*im)))
+	Li = SpecialFunctions.gamma(1-s)/(2pi)^(1-s)*((im)^(1-s)*zeta(1-s,.5+log(-z)/(2pi*im)) + (im)^(s-1)*zeta(1-s,.5-log(-z)/(2pi*im)))
 	return Li
 end
 

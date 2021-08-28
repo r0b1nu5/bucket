@@ -31,9 +31,9 @@ for j in 1:length(ks1)
 end
 L1mi,iii = findmin(L1)
 
-figure("ieee57_uk",(19,4.5))
+figure("ieee57",(10,4.5))
 
-subplot2grid((2,4),(0,0),colspan=1,rowspan=2)
+subplot2grid((2,2),(0,0),colspan=1,rowspan=2)
 for i in 1:length(ls)
 	PyPlot.plot(ks0/T,L0[i,:],"-o",color=cmap((i-1)/(length(ls)-1)))
 end
@@ -55,13 +55,13 @@ if inset
 	PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=5.)
 end	
 
-subplot2grid((2,4),(0,1),colspan=1,rowspan=1)
+subplot2grid((2,2),(0,1),colspan=1,rowspan=1)
 PyPlot.plot(ks1/T,L1,"-o",color=cmap(.4))
 PyPlot.text(.12,-.0000340,"(b)")
 xlabel("freq")
 ylabel("obj")
 
-subplot2grid((2,4),(1,1),colspan=1,rowspan=1)
+subplot2grid((2,2),(1,1),colspan=1,rowspan=1)
 PyPlot.plot(ls,γ1[iii],"-o",color=cmap(0.))
 PyPlot.text(55.,.0017,"(c)")
 xlabel("node id")
@@ -95,7 +95,9 @@ for j in 1:length(ks1)
 end
 L1mi,iii = findmin(L1)
 
-subplot2grid((2,4),(0,2),colspan=1,rowspan=2)
+figure("uk",(10,4.5))
+
+subplot2grid((2,2),(0,0),colspan=1,rowspan=2)
 for i in 1:length(ls)
 	PyPlot.plot(ks0/T,L0[i,:],"-o",color=cmap((i-1)/(length(ls)-1)))
 end
@@ -115,18 +117,18 @@ if inset
 	PyPlot.plot(xy[:,1],xy[:,2],"k",linewidth=.5)
 	xy = [(xy0[:,1]*(xma-xmi) .+ xmi) (xy0[:,2]*(yma-ymi) .+ ymi)]
 	for i in 1:2:size(adj)[1]
-		PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],"k",linewidth=1.)
+		PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],"k",linewidth=.8)
 	end
-	PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=4.)
+	PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=3.)
 end
 
-subplot2grid((2,4),(0,3),colspan=1,rowspan=1)
+subplot2grid((2,2),(0,1),colspan=1,rowspan=1)
 PyPlot.plot(ks1/T,L1,"-o",color=cmap(.4))
 PyPlot.text(.095,-.3091,"(e)")
 xlabel("freq")
 ylabel("obj")
 
-subplot2grid((2,4),(1,3),colspan=1,rowspan=1)
+subplot2grid((2,2),(1,1),colspan=1,rowspan=1)
 PyPlot.plot(ls,γ1[iii],"-o",color=cmap(0.))
 PyPlot.text(118.,.09,"(f)")
 xlabel("node id")

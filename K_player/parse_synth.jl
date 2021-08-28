@@ -1,7 +1,7 @@
 using DelimitedFiles
 
-file = "synth01_2000_1000_70"
-num = Int64.(vec(readdlm("./data/"*file*".csv",',')))
+id = 100004
+num = Int64.(vec(readdlm("./synth_data/d_$(id).csv",',')))
 
 dat = sort(union(num))
 	
@@ -11,7 +11,7 @@ for n in dat
 	global val_num = [val_num [n,Int(sum(num .== n))]]
 end
 	
-writedlm("data/"*file*"_parsed.csv",val_num,',')
+writedlm("data/d_$(id)_parsed.csv",val_num,',')
 
 
 

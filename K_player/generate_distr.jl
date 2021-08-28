@@ -1,12 +1,13 @@
-using PyPlot, LinearAlgebra
+using LinearAlgebra, DelimitedFiles
 
 # n_year: number of iterations of the generation process
 # ppyear: number of papers published in at each iteration
 # ρ0: average proportion of papers by new authors at each iteration
 # amin: age at which the number of publication start decreasing
 # amax: age at which the authors do not publish anymore
+# save: if true, saves the results in a .csv file ("######.csv") identified by six random digits, and the arguments are saved in a .md file ("######.md")
 
-function generate_distr(n_year::Int64, ppyear::Int64, ρ0::Float64, amin::Int64=40, amax::Int64=60)
+function generate_distr(n_year::Int64, ppyear::Int64, ρ0::Float64, amin::Int64=40, amax::Int64=60, save::Bool=false)
 	authors = Dict{Int64,Any}() # contains the list of all authors with their academic age and the number of papers published
 	p0 = floor(Int64,ppyear/6)
 	for i in 1:p0
@@ -60,7 +61,22 @@ function generate_distr(n_year::Int64, ppyear::Int64, ρ0::Float64, amin::Int64=
 #		end
 	end
 
-	return [authors[a]["npaper"] for a in keys(authors)]
+	v = [authors[a]["npaper"] for a in keys(authors)]
+	
+	if save
+		params = retrieve_params()
+		K = keys(params)
+		if length(K) > 0
+			id = maximum(K) + 1
+		else
+			id = 100001
+		end
+		
+		writedlm("synth_data/d_$(id).csv",v,',')
+		write("synth_data/p_$(id).jl","d = Dict{String,Any}(\"id\" => $(id), \"n_year\" => $(n_year), \"ppyear\" => $(ppyear), \"rho0\" => $(ρ0), \"amin\" => $(amin), \"amax\" => $(amax))")
+	end
+
+	return v
 	
 end
 
@@ -121,5 +137,26 @@ function rand_age(p::Int64, ages::Array{Int64,1}, ρ::Float64, amin::Int64=40, a
 	ix = ceil.(Int64,x*length(ids))
 
 	return ids[ix]
+end
+
+# Returns the list of parameters of the synthetic data, under the form of a dictionary, with keys being the simulation id's. 
+function retrieve_params()
+	L = readdir("synth_data")
+
+	ids = Array{Int64,1}()
+
+	for l in L
+		if l[1] == 'd'
+			push!(ids,parse(Int64,l[3:8]))
+		end
+	end
+
+	params = Dict{Int64,Dict{String,Any}}()
+	for id in ids
+		include("synth_data/p_$(id).jl")
+		params[id] = d
+	end
+
+	return params
 end
 
