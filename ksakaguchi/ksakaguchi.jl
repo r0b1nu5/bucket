@@ -15,6 +15,7 @@ function ksakaguchi(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Float6
 	θ = θ0
 	θs = θ0
 
+	dθ = zeros(n)
 	dθs = Array{Float64,2}(undef,n,0)
 
 	err = 1000.
@@ -25,16 +26,19 @@ function ksakaguchi(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Float6
 		iter += 1
 
 		if iter%1000 == 0
-			c += 1
 			if verb
 				@info "iter: $iter, err = $(round(err,digits=5))"
 			end
-	
-			writedlm("temp_data/temp_θ_$c.csv",θs[:,1:end-1],',')
-			θs = θs[:,end]
 
-			writedlm("temp_data/temp_dθ_$c.csv",dθs[:,1:end],',')
-			dθs = Array{Float64,2}(undef,n,0)
+			if save_history
+				c += 1
+				
+				writedlm("temp_data/temp_θ_$c.csv",θs[:,1:end-1],',')
+				θs = θs[:,end]
+	
+				writedlm("temp_data/temp_dθ_$c.csv",dθs[:,1:end],',')
+				dθs = Array{Float64,2}(undef,n,0)
+			end
 		end
 
 		k1 = ω - B12*WW*(sin.(BB'*θ .- α) .+ sin(α))
@@ -46,22 +50,29 @@ function ksakaguchi(L::Array{Float64,2}, ω::Array{Float64,1}, θ0::Array{Float6
 
 		θ += h*dθ
 
-		θs = [θs θ]
-		dθs = [dθs dθ]
+		if save_history
+			θs = [θs θ]
+			dθs = [dθs dθ]
+		end
 
 		err = maximum(dθ)-minimum(dθ)
 	end
 
 	Θs = Array{Float64,2}(undef,n,0)
 	dΘs = Array{Float64,2}(undef,n,0)
-	for i in 1:c
-		Θs = [Θs readdlm("temp_data/temp_θ_$i.csv",',')]
-		rm("temp_data/temp_θ_$i.csv")
-		dΘs = [dΘs readdlm("temp_data/temp_dθ_$i.csv",',')]
-		rm("temp_data/temp_dθ_$i.csv")
+	if save_history
+		for i in 1:c
+			Θs = [Θs readdlm("temp_data/temp_θ_$i.csv",',')]
+			rm("temp_data/temp_θ_$i.csv")
+			dΘs = [dΘs readdlm("temp_data/temp_dθ_$i.csv",',')]
+			rm("temp_data/temp_dθ_$i.csv")
+		end
+		Θs = [Θs θs]
+		dΘs = [dΘs dθs]
+	else
+		Θs = [Θs θ]
+		dΘs = [dΘs dθ]
 	end
-	Θs = [Θs θs]
-	dΘs = [dΘs dθs]
 
 	return Θs,dΘs,err,iter
 end
@@ -79,6 +90,7 @@ function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, ω::Array{Float64,1}, θ0::
 	θ = θ0
 	θs = θ0
 
+	dθ = zeros(n)
 	dθs = Array{Float64,2}(undef,n,0)
 
 	err = 1000.
@@ -89,16 +101,18 @@ function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, ω::Array{Float64,1}, θ0::
 		iter += 1
 
 		if iter%1000 == 0
-			c += 1
 			if verb
 				@info "iter: $iter, err = $(round(err,digits=5))"
 			end
 			
-			writedlm("temp_data/temp_θ_$c.csv",θs[:,1:end-1],',')
-			θs = θs[:,end]
-
-			writedlm("temp_data/temp_dθ_$c.csv",dθs[:,1:end],',')
-			dθs = Array{Float64,2}(undef,n,0)
+			if save_history
+				c += 1
+				writedlm("temp_data/temp_θ_$c.csv",θs[:,1:end-1],',')
+				θs = θs[:,end]
+	
+				writedlm("temp_data/temp_dθ_$c.csv",dθs[:,1:end],',')
+				dθs = Array{Float64,2}(undef,n,0)
+			end
 		end
 
 		k1 = ω - B12*WW*(sin.(BB'*θ .- α) .+ sin(α))
@@ -110,22 +124,29 @@ function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, ω::Array{Float64,1}, θ0::
 
 		θ += h*dθ
 
-		θs = [θs θ]
-		dθs = [dθs dθ]
+		if save_history
+			θs = [θs θ]
+			dθs = [dθs dθ]
+		end
 
 		err = maximum(dθ)-minimum(dθ)
 	end
 
 	Θs = Array{Float64,2}(undef,n,0)
 	dΘs = Array{Float64,2}(undef,n,0)
-	for i in 1:c
-		Θs = [Θs readdlm("temp_data/temp_θ_$i.csv",',')]
-		rm("temp_data/temp_θ_$i.csv")
-		dΘs = [dΘs readdlm("temp_data/temp_dθ_$i.csv",',')]
-		rm("temp_data/temp_dθ_$i.csv")
+	if save_history
+		for i in 1:c
+			Θs = [Θs readdlm("temp_data/temp_θ_$i.csv",',')]
+			rm("temp_data/temp_θ_$i.csv")
+			dΘs = [dΘs readdlm("temp_data/temp_dθ_$i.csv",',')]
+			rm("temp_data/temp_dθ_$i.csv")
+		end
+		Θs = [Θs θs]
+		dΘs = [dΘs dθs]
+	else
+		Θs = [Θs θ]
+		dΘs = [dΘs dθ]
 	end
-	Θs = [Θs θs]
-	dΘs = [dΘs dθs]
 
 	return Θs,dΘs,err,iter
 end
@@ -251,23 +272,41 @@ function ks_vertex!(dθ, θ, e_s, vpar, t)
 end
 
 
-function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, C::Array{Int64,1}, verb::Bool=false, res::Float64=.0005)
+function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float64,1}, α::Float64, C::Array{Array{Int64,1},1}, verb::Bool=false, res::Float64=.0005)
 	if norm(ω0) < 1e-8
 		@info "The frequency vector is close to zero."
 	end
+
+	max_iter = 100000
+	thresh = 1e-6
 
 	n = length(θ0)
 	
 	ω = ω0 .- mean(ω0)
 	ω /= norm(ω)
 
-	x = ksakaguchi(L,zeros(n),θ0,α,true,false,.01,1e-6)
-#	ts,x = ksakaguchi_ND(L,zeros(n),θ0,α,(0.,10.))
-	θ1 = x[1][:,end]
-	θ = copy(θ1)
-	q0 = winding(θ,C)
+	q0 = winding(θ0,C)
+	q = Inf
+	γ = 0.
+	it = 0
 
-	β = 0.
+	θ1 = Array{Float64,1}()
+	θ2 = Array{Float64,1}()
+
+	while q != q0 && γ < 5. && it < max_iter
+		x = ksakaguchi(L,γ*ω,θ0,α,false,false,.01,thresh,max_iter)
+		θ1 = x[1][:,end]
+		θ2 = copy(θ1)
+		q = winding(θ2,C)
+		γ += .2
+		it = x[4]
+	end
+
+	if (q != q0 && it >= max_iter) || (q != q0 && γ >= 5.)
+			return NaN,NaN
+	end
+
+	β = γ
 	dβ = 1.
 
 	while dβ > res
@@ -278,17 +317,19 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 		q = q0
 		it = 0
 		while q == q0 && it < 100000
+			θ1 = copy(θ2)
 			β += dβ
-			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
+			x = ksakaguchi(L,β*ω,θ2,α,false,false,.01,thresh,max_iter)
 #			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
-			q = winding(x[1][:,end],Array(1:n))
+			θ2 = mod.(x[1][:,end] .+ π,2π) .- π
+			q = winding(θ2,C)
 			it = x[4]
 			
 			if verb
 				@info "q = $q, it = $it"
 			end
 		end
-		θ = x[1][:,1]
+		θ2 = copy(θ1)
 		β -= dβ
 		dβ /= 10
 	end
@@ -296,37 +337,45 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 	βmax = copy(β)
 	fmax = mean(x[2][:,end])
 
-	β = 0.
-	dβ = 1.
+	if γ > 0.
+		β = γ
+		dβ = -.2
 
-	while dβ > res
-		if verb
-			@info "β = $β, dβ = $dβ"
-		end
-
-		q = q0
-		it = 0
-		while  q == q0 && it < 100000
-			β -= dβ
-			x = ksakaguchi(L,β*ω,θ,α,true,false,.01,1e-6)
-#			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
-			q = winding(x[1][:,end],Array(1:n))
-			it = x[4]
-
+		while abs(dβ) > res
 			if verb
-				@info "q = $q, it = $it"
+				@info "β = $β, dβ = $dβ"
 			end
+	
+			q = q0
+			it = 0
+			while q == q0 && it < max_iter
+				θ1 = copy(θ2)
+				β += dβ
+				x = ksakaguchi(L,β*ω,θ2,α,false,false,.01,thresh,max_iter)
+	#			ts,x = ksakaguchi_ND(L,β*ω,θ,α,(0.,10.))
+				θ2 = mod.(x[1][:,end] .+ π,2π) .- π
+				q = winding(θ2,C)
+				it = x[4]
+				
+				if verb
+					@info "q = $q, it = $it"
+				end
+			end
+			θ2 = copy(θ1)
+			β -= dβ
+			dβ /= 10
 		end
-		θ = x[1][:,1]
-		β += dβ
-		dβ /= 10
+		
+		βmin = copy(β)
+		fmin = mean(x[2][:,end])
+	else
+		βmin = 0.
+		fmin = 0. # WRONG, BUT NO NEED FOR NOW...
 	end
-
-	βmin = copy(β)
-	fmin = mean(x[2][:,end])
-
-	return βmin,βmax,fmin,max
+	
+	return βmax,βmin,fmax,fmin
 end
+
 
 function ks_flows(θ::Array{Float64,1}, L::Array{Float64,2}, α::Float64)
 	B,w = L2B(L)
