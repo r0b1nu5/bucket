@@ -66,7 +66,7 @@ function sample_winding_cell(u::Array{Int64,1}, B::Array{Float64,2}, T::Array{In
 		y = Bt*x + 2π*Cd*u
 
 		if norm(y,Inf) < π
-			Dθ = Ttd*y[T]
+			θ = Ttd*y[T]
 			θ = θ .- mean(θ)
 			test = false
 		end
@@ -107,7 +107,7 @@ function cyqle(n::Int64, q::Int64=1)
 	return L
 end
 
-function gershgorin(M::Array{Float64,2})
+function gershgorin(M::Union{Array{Float64,2},Array{Complex{Float64},2}})
 	c = diag(M)
 
 	n = length(c)

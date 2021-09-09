@@ -278,7 +278,7 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 	end
 
 	max_iter = 100000
-	thresh = 1e-6
+	thresh = 1e-8
 
 	n = length(θ0)
 	
@@ -287,18 +287,19 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 
 	q0 = winding(θ0,C)
 	q = Inf
-	γ = 0.
+	γ = -0.2
 	it = 0
 
 	θ1 = Array{Float64,1}()
 	θ2 = Array{Float64,1}()
+	x = Array{Float64,1}()
 
 	while q != q0 && γ < 5. && it < max_iter
+		γ += .2
 		x = ksakaguchi(L,γ*ω,θ0,α,false,false,.01,thresh,max_iter)
 		θ1 = x[1][:,end]
 		θ2 = copy(θ1)
 		q = winding(θ2,C)
-		γ += .2
 		it = x[4]
 	end
 
