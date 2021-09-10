@@ -10,6 +10,8 @@ using PyPlot
 
 x = LinRange(γm,γp,300)
 
+xma = 2.38
+xmi = -2.38
 
 figure()
 
@@ -33,6 +35,7 @@ PyPlot.plot(x,cos(α)*sin.(x),color="C0")
 PyPlot.plot([γp,γp + δ],[0,η*δ] .+ cos(α)*sin(γp),"--",color="C0")
 PyPlot.plot([γm,γm - δ],[0,-η*δ] .+ cos(α)*sin(γm),"--",color="C0")
 
+axis([xmi,xma,-1.47,1.47])
 
 subplot(1,3,2)
 
@@ -44,6 +47,7 @@ PyPlot.plot(x,sin.(-x .- α) .+ sin(α), color="C2")
 PyPlot.plot([γp,γp + δ],[0,-η*δ] .+ sin(-γp-α) .+ sin(α),"--",color="C2")
 PyPlot.plot([γm,γm - δ],[0,η*δ] .+ sin(-γm-α) .+ sin(α),"--",color="C2")
 
+axis([xmi,xma,-1.34,1.54])
 
 subplot(1,3,3)
 
@@ -65,5 +69,5 @@ PyPlot.plot(x,sin(α)*(1 .- cos.(x)),color="C3")
 PyPlot.plot([γp,γp + δ],[1,1]*sin(α)*(1-cos(γp)),"--",color="C3")
 PyPlot.plot([γm,γm - δ],[1,1]*sin(α)*(1-cos(γm)),"--",color="C3")
 
-
+axis([xmi,xma,-.05,.2])
 
