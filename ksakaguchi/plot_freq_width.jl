@@ -1,6 +1,7 @@
 using PyPlot, DelimitedFiles
 
 include("plot_ntws.jl")
+cmap = get_cmap("plasma")
 
 run = 3695; ntw = "cyc1_18"; tit = "1-cycle, n=18"; labs = Dict{Int64,String}(0 => "q=0", 1 => "q=1", 2 => "q=-1")
 #run = 6786; ntw = "cyc2_18"; tit = "2-cycle, n=18"; labs = Dict{Int64,String}(0 => "q=[0,0]", 1 => "q=[1,-1]", 2 => "q=[-1,1]")
@@ -18,9 +19,9 @@ di = Array(T:-1:1)
 
 figure()
 subplot(1,2,1)
-PyPlot.fill(αs[[id;di]],[β2[1,id];β2[2,di]],color="C2",alpha=.5,label=labs[2])
-PyPlot.fill(αs[[id;di]],[β0[1,id];β0[2,di]],color="C0",alpha=.5,label=labs[0])
-PyPlot.fill(αs[[id;di]],[β1[1,id];β1[2,di]],color="C1",alpha=.5,label=labs[1])
+PyPlot.fill(αs[[id;di]],[β2[1,id];β2[2,di]],color=cmap(0.),alpha=.5,label=labs[2])
+PyPlot.fill(αs[[id;di]],[β0[1,id];β0[2,di]],color=cmap(1/3),alpha=.5,label=labs[0])
+PyPlot.fill(αs[[id;di]],[β1[1,id];β1[2,di]],color=cmap(2/3),alpha=.5,label=labs[1])
 title(tit*" (run: $run)")
 xlabel("α")
 ylabel("width")
