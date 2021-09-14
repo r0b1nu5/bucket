@@ -1,9 +1,6 @@
 using PyPlot, DelimitedFiles
 
-#to_plot = [("mysterious_forcing_UK",1),("mysterious_forcing_57",1)]
-#to_plot = [("mysterious_forcing",1),]
-to_plot = [("pen_2",2), ("pen_3",2), ("pen_4",2), ("pen_5",2)]
-#to_plot = [("ntw20_multisine",1),("ntw20_saw",1),("ntw20_step",1)]
+to_plot = [("naspi_1",1),("naspi_2",1),("naspi_3",1),("naspi_4",1),("naspi_5",1),("naspi_6",1),("naspi_7",1),("naspi_8",1),("naspi_9",1),("naspi_10",1),("naspi_11",1),("naspi_12",1),("naspi_13",1)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
