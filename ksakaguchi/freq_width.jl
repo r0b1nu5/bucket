@@ -43,7 +43,7 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 	end
 
 	if (q != q0 && it >= max_iter) || (q != q0 && γ >= 5.)
-			return NaN,NaN
+			return NaN,NaN,NaN,NaN,NaN
 	end
 
 	β = γ
@@ -142,7 +142,7 @@ function freq_width(L::Array{Float64,2}, ω0::Array{Float64,1}, θ0::Array{Float
 			βint = max(βint,β*(maximum(abs.(Δ1)) < γmax))
 		end
 		
-		βmin = maximum(β,0.)
+		βmin = max(β,0.)
 		fmin = mean(x[2][:,end])
 	else
 		βmin = 0.

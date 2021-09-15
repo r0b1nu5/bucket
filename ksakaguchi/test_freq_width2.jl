@@ -19,8 +19,17 @@ C = [Array(1:n2+1),[Array(n2+1:n);1]]
 ω .-= mean(ω)
 # =#
 
+ #=
 ω = zeros(n)
 ω[[1,n2+1]] = [1,-1]/sqrt(2)
+# =#
+
+# #=
+ω = zeros(n)
+ω[1] = 1.
+ω .-= mean(ω)
+ω /= norm(ω)
+# =#
 
 β0 = Array{Float64,2}(undef,3,0)
 β1 = Array{Float64,2}(undef,3,0)
