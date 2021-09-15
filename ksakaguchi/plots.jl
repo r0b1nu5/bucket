@@ -91,4 +91,58 @@ function plot_cyc_vid(αs::Vector{Float64}, βmax::Vector{Float64}, βmin::Vecto
 end
 
 
+function plot_ntw_vid(L::Matrix{Float64}, ts::Vector{Float64}, Θs0::Matrix{Float64}, t::Float64, θ0::Vector{Float64}, figid::String)
+	n = length(θ0)
+	θ = θ0 .- Θs0[1]
+
+	Θs = Θs0 .- Θs0[1]
+
+	mz = 10.
+	lw = 2.
+	cmap = get_cmap("plasma")
+
+	figure(figid,(12.,5.))
+	
+	subplot(1,2,1)
+	x = sin.(2π*(0:n-1)/n)
+	y = cos.(2π*(0:n-1)/n)
+	for i in 1:n-1
+		for j in i+1:n
+			if L[i,j] < -.1
+				PyPlot.plot(x[[i,j]],y[[i,j]],"-k",linewidth=lw)
+			end
+		end
+	end
+	
+	for i in 1:n
+		PyPlot.plot(x[i] .+ [0.,.25*cos(θ[i])],y[i] .+ [0.,.25*sin(θ[i])],color="C2",linewidth=1.5*lw)
+		PyPlot.plot(x[i],y[i],"o",color=cmap((i-1)/(n-1)),markersize=mz)
+	end
+
+	axis([-1.3,1.3,-1.3,1.3])
+	xticks([])
+	yticks([])
+
+	subplot(1,2,2)
+	for i in 1:n
+		PyPlot.plot(ts,Θs[i,:],color=cmap((i-1)/(n-1)))
+	end
+	PyPlot.plot([t,t],[minimum(Θs),maximum(Θs)],"k")
+
+	axis([ts[1],ts[end],minimum(Θs),maximum(Θs)])
+	xlabel("t")
+	ylabel("θ_i")
+end
+
+
+function gen_vid_ntw(L::Matrix{Float64}, ts::Vector{Float64}, Θs0::Matrix{Float64}, vidid::String)
+	n,T = size(Θs0)
+
+	for t in 1:T
+		plot_ntw_vid(L,ts,Θs0,ts[t],Θs0[:,t],vidid*"_$t")
+		savefig("./vid/"*vidid*"_$t.png")
+		close()
+	end
+end
+
 
