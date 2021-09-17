@@ -27,7 +27,7 @@ for i in 1:N
 
 	θ0 = 2π*rand(n)
 
-	θs = kuramoto(L,ω,θ0)
+	θs,it = kuramoto(L,ω,θ0)
 
 	push!(qs,winding(θs,Array(1:n)))
 

@@ -36,7 +36,7 @@ function kuramoto(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0:
 		err = maximum(abs.(dθ))
 	end
 
-	return θ
+	return θ,iter
 end
 
 # Runs RK4 simulation of the Kuramoto model on a cycle. 

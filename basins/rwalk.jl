@@ -16,7 +16,7 @@ function rwalk(q::Int64, n::Int64, δ::Float64, T::Int64, ρ::Float64=.5)
 	θs = Matrix{Float64}(undef,n,0)
 	θqs = Matrix{Float64}(undef,n,0)
 
-	θ = kuramoto(L,ω,θq)
+	θ,it = kuramoto(L,ω,θq)
 	θ1 = θ
 	θ2 = θ
 
@@ -36,7 +36,7 @@ function rwalk(q::Int64, n::Int64, δ::Float64, T::Int64, ρ::Float64=.5)
 		v3 = v1 .- mean(v1)
 		v3 ./= norm(v3)
 		θ1 = θ + δ*v3
-		θ2 = kuramoto(L,ω,θ1)
+		θ2,it = kuramoto(L,ω,θ1)
 		dq = q - winding(θ2,Array(1:n))
 	end
 
@@ -68,7 +68,7 @@ function rwalk(q::Int64, n::Int64, δ::Float64, T::Int64, ρ::Float64=.5)
 			v3 ./= norm(v3)
 
 			θ1 = θ + δ*v3
-			θ2 = kuramoto(L,ω,θ1)
+			θ2,it = kuramoto(L,ω,θ1)
 			dq = q - winding(θ2,Array(1:n))
 		end
 

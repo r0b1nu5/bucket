@@ -1,35 +1,46 @@
 using PyPlot
 
-function plot_ntws(ntw::String, ms::Float64=10., lw::Float64=2.)
+function plot_ntws(ntw::String, ω::Vector{Float64}, ms::Float64=10., lw::Float64=2.)
 	cmap = get_cmap("plasma")
+
+	ωmax = maximum(ω)
+	ωmin = minimum(ω)
+	ωcol = (ω .- ωmin)./(ωmax - ωmin)
 
 	if ntw == "cyc1_18"
 		n = 18
 		t = 2π*(0:n)/n
 
-		PyPlot.plot(sin.(t),cos.(t),"ok",markersize=ms)
 		PyPlot.plot(sin.(t),cos.(t),"-k",linewidth=lw)
-		PyPlot.plot(sin(t[1]),cos(t[1]),"o",color=cmap(1/3),markersize=1.1*ms)
-		PyPlot.plot(sin(t[7]),cos(t[7]),"o",color=cmap(2/3),markersize=1.1*ms)
+		for i in 1:n
+			PyPlot.plot(sin(t[i]),cos(t[i]),"o",color=cmap(ωcol[i]),markersize=ms)
+		end
 	elseif ntw == "cyc2_18"
 		n = 18
 		t = 2π*(0:n)/n
 
-		PyPlot.plot(sin.(t),cos.(t),"ok",markersize=ms)
 		PyPlot.plot(sin.(t),cos.(t),"-k",linewidth=lw)
 		PyPlot.plot(sin.(t[[1,10]]),cos.(t[[1,10]]),"-k",linewidth=lw)
-		PyPlot.plot(sin(t[1]),cos(t[1]),"o",color=cmap(1/3),markersize=1.1*ms)
-		PyPlot.plot(sin(t[10]),cos(t[10]),"o",color=cmap(2/3),markersize=1.1*ms)
+		for i in 1:n
+			PyPlot.plot(sin(t[i]),cos(t[i]),"o",color=cmap(ωcol[i]),markersize=ms)
+		end
 	elseif ntw == "cyc2_12"
 		n = 12
 		t = 2π*(0:n)/n
 
-		PyPlot.plot(sin.(t),cos.(t),"ok",markersize=ms)
 		PyPlot.plot(sin.(t),cos.(t),"-k",linewidth=lw)
-		PyPlot.plot(sin.(t[[1,7]]),cos.(t[[1,7]]),"-k",linewidth=lw)
-		PyPlot.plot(sin(t[1]),cos(t[1]),"o",color=cmap(1/3),markersize=1.1*ms)
-		PyPlot.plot(sin(t[7]),cos(t[7]),"o",color=cmap(2/3),markersize=1.1*ms)
+		PyPlot.plot(sin.(t[[1,7]]),cos.(t[[1,7]]),"-k",linewidth=lw)	
+		for i in 1:n
+			PyPlot.plot(sin(t[i]),cos(t[i]),"o",color=cmap(ωcol[i]),markersize=ms)
+		end
+	elseif ntw == "cyc1_12"
+		n = 12
+		t = 2π*(0:n)/n
 
+		PyPlot.plot(sin.(t),cos.(t),"-k",linewidth=lw)
+		for i in 1:n
+			PyPlot.plot(sin(t[i]),cos(t[i]),"o",color=cmap(ωcol[i]),markersize=ms)
+		end
 	else
 		@info "No network found..."
 	end

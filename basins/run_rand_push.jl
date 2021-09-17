@@ -33,7 +33,7 @@ for q in qs
 			iter += 1
 			α = αs[iter]
 
-			θ = kuramoto(L,ω,θ0 + α*ϵ)
+			θ,it = kuramoto(L,ω,θ0 + α*ϵ)
 		end
 
 		push!(dl,αs[iter])
