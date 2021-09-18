@@ -56,7 +56,7 @@ function kuramoto_series(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1
 	while err > tol && iter < max_iter
 		iter += 1
 		if iter%1000 == 0
-			@info "iter = $iter"
+			@info "iter = $iter, err = $err"
 		end
 
 		θs = [θs θ]
@@ -70,7 +70,7 @@ function kuramoto_series(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1
 		dθ = (k1 + 2*k2 + 2*k3 + k4)/6
 
 		θ += h*dθ
-		θ = mod.(θ .+ π,2π) .- π
+#		θ = mod.(θ .+ π,2π) .- π
 
 		err = maximum(abs.(dθ))
 	end

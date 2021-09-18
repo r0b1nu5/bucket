@@ -1,7 +1,7 @@
 using PyPlot, DelimitedFiles
 
 to_plot = [("naspi_1",1),("naspi_2",1),("naspi_3",1),("naspi_4",1),("naspi_5",1),("naspi_6",1),("naspi_7",1),("naspi_8",1),("naspi_9",1)]
-
+to_plot = [("naspi_10",1),("naspi_11",1),("naspi_12",1),("naspi_13",1)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -126,7 +126,7 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "naspi_10" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",','))[1:51],
 				       "naspi_11" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
 				       "naspi_12" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
-				       "naspi_13" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",',')),
+				       "naspi_13" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
 				       "mysterious_forcing_UK" => Array(1:120),
 				       "mysterious_forcing_57" => Array(1:57),
 				       "mysterious_forcing" => Array(1:99),

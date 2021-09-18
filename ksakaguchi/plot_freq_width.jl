@@ -5,7 +5,7 @@ include("runs_dict.jl")
 
 cmap = get_cmap("plasma")
 
-run = 3538
+run = 6179
 
 αs = vec(readdlm("temp_data/alphas_$(run).csv",','))
 β0 = readdlm("temp_data/beta0_$(run).csv",',')
