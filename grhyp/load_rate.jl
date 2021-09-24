@@ -35,17 +35,23 @@ function anglediff_rate(θ::Array{Float64,1}, angbnd::SparseMatrixCSC{Float64,In
 	end
 
 	if do_plot
+		max_x = min(120,length(ids))
+		nlines = ceil(Int64,length(ids)/max_x)
+
 		c = (L .> .5) + (L .> .8) + (L .> 1.) .+ 1
 		col = ["C2","C0","C1","C3"]
 
 		figure()
-		PyPlot.plot([0,length(ids)+1],[1.,1.],"--k")
-		for k in 1:length(ids)
-			PyPlot.bar(k,L[k],.9,0.,color=col[c[k]])
+		for l in 1:nlines
+			subplot2grid((3*nlines,1),((l-1)*3,0),rowspan=2)
+			PyPlot.plot([0,max_x+1],[1.,1.],"--k")
+			for k in ((l-1)*max_x + 1):min(l*max_x,length(ids))
+				PyPlot.bar(k-(l-1)*max_x,L[k],.9,0.,color=col[c[k]])
+			end
+				
+			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I[i]),$(J[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
+			ylabel("angle ratio")
 		end
-		
-		xticks(Array(1:length(ids)),["($(I[i]),$(J[i]))" for i in ids],rotation=90)
-		ylabel("angle ratio")
 	end
 
 	return sparse([I2;J2],[J2;I2],[L;L])
@@ -91,17 +97,23 @@ function flow_rate(θ::Vector{Float64}, v::Vector{Float64}, angbnd::SparseMatrix
 	end
 
 	if do_plot
+		max_x = min(120,length(ids))
+		nlines = ceil(Int64,length(ids)/max_x)
+
 		c = (L .> .5) + (L .> .8) + (L .> 1.) .+ 1
 		col = ["C2","C0","C1","C3"]
 
 		figure()
-		PyPlot.plot([0,length(ids)+1],[1.,1.],"--k")
-		for k in 1:length(ids)
-			PyPlot.bar(k,L[k],.9,0.,color=col[c[k]])
+		for l in 1:nlines
+			subplot2grid((3*nlines,1),((l-1)*3,0),rowspan=2)
+			PyPlot.plot([0,max_x+1],[1.,1.],"--k")
+			for k in ((l-1)*max_x + 1):min(l*max_x,length(ids))
+				PyPlot.bar(k-(l-1)*max_x,L[k],.9,0.,color=col[c[k]])
+			end
+			
+			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I[i]),$(J[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
+			ylabel("flow ratio")
 		end
-		
-		xticks(Array(1:length(ids)),["($(I[i]),$(J[i]))" for i in ids],rotation=90)
-		ylabel("flow ratio")
 	end
 
 	return sparse([I2;J2],[J2;I2],[L;L])
@@ -140,14 +152,22 @@ function active_flow(θ::Vector{Float64}, v::Vector{Float64}, B::SparseMatrixCSC
 	end
 
 	if do_plot
+		max_x = min(120,length(ids))
+		nlines = ceil(Int64,length(ids)/max_x)
+
+		c = (L .> .5) + (L .> .8) + (L .> 1.) .+ 1
+		col = ["C2","C0","C1","C3"]
+
 		figure()
-		PyPlot.plot([0,length(ids)+1],[1.,1.],"--k")
-		for k in 1:length(ids)
-			PyPlot.bar(k,L[k],.9,0.,color="C0")
+		for l in 1:nlines
+			subplot2grid((3*nlines,1),((l-1)*3,0),rowspan=2)
+			for k in ((l-1)*max_x + 1):min(l*max_x,length(ids))
+				PyPlot.bar(k-(l-1)*max_x,L[k],.9,0.,color="C0")
+			end
+			
+			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I[i]),$(J[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
+			ylabel("active pf")
 		end
-		
-		xticks(Array(1:length(ids)),["($(I[i]),$(J[i]))" for i in ids],rotation=90)
-		ylabel("active power flow")
 	end
 
 	return sparse([I2;J2],[J2;I2],[L;-L])
