@@ -4,7 +4,7 @@ include("L2B.jl")
 
 # Runs RK4 simulation of the Kuramoto model on a cycle.
 # Returns the final state.
-function kuramoto(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, verb::Bool=false, h::Float64=.1, max_iter::Int64=10000, tol::Float64=1e-6)
+function kuramoto(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, verb::Bool=false, h::Float64=.01, max_iter::Int64=10000, tol::Float64=1e-6)
 	B,w,Bt = L2B(L)
 	W = spdiagm(0 => w)
 	BW = B*W
@@ -41,7 +41,7 @@ end
 
 # Runs RK4 simulation of the Kuramoto model on a cycle. 
 # Returns the whole time series.
-function kuramoto_series(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, h::Float64=.1, max_iter::Int64=10000, tol::Float64=1e-6)
+function kuramoto_series(L::SparseMatrixCSC{Float64, Int64}, ω::Array{Float64,1}, θ0::Array{Float64,1}, h::Float64=.01, max_iter::Int64=10000, tol::Float64=1e-6)
 	B,w,Bt = L2B(L)
 	W = spdiagm(0 => w)
 	BW = B*W
