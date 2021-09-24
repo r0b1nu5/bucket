@@ -2,14 +2,21 @@ using PowerModels, PyPlot, SparseArrays
 
 include("tools.jl")
 
-function load_rate(nd::Dict{String,Any}, do_plot::Bool=true)
+# Computes the ratio between actual angle difference and maximal angle difference for each line.
+function anglediff_rate(nd::Dict{String,Any}, do_plot::Bool=true)
 	θ = angle_vec(nd)
 	angbnd = angdiff_bound(nd)
 
-	return load_rate(θ,angbnd,do_plot)
+	return anglediff_rate(θ,angbnd,do_plot)
 end
 
-function load_rate(θ::Array{Float64,1}, angbnd::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=true)
+function anglediff_rate(θ::Vector{Float64}, nd::Dict{String,Any}, do_plot::Bool=true)
+	angbnd = angdiff_bound(nd)
+
+	return anglediff_rate(θ,angbnd,do_plot)
+end
+
+function anglediff_rate(θ::Array{Float64,1}, angbnd::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=true)
 	n = length(θ)
 
 	I,J,V = findnz(angbnd)
@@ -38,11 +45,114 @@ function load_rate(θ::Array{Float64,1}, angbnd::SparseMatrixCSC{Float64,Int64},
 		end
 		
 		xticks(Array(1:length(ids)),["($(I[i]),$(J[i]))" for i in ids],rotation=90)
+		ylabel("angle ratio")
 	end
 
-	return sparse(I2,J2,L)
+	return sparse([I2;J2],[J2;I2],[L;L])
 end
 
+# Computes the ratio between actual active power flow and the maximal active power flow for each line.
+function flow_rate(nd::Dict{String,Any}, to_plot::Bool=true)
+	θ = angle_vec(nd)
+	v = volt_vec(nd)
+	angbnd = angdiff_bound(nd)
+	B = calc_basic_susceptance_matrix(nd)
+
+	return flow_rate(θ,v,angbnd,B,to_plot)
+end
+
+function flow_rate(θ::Vector{Float64}, v::Vector{Float64}, nd::Dict{String,Any}, do_plot::Bool=true)
+	angbnd = angdiff_bound(nd)
+	B = calc_basic_susceptance_matrix(nd)
+
+	return flow_rate(θ,v,angbnd,B,to_plot)
+end
+
+function flow_rate(θ::Vector{Float64}, v::Vector{Float64}, angbnd::SparseMatrixCSC{Float64,Int64}, B::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=true)
+	n = length(θ)
+
+	I,J,V = findnz(angbnd)
+
+	ids = setdiff((I .< J).*(1:length(I)),[0,])
+	I2 = I[ids]
+	J2 = J[ids]
+
+	L = Vector{Float64}()
+	for k in 1:length(ids)
+		i = I2[k]
+		j = J2[k]
+
+		Bvv = B[i,j]*v[i]*v[j]
+
+		f = Bvv*sin(θ[i] - θ[j])
+		fmax = Bvv*sin(angbnd[i,j])
+		fmin = Bvv*sin(angbnd[j,i])
+		push!(L,max(f/fmax,f/fmin))
+	end
+
+	if do_plot
+		c = (L .> .5) + (L .> .8) + (L .> 1.) .+ 1
+		col = ["C2","C0","C1","C3"]
+
+		figure()
+		PyPlot.plot([0,length(ids)+1],[1.,1.],"--k")
+		for k in 1:length(ids)
+			PyPlot.bar(k,L[k],.9,0.,color=col[c[k]])
+		end
+		
+		xticks(Array(1:length(ids)),["($(I[i]),$(J[i]))" for i in ids],rotation=90)
+		ylabel("flow ratio")
+	end
+
+	return sparse([I2;J2],[J2;I2],[L;L])
+end
+	
+#Computes the active power flows on each line.
+function active_flow(nd::Dict{String,Any}, to_plot::Bool=true)
+	θ = angle_vec(nd)
+	v = volt_vec(nd)
+	B = calc_basic_susceptance_matrix(nd)
+
+	return active_flow(θ,v,B,to_plot)
+end
+
+function active_flow(θ::Vector{Float64}, v::Vector{Float64}, nd::Dict{String,Any}, do_plot::Bool=false)
+	B = calc_basic_susceptance_matrix(nd)
+	
+	return active_flow(θ,v,B,do_plot)
+end
+
+function active_flow(θ::Vector{Float64}, v::Vector{Float64}, B::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=false)
+	n = length(θ)
+
+	I,J,V = findnz(B)
+
+	ids = setdiff((I .< J).*(1:length(I)),[0,])
+	I2 = I[ids]
+	J2 = J[ids]
+
+	L = Vector{Float64}()
+	for k in 1:length(ids)
+		i = I2[k]
+		j = J2[k]
+
+		push!(L,B[i,j]*v[i]*v[j]*sin(θ[i]-θ[j]))
+	end
+
+	if do_plot
+		figure()
+		PyPlot.plot([0,length(ids)+1],[1.,1.],"--k")
+		for k in 1:length(ids)
+			PyPlot.bar(k,L[k],.9,0.,color="C0")
+		end
+		
+		xticks(Array(1:length(ids)),["($(I[i]),$(J[i]))" for i in ids],rotation=90)
+		ylabel("active power flow")
+	end
+
+	return sparse([I2;J2],[J2;I2],[L;-L])
+end
+	
 
 function dist_ratio(Lw::SparseMatrixCSC{Float64,Int64}, do_plot::Bool=false)
 	Ω = res_dist(Array(Lw))

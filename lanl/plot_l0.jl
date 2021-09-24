@@ -1,7 +1,6 @@
 using PyPlot, DelimitedFiles
 
-to_plot = [("naspi_1",1),("naspi_2",1),("naspi_3",1),("naspi_4",1),("naspi_5",1),("naspi_6",1),("naspi_7",1),("naspi_8",1),("naspi_9",1)]
-to_plot = [("naspi_10",1),("naspi_11",1),("naspi_12",1),("naspi_13",1)]
+to_plot = [("naspi_1",1),("naspi_2",1),("naspi_3",1),("naspi_4",1),("naspi_5",1),("naspi_6",1),("naspi_7",1),("naspi_8",1),("naspi_9",1),("naspi_10",1),("naspi_11",1),("naspi_12",1),("naspi_13",1)]
 
 kss = Dict{Tuple{String,Int64},Tuple{Int64,Int64,Int64}}(
 							 ("ntw3_1",1) => (1,50,1),
@@ -126,7 +125,7 @@ node_ids = Dict{String,Array{Any,1}}(
 				       "naspi_10" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",','))[1:51],
 				       "naspi_11" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
 				       "naspi_12" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
-				       "naspi_13" => vec(readdlm("data_naspi/naspi_ids_Case1.csv",',')),
+				       "naspi_13" => vec(readdlm("data_naspi/naspi_ids_Case2.csv",',')),
 				       "mysterious_forcing_UK" => Array(1:120),
 				       "mysterious_forcing_57" => Array(1:57),
 				       "mysterious_forcing" => Array(1:99),
@@ -207,7 +206,7 @@ for ntw_run in to_plot
 	
 	sort_nodes = sortslices([L[:,iii[2]] ni Array(1:length(ls))],dims=1)
 	
-	figure("[ℓ0] ntw: "*ntw*", run: $run",(8.,7.))
+	figure("[ℓ0] ntw: "*ntw*", run: $run",(9.,7.))
 
 #=
 	subplot2grid((1,7),(0,0),colspan=3)
@@ -223,7 +222,7 @@ for ntw_run in to_plot
 =#
 
 #	subplot2grid((1,7),(0,3),colspan=3)
-	subplot2grid((1,6),(0,0),colspan=5)
+	subplot2grid((1,7),(0,0),colspan=5)
 	for i in 1:length(ls)
 		j = Int(sort_nodes[i,3])
 		PyPlot.plot(ks/T[ntw],L[j,:],"-o",label="l = $(ls[j])",color=cmap((i-1)/(length(ls)-1)))
@@ -236,7 +235,7 @@ for ntw_run in to_plot
 	title("Node id: $(node_id) \n frequency: $freq [Hz]")
 	
 #	subplot2grid((1,7),(0,6),colspan=1)
-	subplot2grid((1,6),(0,5),colspan=1)
+	subplot2grid((1,7),(0,5),colspan=1)
 	xticks([])
 	yticks([])
 	twinx()

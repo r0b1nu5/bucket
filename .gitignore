@@ -1,7 +1,9 @@
 basins/data/
 grhyp/data/
 grhyp/MATPOWER-manual-7.1.pdf
-grhyp/ntw_data/
+grhyp/ntw_data/*.png
+grhyp/ntw_data/*.raw
+grhyp/ntw_data/*.RAW
 gs_failure/data/
 gs_failure/figs/
 K_player/figures/

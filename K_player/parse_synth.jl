@@ -1,6 +1,6 @@
 using DelimitedFiles
 
-id = 100008
+id = 100012
 num = Int64.(vec(readdlm("./synth_data/d_$(id).csv",',')))
 
 dat = sort(union(num))
