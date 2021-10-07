@@ -21,3 +21,5 @@ PyPlot.plot(x3,y4,color="C1",linewidth=4.)
 PyPlot.plot(x2,y5,color="C2",linewidth=4.)
 PyPlot.plot(x1,y1,"--",color="C0")
 
+
+axis([-1.5*π,1.5*π,-1.2,1.6])
