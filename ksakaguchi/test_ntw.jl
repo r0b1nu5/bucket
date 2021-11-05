@@ -33,7 +33,7 @@ Ff = h([Δf;-Δf]) # Real flows
 #u = [0,1,0] # Tentative winding vector
 u = uf
 T = 1000 # Number of iterations
-T = 20
+#T = 20
 λ = .1 # Scaling parameter for the fixed point iteration Tu
 
 #Lmin = 1.0*ones(m2) # Scaling for the cutset projection. Lower bounds on the coupling derivatives.
@@ -128,7 +128,7 @@ xlabel("iteration")
 
 #Δ01 = (2*rand(m2) .- 1)*γ
 Δ01 = 4π*rand(m2) .- 2π
-Δ1 = iterations5(Δ01,θf,Bout,B,C,ω,u,ρ1,T,false)
+Δ1 = iterations5(Δ01,θf,Bout,B,C,ω,α,u,ρ1,T,false)
 f1 = h([Δ1;-Δ1])
 
 #f02 = (hγ2 - hγ1)*rand(m) .+ hγ1
@@ -139,7 +139,7 @@ f1 = h([Δ1;-Δ1])
 
 #Δ02 = (2*rand(m2) .- 1)*γ
 Δ02 = 4π*rand(m2) .- 2π
-Δ4 = iterations5(Δ02,θf,Bout,B,C,ω,u,ρ1,T,false)
+Δ4 = iterations5(Δ02,θf,Bout,B,C,ω,α,u,ρ1,T,false)
 f4 = h([Δ4;-Δ4])
 
 ##=
