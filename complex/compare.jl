@@ -7,9 +7,10 @@ n = 10
 L = cycle(n)
 B,w = L2B(L)
 A = diagm(0 => diag(L)) - L
-γ = 2/π
+γ = 1.
 
 #θ0 = 2π*(1:n)./n .- π .- π/10 + .3*(2*rand(n).-1)
+θ0 = vec(readdlm("th1.csv",','))
 θs = copy(θ0)
 θ = copy(θ0)
 
@@ -23,6 +24,8 @@ x = copy(x0)
 
 T = 50000
 h = .001
+T = 100000
+h = .0005
 t = 0
 c = 0
 
@@ -86,26 +89,40 @@ end
 Zs = [Zs zs]
 Xs = [Xs xs]
 
+figure()
+
 for i in 1:n
-	subplot(1,3,1)
+	subplot(2,3,1)
 	PyPlot.plot((0:T)*h,Θs[i,:])
-	subplot(1,3,2)
+	subplot(2,3,2)
 	PyPlot.plot((0:T)*h,real.(Zs[i,:]))
-	subplot(1,3,3)
+	subplot(2,3,3)
 	PyPlot.plot((0:T)*h,angle.(Xs[i,:]))
+	subplot(2,3,4)
+	PyPlot.plot((0:T)*h,abs.(Θs[i,:] - real.(Zs[i,:])))
+	subplot(2,3,5)
+	PyPlot.plot((0:T)*h,abs.(Θs[i,:] - angle.(Xs[i,:])))
+	subplot(2,3,6)
+	PyPlot.plot((0:T)*h,abs.(real.(Zs[i,:]) - angle.(Xs[i,:])))
 end
 
-subplot(1,3,1)
+subplot(2,3,1)
 title("Original Kuramoto")
-xlabel("t")
 ylabel("θ")
-subplot(1,3,2)
+subplot(2,3,2)
 title("Complex Kuramoto - 1st")
-xlabel("t")
 ylabel("real(z)")
-subplot(1,3,3)
+subplot(2,3,3)
 title("Complex Kuramoto - 2nd")
-xlabel("t")
 ylabel("arg(x)")
+subplot(2,3,4)
+xlabel("t")
+ylabel("θ - real(z)")
+subplot(2,3,5)
+xlabel("t")
+ylabel("θ - arg(x)")
+subplot(2,3,6)
+xlabel("t")
+ylabel("real(z) - arg(x)")
 
 
