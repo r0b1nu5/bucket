@@ -20,10 +20,10 @@ run = 6786
 
 lw = 2.
 
-αs = vec(readdlm("data/alphas_$(run).csv",','))
-β0 = readdlm("data/beta0_$(run).csv",',')
-β1 = readdlm("data/beta1_$(run).csv",',')
-β2 = readdlm("data/beta2_$(run).csv",',')
+αs = vec(readdlm("temp_data/alphas_$(run).csv",','))
+β0 = readdlm("temp_data/beta0_$(run).csv",',')
+β1 = readdlm("temp_data/beta1_$(run).csv",',')
+β2 = readdlm("temp_data/beta2_$(run).csv",',')
 
 T = length(αs)
 T = 70
@@ -47,12 +47,14 @@ ylabel("β")
 legend()
 
 subplot(1,2,2)
-w = vec(readdlm("data/w_$(run).csv",','))
-plot_ntws(runs[run]["ntw"],w,10.,2.,name_cmap)
+θ = vec(readdlm("temp_data/th0f_6786.csv",','))
+#θ = vec(readdlm("temp_data/th1f_6786.csv",',')) .+ .5
+#plot_ntws(runs[run]["ntw"],w,10.,2.,name_cmap)
+plot_ntws(runs[run]["ntw"],w,θ,10.,2.,name_cmap)
 axis([-1.3,1.3,-1.3,1.3])
 
-flows0 = readdlm("data/f0_$(run).csv",',')
-flows1 = readdlm("data/f1_$(run).csv",',')
-flows2 = readdlm("data/f2_$(run).csv2,',')
+#flows0 = readdlm("temp_data/f0_$(run).csv",',')
+#flows1 = readdlm("temp_data/f1_$(run).csv",',')
+#flows2 = readdlm("temp_data/f2_$(run).csv2,',')
 
 

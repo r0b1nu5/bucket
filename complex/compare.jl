@@ -9,8 +9,8 @@ B,w = L2B(L)
 A = diagm(0 => diag(L)) - L
 γ = 1.
 
-#θ0 = 2π*(1:n)./n .- π .- π/10 + .3*(2*rand(n).-1)
-θ0 = vec(readdlm("th1.csv",','))
+θ0 = 2π*(1:n)./n .- π .- π/10 + .3*(2*rand(n).-1)
+#θ0 = vec(readdlm("th1.csv",','))
 θs = copy(θ0)
 θ = copy(θ0)
 
@@ -54,10 +54,10 @@ while t < T
 	θ += h*(k1 + 2*k2 + 2*k3 + k4)/6
 	θs = [θs (mod.(θ .+ π,2π) .- π)]
 
-	k1 = -γ*B*(sin.(B'*z) - im*cos.(B'*z))
-	k2 = -γ*B*(sin.(B'*(z + h*k1/2)) - im*cos.(B'*(z + h*k1/2)))
-	k1 = -γ*B*(sin.(B'*(z + h*k2/2)) - im*cos.(B'*(z + h*k2/2)))
-	k1 = -γ*B*(sin.(B'*(z + h*k3)) - im*cos.(B'*(z + h*k3)))
+	k1 = -γ*(B*sin.(B'*z) + im*abs.(B)*cos.(B'*z))
+	k2 = -γ*(B*sin.(B'*(z + h*k1/2)) + im*abs.(B)*cos.(B'*(z + h*k1/2)))
+	k3 = -γ*(B*sin.(B'*(z + h*k2/2)) + im*abs.(B)*cos.(B'*(z + h*k2/2)))
+	k4 = -γ*(B*sin.(B'*(z + h*k3)) + im*abs.(B)*cos.(B'*(z + h*k3)))
 
 	z += h*(k1 + 2*k2 + 2*k3 + k4)/6
 	zs = [zs z]
@@ -92,18 +92,23 @@ Xs = [Xs xs]
 figure()
 
 for i in 1:n
+	AA = Θs[i,:]
+	BB = mod.(real.(Zs[i,:]) .+ π,2π) .- π
+	CC = angle.(Xs[i,:])
+
 	subplot(2,3,1)
-	PyPlot.plot((0:T)*h,Θs[i,:])
+	PyPlot.plot((0:T)*h,AA)
 	subplot(2,3,2)
-	PyPlot.plot((0:T)*h,real.(Zs[i,:]))
+	PyPlot.plot((0:T)*h,BB)
 	subplot(2,3,3)
-	PyPlot.plot((0:T)*h,angle.(Xs[i,:]))
+#	PyPlot.plot((0:T)*h,imag.(Zs[i,:]))
+	PyPlot.plot((0:T)*h,CC)
 	subplot(2,3,4)
-	PyPlot.plot((0:T)*h,abs.(Θs[i,:] - real.(Zs[i,:])))
+	PyPlot.plot((0:T)*h,abs.(AA - BB))
 	subplot(2,3,5)
-	PyPlot.plot((0:T)*h,abs.(Θs[i,:] - angle.(Xs[i,:])))
+	PyPlot.plot((0:T)*h,abs.(AA - CC))
 	subplot(2,3,6)
-	PyPlot.plot((0:T)*h,abs.(real.(Zs[i,:]) - angle.(Xs[i,:])))
+	PyPlot.plot((0:T)*h,abs.(BB - CC))
 end
 
 subplot(2,3,1)

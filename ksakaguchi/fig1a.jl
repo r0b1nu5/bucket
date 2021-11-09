@@ -48,5 +48,8 @@ legend()
 
 subplot(1,2,2)
 w = vec(readdlm("temp_data/w_$(run).csv",','))
-plot_ntws(runs[run]["ntw"],w,10.,2.,name_cmap)
+#θ = vec(readdlm("temp_data/th0f_$(run).csv",',')) .+ .4
+θ = vec(readdlm("temp_data/th2f_$(run).csv",',')) .+ .5
+#plot_ntws(runs[run]["ntw"],w,10.,2.,name_cmap)
+plot_ntws(runs[run]["ntw"],w,θ,10.,2.,name_cmap)
 axis([-1.3,1.3,-1.3,1.3])
