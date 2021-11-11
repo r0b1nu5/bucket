@@ -9,7 +9,7 @@ col1 = cmap(1/6)
 col2 = cmap(3/6)
 col3 = cmap(5/6)
 
- #=
+# #=
 run = 6179
 
 n = 18
@@ -79,7 +79,7 @@ writedlm("temp_data/fig4_w2_$(run).csv",ω2,',')
 
 # =#
 
-# #=
+ #=
 run = 6786
 
 n = 18
