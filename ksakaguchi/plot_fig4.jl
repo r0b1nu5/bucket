@@ -34,7 +34,7 @@ ps = vec(readdlm("temp_data/fig4_ps_$(run).csv",','))
 
 figure()
 
-# #=
+ #=
 subplot(1,2,1)
 PyPlot.plot(ps,λ1[end-1,:],color=col3,label="sol. 3")
 PyPlot.plot(ps,λ0[end-1,:],color=col2,label="sol. 2")
@@ -46,24 +46,31 @@ legend()
 subplot(1,2,2)
 # =#
 
- #=
+# #=
 for i in 1:n
 	subplot(1,4,1)
-	PyPlot.plot(ps,λ0[i,:])
-	subplot(1,4,2)
 	PyPlot.plot(ps,λ1[i,:])
+	subplot(1,4,2)
+	PyPlot.plot(ps,λ0[i,:])
 	subplot(1,4,3)
 	PyPlot.plot(ps,λ2[i,:])
 end
+subplot(1,4,1)
+title("sol. 3")
+subplot(1,4,2)
+title("sol. 2")
+subplot(1,4,3)
+title("sol. 1")
 
 subplot(1,4,4)
 # =#
 
-PyPlot.plot(ps,-ω1,color=col3)
-PyPlot.plot(ps,-ω0,color=col2)
-PyPlot.plot(ps,-ω2,color=col1)
+PyPlot.plot(ps,-ω1,color=col3,label="sol. 3")
+PyPlot.plot(ps,-ω0,color=col2,label="sol. 2")
+PyPlot.plot(ps,-ω2,color=col1,label="sol. 1")
 xlabel("p")
 ylabel("ω_s")
+legend()
 
 # =#
 
@@ -95,7 +102,7 @@ ps = vec(readdlm("temp_data/fig4_ps_$(run).csv",','))
 
 figure()
 
-# #=
+ #=
 subplot(1,2,1)
 #PyPlot.plot(ps,λ2[end-1,:],color=col3,label="sol. 3")
 PyPlot.plot(ps,λ0[end-1,:],color=col2,label="sol. 2")
@@ -107,23 +114,26 @@ legend()
 subplot(1,2,2)
 # =#
 
- #=
+# #=
 for i in 1:n
-	subplot(1,4,1)
+	subplot(1,3,1)
 	PyPlot.plot(ps,λ0[i,:])
-	subplot(1,4,2)
+	subplot(1,3,2)
 	PyPlot.plot(ps,λ1[i,:])
-	subplot(1,4,3)
-	PyPlot.plot(ps,λ2[i,:])
 end
+subplot(1,3,1)
+title("sol. 2")
+subplot(1,3,2)
+title("sol. 1")
 
-subplot(1,4,4)
+subplot(1,3,3)
 # =#
 
 #PyPlot.plot(ps,-ω2,color=col3)
-PyPlot.plot(ps,-ω0,color=col2)
-PyPlot.plot(ps,-ω1,color=col1)
+PyPlot.plot(ps,-ω0,color=col2,label="sol. 2")
+PyPlot.plot(ps,-ω1,color=col1,label="sol. 1")
 xlabel("p")
 ylabel("ω_s")
+legend()
 
 # =#

@@ -4,6 +4,64 @@ include("L2B.jl")
 
 #TODO
 
+function kuramoto(L::Array{Float64,2}, P::Array{Float64,1}, θ0::Array{Float64,1}, store::Bool=false, max_iter::Int64=100000, ε::Float64=1e-8, h::Float64=.01)
+	B,w = L2B(L)
+	W = diagm(0 => w)
+	Bt = transpose(B)
+
+	n = length(θ0)
+
+	err = 1000.
+	iter = 0
+
+	θ1 = copy(θ0)
+	θ2 = copy(θ0)
+	if store
+		θs = Array{Float64,2}(undef,n,0)
+		θs = [θs θ0]
+	else
+		θs = Array{Float64,1}()
+	end
+
+	while err > ε && iter < max_iter
+		iter += 1
+		if iter%1000 == 0
+			@info "$iter"
+		end
+		
+		θ1 = copy(θ2)
+		
+		k1 = P - B*W*sin.(Bt*θ1)
+		k2 = P - B*W*sin.(Bt*(θ1+h/2*k1))
+		k3 = P - B*W*sin.(Bt*(θ1+h/2*k2))
+		k4 = P - B*W*sin.(Bt*(θ1+h*k3))
+
+		dθ = (k1+2*k2+2*k3+k4)/6
+
+		θ2 = θ1 + h*dθ
+
+		if store && iter%1000 == 0
+			c += 1
+			writedlm("data1/ths_$c.csv",θs[:,1:end],',')
+			θs = Array{Float64,2}(undef,n,0)
+			θs = [θs θ2]
+		elseif store
+			θs = [θs θ2]
+		else
+			θs = copy(θ2)
+		end
+
+		err = maximum(abs.(dθ))
+	end
+
+	Θs = Array{Float64,2}(undef,n,0)
+	for i in 1:c
+		Θs = [Θs readdlm("data1/ths_$i.csv",',')]
+	end
+
+	return Θs
+end
+
 function kuramoto_corr_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float64,1}, dP0::Float64, tau0::Float64, store::Bool=false, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.1)
 	B,w = L2B(L)
 	W = diagm(0 => w)
@@ -23,13 +81,15 @@ function kuramoto_corr_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Arra
 		ths = Array{Float64,1}()
 	end
 
+	xi = dP0^2*rand(Normal(0.,1.),n)
+
 	while err > eps && iter < max_iter
 		iter += 1
 		if iter%1000 == 0
 			@info "$iter"
 		end
-
-		xi = dP0^2*rand(Normal(0.,1.),n)
+		
+		xi = dP0^2*cnoise(xi,tau0)
 
 		th1 = copy(th2)
 		
@@ -63,7 +123,8 @@ function kuramoto_corr_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Arra
 
 	return Ths
 end
-function kuramoto_white_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float64,1}, dP0::Float64, store::Bool=false, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.1)
+
+function kuramoto_white_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float64,1}, dP0::Float64, store::Bool=false, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.01)
 	B,w = L2B(L)
 	W = diagm(0 => w)
 	Bt = transpose(B)
@@ -78,8 +139,10 @@ function kuramoto_white_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Arr
 	if store
 		ths = Array{Float64,2}(undef,n,0)
 		ths = [ths th0]
+		dths = Matrix{Float64}(undef,n,0)
 	else
 		ths = Array{Float64,1}()
+		dths = Vector{Float64}()
 	end
 	
 	c = 0
@@ -102,27 +165,38 @@ function kuramoto_white_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Arr
 		dth = (k1+2*k2+2*k3+k4)/6
 
 		th2 = th1 + h*dth
+		dths = [dths dth]
 
 		if store && iter%1000 == 0
 			c += 1
 			writedlm("data1/ths_$c.csv",ths[:,1:end],',')
 			ths = Array{Float64,2}(undef,n,0)
 			ths = [ths th2]
+			writedlm("data1/dths_$c.csv",dths[:,1:end],',')
+			dths = Matrix{Float64}(undef,n,0)
 		elseif store
 			ths = [ths th2]
 		else
 			ths = copy(th2)
+			dths = copy(dth)
 		end
 
 		err = maximum(abs.(dth))
 	end
 
-	Ths = Array{Float64,2}(undef,n,0)
-	for i in 1:c
-		Ths = [Ths readdlm("data1/ths_$i.csv",',')]
+	if store
+		Ths = Array{Float64,2}(undef,n,0)
+		dThs = Matrix{Float64}(undef,n,0)
+		for i in 1:c
+			Ths = [Ths readdlm("data1/ths_$i.csv",',')]
+			dThs = [dThs readdlm("data1/dths_$i.csv",',')]
+		end
+	else
+		Ths = ths
+		dThs = dths
 	end
 
-	return Ths
+	return Ths,dThs
 end
 
 # max_iter: maximum number of iterations

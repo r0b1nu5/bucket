@@ -24,7 +24,7 @@ x = copy(x0)
 
 T = 50000
 h = .001
-T = 100000
+T = 50000
 h = .0005
 t = 0
 c = 0
@@ -113,21 +113,24 @@ end
 
 subplot(2,3,1)
 title("Original Kuramoto")
+xlabel("t[s]")
 ylabel("θ")
 subplot(2,3,2)
 title("Complex Kuramoto - 1st")
+xlabel("t[s]")
 ylabel("real(z)")
 subplot(2,3,3)
 title("Complex Kuramoto - 2nd")
+xlabel("t[s]")
 ylabel("arg(x)")
 subplot(2,3,4)
-xlabel("t")
+xlabel("t[s]")
 ylabel("θ - real(z)")
 subplot(2,3,5)
-xlabel("t")
+xlabel("t[s]")
 ylabel("θ - arg(x)")
 subplot(2,3,6)
-xlabel("t")
+xlabel("t[s]")
 ylabel("real(z) - arg(x)")
 
 

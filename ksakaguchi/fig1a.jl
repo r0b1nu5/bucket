@@ -53,3 +53,9 @@ w = vec(readdlm("temp_data/w_$(run).csv",','))
 #plot_ntws(runs[run]["ntw"],w,10.,2.,name_cmap)
 plot_ntws(runs[run]["ntw"],w,θ,10.,2.,name_cmap)
 axis([-1.3,1.3,-1.3,1.3])
+
+figure()
+PyPlot.plot(cos.(LinRange(0,2π,200)),sin.(LinRange(0,2π,200)),"k")
+PyPlot.plot(cos.([θ;θ[1]]),sin.([θ;θ[1]]),"-o")
+
+
