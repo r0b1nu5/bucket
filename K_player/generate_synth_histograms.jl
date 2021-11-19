@@ -1,6 +1,5 @@
 using PyPlot, DelimitedFiles, SpecialFunctions, Dates
 
-include("journals.jl")
 include("my_histo.jl")
 include("mle.jl")
 include("gof.jl")
@@ -11,7 +10,11 @@ number_sample = 2500
 precision = 1e-4
 
 ############## JOURNALS TO USE ########################################
-js = ["cha",]
+#js = [100001,100002,100003,100004]
+#js = [100005,100006,100007,100008]
+#js = [100009,100010,100011,100012]
+#js = [100013,100014,100015,100016]
+js = Array(100017:100021)
 
 ################ DO / DON'T LIST #######################################
 plots = true
@@ -47,13 +50,9 @@ for j in js
 ################ COLLECTING DATA ################################
 	
 	@info("$(now()) -- Collecting data: $j")
-	if j == "prl_reduced" || j == "prd_reduced"
-		num = Int.(readdlm("data/"*j*"_parsed.csv",','))
-		j = j[1:3]
-	else
-		num = Int.(readdlm("data/"*j*"_parsed.csv",','))
-	end
-	
+	num = Int.(readdlm("synth_data/d_$(j)_parsed.csv",','))
+	include("synth_data/p_$(j).jl")
+
 	mi = num[1,1]
 	ma = num[1,end]
 	n_data = sum(num[2,:])
@@ -62,11 +61,7 @@ for j in js
 	
 ############## PLOT HISTOGRAM ##################################
 	if plots
-		if haskey(journals_colors,j)
-			col = journals_colors[j][1]
-		else
-			col = "C0"
-		end
+		col = "C$(mod(j,10))"
 
 		for i in 1:size(num)[2]
 			figure(j)
@@ -115,13 +110,9 @@ for j in js
 =#
 		@info "==========================================="
 		
-		if haskey(journals_code,j)
-			jcode = journals_code[j]
-		else
-			jcode = "SYNTH"
-		end
+		jcode = "ppy: $(d["ppyear"]), ny: $(d["n_year"]), ρ0: $(d["rho0"]), Y: [$(d["amin"]),$(d["amax"])]"
 
-		title(jcode*", max. # articles predicted: $(ceil(Int,max_k))")
+		title(jcode*", max: $(ceil(Int,max_k))")
 		xlabel("Number of articles")
 		ylabel("Number of authors")
 		axis([.9*mi,2*ma,.5/sum(num[2,:]),2.])
