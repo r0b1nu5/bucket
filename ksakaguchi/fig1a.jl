@@ -54,8 +54,10 @@ w = vec(readdlm("temp_data/w_$(run).csv",','))
 plot_ntws(runs[run]["ntw"],w,θ,10.,2.,name_cmap)
 axis([-1.3,1.3,-1.3,1.3])
 
-figure()
+figure("test",(8,8))
 PyPlot.plot(cos.(LinRange(0,2π,200)),sin.(LinRange(0,2π,200)),"k")
-PyPlot.plot(cos.([θ;θ[1]]),sin.([θ;θ[1]]),"-o")
+PyPlot.plot(cos.([θ;θ[1]]),sin.([θ;θ[1]]),"ok")
+PyPlot.plot(1.1*cos.(θ[1:7]),1.1*sin.(θ[1:7]))
+PyPlot.plot(.9*cos.([θ[7:18];θ[1]]),.9*sin.([θ[7:18];θ[1]]))
 
 
