@@ -1,6 +1,6 @@
 include("tools.jl")
 
-function acyc_algo(L::Array{Float64,2}, H::Function, ω0::Array{Float64,1}, hγ::Tuple{Float64,Float64}, α::Float64=.1)
+function acyclic_algorithm(L::Array{Float64,2}, H::Function, ω0::Array{Float64,1}, hγ::Tuple{Float64,Float64}, α::Float64=.1)
 	B0,w = L2B(L)
 	n,m = size(B0)
 
