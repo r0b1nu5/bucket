@@ -109,15 +109,19 @@ function targets(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}})
 	n,m = size(B)
 
 	if n == 2
-		k = Dict{Int64,Int64}(1 => 2)
+		te = Dict{Int64,Int64}(1 => 2)
+		et = Dict{Int64,Vector{Int64}}(1 => Int64[], 2 => [1,])
 	else
-		k0 = targets(B[2:n,2:n-1])
-		k = Dict{Int64,Int64}(i => k0[i-1]+1 for i in 2:n-1)
+		k0,e0 = targets(B[2:n,2:n-1])
+		te = Dict{Int64,Int64}(i => k0[i-1]+1 for i in 2:n-1)
 		k1 = findmax(abs.([0.;B[2:n,1]]))[2]
-		k[1] = k1
+		te[1] = k1
+		et = Dict{Int64,Vector{Int64}}(i => e0[i-1] .+ 1 for i in 2:n)
+		push!(et[k1],1)
+		et[1] = Int64[]
 	end
 
-	return k
+	return te,et
 end
 
 
@@ -152,11 +156,11 @@ function dichot(F::Function, l0::Float64, u0::Float64, tol::Float64=1e-6)
 	return (l + u)/2
 end
 
-function retro_function(i::Int64, ω::Array{Float64,1}, H::Function, k::Dict{Int64,Int64}, ki::Dict{Int64,Array{Int64,1}})
-	if length(ki[i]) == 0
+function retro_function(i::Int64, ω::Array{Float64,1}, H::Vector{Function}, k::Dict{Int64,Int64}, ki::Dict{Int64,Vector{Int64}})
+	if length(et[i]) == 0
 		return (φ -> ω[i] - φ)
 	else
-		return (φ -> ω[i] - sum(H(retro_function(j,ω,H,k,ki)(φ)) for j in ki[i]) - φ)
+		return (φ -> ω[i] - sum(H[j+m](retro_function(j,ω,H,te,et)(φ)) for j in et[i]) - φ)
 	end
 end
 
