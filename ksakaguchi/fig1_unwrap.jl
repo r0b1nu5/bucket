@@ -20,10 +20,10 @@ Y = sqrt.(1 .- X.^2)
 Z1 = z1*ones(1,50)
 Z2 = z2*ones(1,50)
 
-θ0 = vec(readdlm("temp_data/th0f_$(run).csv",','))[[5:18;1:4]]
+θ0 = vec(readdlm("temp_data/th0f_$(run).csv",','))[[4:18;1:3]]
 d0 = mod.(θ0[[2:n;1]] - θ0 .+ π,2π) .- π
 θ0 = [(θ0[1] + sum(d0[1:i])) for i in 0:n]
-θ2 = vec(readdlm("temp_data/th2f_$(run).csv",','))[[5:18;1:4]]
+θ2 = vec(readdlm("temp_data/th2f_$(run).csv",','))[[4:18;1:3]]
 d2 = mod.(θ2[[2:n;1]] - θ2 .+ π,2π) .- π
 θ2 = [(θ2[1] + sum(d2[1:i])) for i in 0:n]
 
@@ -83,10 +83,10 @@ n = 18
 
 t = (0:n)*2π/n
 
-θ0 = vec(readdlm("temp_data/th0f_$(run).csv",','))[[5:18;1:4]]
+θ0 = vec(readdlm("temp_data/th0f_$(run).csv",','))[[3:18;1:2]]
 d0 = mod.(θ0[[2:n;1]] - θ0 .+ π,2π) .- π
 θ0 = [(θ0[1] + sum(d0[1:i])) for i in 0:n]
-θ2 = vec(readdlm("temp_data/th1f_$(run).csv",','))[[5:18;1:4]]
+θ2 = vec(readdlm("temp_data/th1f_$(run).csv",','))[[3:18;1:2]]
 d2 = mod.(θ2[[2:n;1]] - θ2 .+ π,2π) .- π
 θ2 = [(θ2[1] + sum(d2[1:i])) for i in 0:n]
 

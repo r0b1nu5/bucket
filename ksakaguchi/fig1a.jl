@@ -7,13 +7,21 @@ name_cmap = "viridis"
 cmap = get_cmap(name_cmap)
 # #=
 col1 = cmap(1/6)
-col2 = cmap(3/6)
-col3 = cmap(5/6)
+col2 = cmap(2.5/6)
+col3 = cmap(4/6)
 # =#
  #=
 col1 = "C0"
 col2 = "C1"
 col3 = "C2"
+# =#
+ #=
+base_col = (0,54,96)./255
+base_col = (66,0,192)./255
+ts = LinRange(0.,.5,3)
+col1 = ts[1] .+ (1-ts[1]).*base_col
+col2 = ts[2] .+ (1-ts[2]).*base_col
+col3 = ts[3] .+ (1-ts[3]).*base_col
 # =#
 
 run = 6179 #run = 3695
