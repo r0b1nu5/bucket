@@ -555,6 +555,85 @@ function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{F
 end
 
 
+function iterations5_hetero(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{Float64,2}, B::Array{Float64,2}, C::Array{Float64,2}, ω::Array{Float64,1}, h::Vector{Function}, γs::Vector{Tuple{Float64,Float64}}, u::Array{Int64,1}, δ::Float64, T::Int64=100, plot::Bool=true, verb::Bool=false)
+	n,m = size(Bout)
+	m2 = Int(m/2)
+
+	hγs = [(h[i](γs[i][1]),h[i](γs[i][2])) for i in 1:m]
+
+	b = B[:,1:m2]
+	P = cycle_proj(b,ones(m2))
+#	X = diagm(0 => ones(n)) - ones(n,n)/n
+	Cdag = pinv(C)
+
+	Ld = pinv(b*b')
+
+	Δ = b'*Ld*b*Δ0 + 2π*Cdag*u
+	Δs = zeros(m2,T)
+	
+	for t in 1:T
+		nΔ = norm(Δ)
+		if nΔ > 1e10
+			break
+		end
+
+		if verb
+			@info "iter = $t, ||Δ|| = $nΔ)"
+		end
+
+		Δs[:,t] = Δ
+		
+		Δ = Sω(Δ,ω,b,Bout,P,Ld,δ,h,γs,hγs,10*ones(m))
+	end
+#=
+	if plot
+		i0 = 1
+		Δf = B'*θf
+		γs = LinRange(-π/2+α,π/2-α,200)
+		x = Array{Float64,1}()
+		push!(x,h(Δ0[i0]))
+		y = Array{Float64,1}()
+		push!(y,h(-Δ0[i0]))
+
+		figure()
+		
+#		subplot(1,2,1)
+		PyPlot.plot(h(γs,α),h(-γs,α),"--k")
+		PyPlot.plot(h(Δf[i0],α),h(-Δf[i0],α),"o",color="C8",markersize=20.)
+		PyPlot.plot(h(Δf[i0],α),h(-Δf[i0],α),"o",color="C1",markersize=13.)
+		PyPlot.plot(h(Δf[i0],α),h(-Δf[i0],α),"o",color="C3",markersize=5.)
+
+		for t in 1:T
+			push!(x,h(Δs[i0,t],α))
+			push!(y,h(-Δs[i0,t],α))
+		end
+
+#		subplot(1,2,1)
+		PyPlot.plot(x,y,"-k")
+		
+		xlabel("f_e")
+		ylabel("f_{\bar{e}}")
+	
+		PyPlot.plot(h(Δ0[i0],α),h(-Δ0[i0],α),"ok")
+		for t in 1:T
+			colo = "C$(mod(t-1,10))"
+
+#			subplot(1,2,1)
+			PyPlot.plot(h(Δs[i0,t],α),h(-Δs[i0,t],α),"o",color=colo)
+		end
+
+#=
+		figure()
+		PyPlot.plot(1:length(dmax),(dmax+dmin)./(dmax-dmin),"o")
+=#
+
+		title("u = $u")
+	end	
+=#
+	return Δs
+end
+
+
 
 function check_monotonicity(ff1::Array{Float64,2}, ff2::Array{Float64,2}, P::Array{Float64,2})
 	bool1 = ff1 .< ff2
@@ -594,9 +673,12 @@ function dir_cycle_proj(B::Array{Float64,2}, Lmin::Array{Float64,1})
 	return Im - D*B'*pinv(Bout*D*B')*Bout
 end
 
-		
 function Sω(Δ::Array{Float64,1}, ω::Array{Float64,1}, b::Array{Float64,2}, Bout::Array{Float64,2}, P::Array{Float64,2}, D::Array{Float64,2}, δ::Float64, α::Float64, γ::Tuple{Float64,Float64}=(-Inf,Inf), hγ::Tuple{Float64,Float64}=(0.,0.), s::Float64=1.)
 	return Δ - δ*b'*D*(Bout*hs([Δ;-Δ],α,γ,hγ,s) - ω)
+end
+		
+function Sω(Δ::Array{Float64,1}, ω::Array{Float64,1}, b::Array{Float64,2}, Bout::Array{Float64,2}, P::Array{Float64,2}, D::Array{Float64,2}, δ::Float64, h::Vector{Function}, γs::Vector{Tuple{Float64,Float64}}, hγs::Vector{Tuple{Float64,Float64}}, s::Vector{Float64})
+	return Δ - δ*b'*D*(Bout*hs([Δ;-Δ],h,γs,hγs,s) - ω)
 end
 
 function Tu(Δ1::Array{Float64,1}, Δ2::Array{Float64,1}, u::Array{Int64,1}, P::Array{Float64,2}, C::Array{Float64,2}, λ::Float64=1.)
@@ -678,4 +760,13 @@ end
 function hs(x::Array{Float64,1}, α::Float64, γ::Tuple{Float64,Float64}, hγ::Tuple{Float64,Float64}, s::Float64=1.)
 	return [hs(x[i],α,γ,hγ,s) for i in 1:length(x)]
 end
-	
+
+function hs(x::Float64, h::Function, γ::Tuple{Float64,Float64}, hγ::Tuple{Float64,Float64}, s::Float64=1.)
+	return (s*(x - γ[1]) + hγ[1])*(x < γ[1]) + h(x)*(γ[1] <= x <= γ[2]) + (s*(x - γ[2]) + hγ[2])*(x > γ[2])
+end
+
+function hs(x::Vector{Float64}, h::Vector{Function}, γs::Vector{Tuple{Float64,Float64}}, hγs::Vector{Tuple{Float64,Float64}}, s::Vector{Float64})
+	return [hs(x[i],h[i],γs[i],hγs[i],s[i]) for i in 1:length(x)]
+end
+
+

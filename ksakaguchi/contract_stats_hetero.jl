@@ -3,21 +3,31 @@ using PyPlot
 include("ksakaguchi.jl")
 include("iterations.jl")
 
-iterate = false
-read = true
+iterate = true
+read = false
 plot3 = false
 plot1 = true
 write = false
 verb = true
 
-# #=
+ #=
 ntw = "ntw10"
-δs = [.208,.204,.202,.2]
+δs = [.2,.15,.1,.05]
+α = .2*rand(m2) .+ .1
+w = rand(m2) .+ .5
 # =#
 
- #=
-ntw = "rts96"
-δs = [2.,1.,.5,.25]
+# #=
+ntw = "rts96_w"
+δs = [.5,.25,.1,.05]
+Lb = readdlm("ntw_data/"*ntw*"_Lb.csv",',')
+Bb,wb = L2B(Lb)
+Lg = readdlm("ntw_data/"*ntw*"_Lg.csv",',')
+Bg,wg = L2B(Lg)
+α = atan.(wg./wb)
+α = [α;copy(α).+1e-8]
+w = sqrt.(wb.^2 + wg.^2)
+w = [w;copy(w).+1e-8]
 # =#
 
 n_iter = 10
@@ -34,10 +44,19 @@ B,Bout,Bin = L2B_bidir(L)
 n,m = size(b)
 m2 = 2*m
 
-α = .1
-γ = π/2 - α
-hγ1 = h(-γ,α)
-hγ2 = h(γ,α)
+hh = Vector{Function}()
+for i in 1:m
+	push!(hh,(x -> w[i]*(sin(x - α[i]) + sin(α[i]))))
+end
+for i in 1:m
+	push!(hh,(x -> w[i]*(sin(x - α[i]) + sin(α[i]))))
+end
+#hh = [(x -> w[i]*(sin(x - α[i]) + sin(α[i]))) for i in 1:m2]
+γs = [(α[i] - π/2,π/2 - α[i]) for i in 1:m2]
+@info "$(γs[109])"
+@info "$(hh[109](0.))"
+hγs = [(hh[i](γs[i][1]),hh[i](γs[i][2])) for i in 1:m2]
+λs = ([max(γs[i][1],-γs[i+m][2]) for i in 1:m],[min(γs[i][2],-γs[i+m][1]) for i in 1:m])
 
 #xxx = ksakaguchi(L,ω,θ0,α,false,false,.01,1e-8)
 #θf = xxx[1][:,end]
@@ -47,7 +66,8 @@ for th in ths
 	uf = winding(θf,Σ)
 	
 	Δf = dcc(b'*θf)
-	Ff = h([Δf;-Δf])
+	Δff = [Δf;-Δf]
+	Ff = [hh[i](Δff[i]) for i in 1:m2]
 
 	u = uf
 	T = 1000
@@ -72,13 +92,13 @@ for th in ths
 					@info "δ = $δ, iter = $i"
 				end
 			
-				Δ01 = γ*(2*rand(m) .- 1)
-				Δ1 = iterations5(Δ01,θf,Bout,B,C,ω,α,u,δ,T,false)
+				Δ01 = (λs[2] - λs[1]).*rand(m) + λs[1]
+				Δ1 = iterations5_hetero(Δ01,θf,Bout,B,C,ω,hh,γs,u,δ,T,false)
 #				f1 = h([Δ1;-Δ1])
 #				push!(X1,Δ1)
-		
-				Δ02 = γ*(2*rand(m) .- 1)
-				Δ2 = iterations5(Δ02,θf,Bout,B,C,ω,α,u,δ,T,false)
+
+				Δ02 = (λs[2] - λs[1]).*rand(m) + λs[1]
+				Δ2 = iterations5_hetero(Δ02,θf,Bout,B,C,ω,hh,γs,u,δ,T,false)
 #				f2 = h([Δ2;-Δ2])
 #				push!(X2,Δ2)
 	
