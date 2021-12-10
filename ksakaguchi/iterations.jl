@@ -490,14 +490,19 @@ function iterations5(Δ0::Array{Float64,1}, θf::Array{Float64,1}, Bout::Array{F
 	Ld = pinv(b*b')
 
 	Δ = b'*Ld*b*Δ0 + 2π*Cdag*u
-	Δs = Array{Float64,2}(undef,m2,0)
-
+	Δs = zeros(m2,T)
+	
 	for t in 1:T
-		if verb
-			@info "iter = $t"
+		nΔ = norm(Δ)
+		if nΔ > 1e10
+			break
 		end
 
-		Δs = [Δs Δ]
+		if verb
+			@info "iter = $t, ||Δ|| = $nΔ)"
+		end
+
+		Δs[:,t] = Δ
 		
 		Δ = Sω(Δ,ω,b,Bout,P,Ld,δ,α,(-γ,γ),(hγm,hγp),10.)
 	end
