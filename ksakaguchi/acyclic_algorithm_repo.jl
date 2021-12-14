@@ -45,7 +45,7 @@ function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,
 		return nothing
 	end
 	if length(h) != 2*m
-		@info "There not the same number of coupling functions and edges ($(length(H)),$(2*m)): aborting."
+		@info "There not the same number of coupling functions and edges ($(length(h)),$(2*m)): aborting."
 		return nothing
 	end
 
@@ -100,8 +100,8 @@ Recursive algorithm determining the existence of a unique solution for the Dissi
 
 _INPUT_:\\
 `B`: Incidence matrix of the graph considered. The nodes and edges are assumed to ordered according to the requirements of the original reference [Delabays, Jafarpour, and Bullo (2021)]. \\
-`H`: Vector (of dimension 2m) of the transfer functions, relating the flows over the two orientations of the edges. For e = 1:m, H[e](f) = h[e](h[e+m]^{-1}(f)) and for e = m+1:2*m, H[e](f) = h[e](h[e-m]^{-1}(f)). \\
 `ω`: Vector of natural frequencies of the oscillators.\\
+`H`: Vector (of dimension 2m) of the transfer functions, relating the flows over the two orientations of the edges. For e = 1:m, H[e](f) = h[e](h[e+m]^{-1}(f)) and for e = m+1:2*m, H[e](f) = h[e](h[e-m]^{-1}(f)). \\
 `hγ`: Vector of tuples of the lower and upper bounds of the domain of the transfer functions.\\
 `ϵ`: Correction parameter to avoid evaluating the transfer functions exactly at the boundary of their domain.
 
@@ -111,7 +111,7 @@ _OUTPUT_:\\
   flow over the edge defined by B0:,e (resp. -B0[:,e]).\\
 `φ`: Synchronous frequency corresponding the solution.
 """
-function acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, H::Vector{Function}, ω::Vector{Float64}, hγ::Vector{Tuple{Float64,Float64}}, ϵ::Float64=1e-10)
+function acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, H::Vector{Function}, hγ::Vector{Tuple{Float64,Float64}}, ϵ::Float64=1e-10)
 	# Initializing...
 	n,m = size(B)
 

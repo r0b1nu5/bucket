@@ -1,10 +1,11 @@
 using PyPlot
 
+include("tools.jl")
 include("ksakaguchi.jl")
 include("iterations.jl")
 
-iterate = true
-read = false
+iterate = false
+read = true
 plot3 = false
 plot1 = true
 write = false
@@ -30,7 +31,7 @@ w = sqrt.(wb.^2 + wg.^2)
 w = [w;copy(w).+1e-8]
 # =#
 
-n_iter = 10
+n_iter = 1000
 
 L = readdlm("ntw_data/"*ntw*"_L.csv",',')
 include("ntw_data/"*ntw*"_cycles.jl")

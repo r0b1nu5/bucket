@@ -1,7 +1,68 @@
 using LinearAlgebra, SparseArrays, Statistics
 
 """
-	L2B(L::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}})
+	load_ksagaguchi(as::Vector{Float64},ϕs::Vector{Float64})
+
+Loads the Kuramoto-Sakaguchi coupling functions, ready to use in the acyclic_algorithm script.
+
+_INPUT_:\\
+`as`: Vector of coupling weights, ordered according to the edge indexing in the incidence matrix. The vector `as` is of dimension 2m, as the two orientations of each edge are distiguished. If the edge e=(i,j), then the index of edge (j,i) is e+m. \\
+`ϕs`: Vector of phase frustrations. Ordering follows the same rules as `as`.
+
+_OUTPUT_:\\
+`h`: Vector of tuples composed of the coupling functions (1st component) and its inverse (2nd component), following the ordering of `as` and `ϕs`.\\
+`γ: Vector of tuples composed of the lower (1st component) and upper (2nd component) bounds on the coupling functions, so that they are strictly increasing on (γ[1],γ[2]).
+"""
+function load_ksakaguchi(as::Vector{Float64},ϕs::Vector{Float64})
+	m2 = length(as)
+	m = Int(m2/2)
+
+	h = Vector{Tuple{Function,Function}}()
+	γ = [(-π/2 + max(ϕs[i],ϕs[i+m]),π/2 - max(ϕs[i],ϕs[i+m])) for i in 1:m]
+	γ = [γ;γ]
+
+	for i in 1:m2
+		push!(h,((x -> as[i]*(sin(x - ϕs[i]) + sin(ϕs[i]))),(f -> (asin(f/as[i] - sin(ϕs[i])) + ϕs[i]))))
+	end
+
+	return h,γ
+end
+
+"""
+	load_ksakaguchi(Y::Matrix{ComplexF64})
+
+Loads the coupling functions, their inverse, their domain bounds, and the incidence matrix of the network of Kuramoto oscillators, based on the associated admittance matrix. 
+
+_INPUT_:\\
+`Y`: Admittance matrix of the system under consideration.
+
+_OUTPUT_:\\
+`h`: Vector of tuples composed of the coupling functions (1st component) and its inverse (2nd component), following the ordering of edges in the incidence matrix. Amplitudes are sqrt{B^2 + G^2} and phase frustrations are arctan(G/B).\\
+`γ: Vector of tuples composed of the lower (1st component) and upper (2nd component) bounds on the coupling functions, so that they are strictly increasing on (γ[1],γ[2]).\\
+`B`: Incidence matrix of the underlying network (undirected).
+Computes the zero of the function F in the interval [l,u] with tolerance tol, if it exits. The
+  function F is assumed strictly monotone and well-defined on [l,u]. The algorithm proceeds by
+  dichotomy.
+"""
+function load_ksakaguchi(Y::Matrix{ComplexF64})
+	B,y,Bt = L2B(Y)
+
+	b = abs.(imag.(y))
+	g = abs.(real.(y))
+
+	as = sqrt.(b.^2 + g.^2)
+	as = [as;as]
+	ϕs = atan.(g./b)
+	ϕs = [ϕs;ϕs]
+
+	h,γ = load_ksakaguchi(as,ϕs)
+
+	return h,γ,B
+end
+
+
+"""
+	L2B(L::Union{Matrix{Float64},Matrix{ComplexF64},SparseMatrixCSC{Float64,Int64},SparseMatrixCSC{ComplexF64,Int64}})
 
 Compute an incidence matrix associated to a Laplacian matrix.
 
@@ -13,11 +74,12 @@ _OUTPUT_:\\
 `w`: Vector of edge weights.\\
 `Bt`: Transpose of B.
 """
-function L2B(L::Matrix{Float64})
+function L2B(L::Union{Matrix{Float64},Matrix{ComplexF64}})
 	n = size(L)[1]
+	T = typeof(L[1,1])
 	
-	B = Array{Float64,2}(undef,n,0)
-	w = Array{Float64,1}(undef,0)
+	B = Matrix{Float64}(undef,n,0)
+	w = Vector{T}(undef,0)
 	for i in 1:n-1
 		for j in i+1:n
 			if L[i,j] != 0.0
@@ -33,29 +95,30 @@ function L2B(L::Matrix{Float64})
 	return B,w,Array(B')
 end
 
-function L2B(L::SparseMatrixCSC{Float64,Int})
+function L2B(L::Union{SparseMatrixCSC{Float64,Int64},SparseMatrixCSC{ComplexF64,Int64}})
 	n = size(L)[1]
 	
-	B = Array{Float64,2}(undef,n,0)
-	w = Array{Float64,1}(undef,0)
-	Bt = Array{Float64,2}(undef,0,n)
-	for i in 1:n-1
-		for j in i+1:n
-			if L[i,j] != 0.0
-				ed = zeros(n)
-				edt = zeros(1,n)
-				ed[i] = 1.0
-				edt[1,i] = 1.0
-				ed[j] = -1.0
-				edt[1,j] = -1.0
-				B = [B ed]
-				Bt = [Bt;edt]
-				push!(w,-L[i,j])
-			end
+	I0,J0,V0 = findnz(L)
+
+	T = typeof(V0[1])
+	
+	I = Vector{Int64}()
+	J = Vector{Int64}()
+	V = Vector{Float64}()
+	w = Vector{T}()
+
+	e = 0
+	for k in 1:length(I0)
+		if (I0[k] < J0[k]) && abs.(V0[k]) > 1e-6
+			global e += 1
+			I = [I;[I0[k],J0[k]]]
+			J = [J;[e,e]]
+			V = [V;[1.,-1.]]
+			w = push!(w,-V0[k])
 		end
 	end
 	
-	return sparse(B),w,sparse(Bt)
+	return sparse(I,J,V),w,sparse(J,I,V)
 end
 
 
@@ -241,7 +304,7 @@ end
 
 Recursively defines the flow over an edge as a function of the synchronous frequency `φ`.
 
-_INPUT_"\\
+_INPUT_\\
 `i`: Index of the edge whose flow function has to be defined. Note that, according to indexing, `i` is also the index of the node at the source of edge `i`.\\
 `ω`: Vector of natural frequencies of the oscillators. \\
 `H`: Vector of the transfer functions over all (directed) edges. \\

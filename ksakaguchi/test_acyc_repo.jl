@@ -23,17 +23,8 @@ h1 = ((x -> h(x,α)),(f -> hi(f,α)))
 γ1 = (-γ1,γ1)
 
 αs = .4*rand(14) .+ .1
-γ2 = [(-π/2 + αs[i],π/2 - αs[i]) for i in 1:2*m]
-h2 = Vector{Tuple{Function,Function}}()
-for i in 1:m
-	push!(h2,((x -> (sin(x - αs[i]) + sin(αs[i]))),(f -> (asin(f - sin(αs[i])) + αs[i]))))
-	push!(γ2,(-π/2 + max(αs[i],αs[i+m]),π/2 - max(αs[i],αs[i+m])))
-end
-for i in m+1:2*m
-	push!(h2,((x -> (sin(x - αs[i]) + sin(αs[i]))),(f -> (asin(f - sin(αs[i])) + αs[i]))))
-	push!(γ2,(-π/2 + max(αs[i],αs[i-m]),π/2 - max(αs[i],αs[i-m])))
-end
-
+as = .4*rand(14) .+ .8
+h2,γ2 = load_ksakaguchi(as,αs)
 
 xxx1 = run_acyclic_algorithm(B1,ω,h1,γ1)
 @info "Dense matrix and uniform coupling: OK!"

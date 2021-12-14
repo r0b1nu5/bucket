@@ -168,6 +168,7 @@ end
 
 # Loads the coupling function for the Kuramoto-Sakaguchi model.
 
+#=
 function h(x::Float64, α::Float64=.1)
 	return sin(x - α) + sin(α)
 end
@@ -209,7 +210,7 @@ end
 function H(f::Union{Array{Float64,1},LinRange{Float64}}, α::Float64=.1)
 	return [H(f[i]) for i in 1:length(f)]
 end
-
+=#
 
 function ksakaguchi_2nd(L::Array{Float64,2}, ω::Array{Float64,1}, d::Array{Float64,1}, θ0::Array{Float64,1}, θd0::Array{Float64,1}, α::Float64, save_history::Bool=false, verb::Bool=false, h::Float64=.01, thres::Float64=1e-5, max_iter::Int64=100000)
 	B,w = L2B(L)
