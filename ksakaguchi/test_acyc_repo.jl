@@ -24,7 +24,11 @@ h1 = ((x -> h(x,α)),(f -> hi(f,α)))
 
 αs = .4*rand(14) .+ .1
 as = .4*rand(14) .+ .8
-h2,γ2 = load_ksakaguchi(as,αs)
+h2,hi2,γ2 = load_ksakaguchi(as,αs)
+hh2 = Vector{Tuple{Function,Function}}()
+for i in 1:length(h2)
+	push!(hh2,(h2[i],hi2[i]))
+end
 
 xxx1 = run_acyclic_algorithm(B1,ω,h1,γ1)
 @info "Dense matrix and uniform coupling: OK!"
@@ -32,10 +36,10 @@ xxx1 = run_acyclic_algorithm(B1,ω,h1,γ1)
 xxx2 = run_acyclic_algorithm(B2,ω,h1,γ1)
 @info "Sparse matrix and uniform coupling: OK!"
 
-xxx3 = run_acyclic_algorithm(B1,ω,h2,γ2)
+xxx3 = run_acyclic_algorithm(B1,ω,hh2,γ2)
 @info "Dense matrix and heterogeneous couplings: OK!"
 
-xxx4 = run_acyclic_algorithm(B2,ω,h2,γ2)
+xxx4 = run_acyclic_algorithm(B2,ω,hh2,γ2)
 @info "Sparse matrix and heterogeneous couplings: OK!"
 
 

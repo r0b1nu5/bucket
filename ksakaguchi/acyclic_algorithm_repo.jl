@@ -1,4 +1,4 @@
-include("tools_repo.jl")
+include("toolbox_repo.jl")
 
 """
 	run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Function, γ::Tuple{Float64,Float64})
@@ -70,7 +70,7 @@ function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,
 
 
 	# Run the algorithm
-	exist,f,φ = acyclic_algorithm(B1,H1,ω1,hγ1)
+	exist,f,φ = acyclic_algorithm(B1,ω1,H1,hγ1)
 
 
 	# De-sort nodes
