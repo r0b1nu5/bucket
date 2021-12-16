@@ -1,5 +1,6 @@
 include("toolbox_repo.jl")
 
+# ================================================================================
 """
 	run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Function, γ::Tuple{Float64,Float64})
 	run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Vector{Function}, γ::Tuple{Float64,Float64})
@@ -93,6 +94,7 @@ function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,
 end
 
 
+# ================================================================================
 """
 	acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, H::Vector{Function}, ω::Vector{Float64}, hγ::Vector{Tuple{Float64,Float64}}, ϵ::Float64=1e-10)
 	
