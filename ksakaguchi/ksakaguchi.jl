@@ -151,6 +151,81 @@ function ksakaguchi(L::SparseMatrixCSC{Float64,Int}, ω::Array{Float64,1}, θ0::
 	return Θs,dΘs,err,iter
 end
 
+function ksakaguchi(L::Matrix{Float64}, ω::Vector{Float64}, θ0::Vector{Float64}, ϕ::Vector{Float64}, save_history::Bool=false, verb::Bool=false, h::Float64=.01, thres::Float64=1e-5, max_iter::Int64=100000)
+	B,w = L2B(L)
+	W = diagm(0 => w)
+	n,m = size(B)
+	B1 = B.*(B .> 0)
+	B2 = -B.*(B .< 0)
+	B12 = [B1 B2]
+	BB = [B -B]
+	WW = [W zeros(m,m);zeros(m,m) W]
+	ϕ2 = [ϕ;ϕ]
+
+	θ = θ0
+	θs = θ0
+
+	dθ = zeros(n)
+	dθs = Array{Float64,2}(undef,n,0)
+
+	err = 1000.
+	iter = 0
+	c = 0
+
+	while err > thres && iter < max_iter
+		iter += 1
+
+		if iter%1000 == 0
+			if verb
+				@info "iter: $iter, err = $(round(err,digits=5))"
+			end
+
+			if save_history
+				c += 1
+				
+				writedlm("temp_data/temp_θ_$c.csv",θs[:,1:end-1],',')
+				θs = θs[:,end]
+	
+				writedlm("temp_data/temp_dθ_$c.csv",dθs[:,1:end],',')
+				dθs = Array{Float64,2}(undef,n,0)
+			end
+		end
+
+		k1 = ω - B12*WW*(sin.(BB'*θ - ϕ2) + sin.(ϕ2))
+		k2 = ω - B12*WW*(sin.(BB'*(θ + h/2*k1) - ϕ2) + sin.(ϕ2))
+		k3 = ω - B12*WW*(sin.(BB'*(θ + h/2*k2) - ϕ2) + sin.(ϕ2))
+		k4 = ω - B12*WW*(sin.(BB'*(θ + h*k3) - ϕ2) + sin.(ϕ2))
+
+		dθ = (k1 + 2*k2 + 2*k3 + k4)/6
+
+		θ += h*dθ
+
+		if save_history
+			θs = [θs θ]
+			dθs = [dθs dθ]
+		end
+
+		err = maximum(dθ)-minimum(dθ)
+	end
+
+	Θs = Array{Float64,2}(undef,n,0)
+	dΘs = Array{Float64,2}(undef,n,0)
+	if save_history
+		for i in 1:c
+			Θs = [Θs readdlm("temp_data/temp_θ_$i.csv",',')]
+			rm("temp_data/temp_θ_$i.csv")
+			dΘs = [dΘs readdlm("temp_data/temp_dθ_$i.csv",',')]
+			rm("temp_data/temp_dθ_$i.csv")
+		end
+		Θs = [Θs θs]
+		dΘs = [dΘs dθs]
+	else
+		Θs = [Θs θ]
+		dΘs = [dΘs dθ]
+	end
+
+	return Θs,dΘs,err,iter
+end
 
 function ks_flows(θ::Array{Float64,1}, L::Array{Float64,2}, α::Float64)
 	B,w = L2B(L)

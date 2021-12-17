@@ -273,10 +273,9 @@ _OUTPUT_:\\
 `h`: Vector of the coupling functions, following the ordering of edges in the incidence matrix. Amplitudes are sqrt{B^2 + G^2} and phase frustrations are arctan(G/B).\\
 `hi`: Vector of the inverse of the coupling functions.\\
 `γ`: Vector of tuples composed of the lower (1st component) and upper (2nd component) bounds on the coupling functions, so that they are strictly increasing on (γ[1],γ[2]).\\
-`B`: Incidence matrix of the underlying network (undirected).
-Computes the zero of the function F in the interval [l,u] with tolerance tol, if it exits. The
-  function F is assumed strictly monotone and well-defined on [l,u]. The algorithm proceeds by
-  dichotomy.
+`B`: Incidence matrix of the underlying network (undirected). \\
+`as`: List of coupling weights. \\
+`ϕs`: List of coupling frustrations.
 """
 function load_ksakaguchi(Y::Matrix{ComplexF64})
 	B,y,Bt = L2B(Y)
@@ -291,7 +290,7 @@ function load_ksakaguchi(Y::Matrix{ComplexF64})
 
 	h,hi,γ = load_ksakaguchi(as,ϕs)
 
-	return h,hi,γ,B
+	return h,hi,γ,B,as,ϕs
 end
 
 # ================================================================================

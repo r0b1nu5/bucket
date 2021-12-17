@@ -56,6 +56,15 @@ function iterations(Δ0::Vector{Float64}, B::Matrix{Float64}, C::Matrix{Float64}
 
 		Δs = [Δs Δ]
 	end
+
+	if t >= max_iter
+		@info "Reached the max. number of iterations with update magnitude err = $err."
+	end
+
+	test = prod([γ[i][1] <= Δ[i] <= γ[i][2] for i in 1:m2])
+	if !test
+		@info "Iterations converged outside of the cohesive set."
+	end
 	
 	return Δ, Δs
 end

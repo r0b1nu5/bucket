@@ -2,6 +2,7 @@ include("acyclic_algorithm_repo.jl")
 include("cyclic_iterations_repo.jl")
 include("toolbox_repo.jl")
 
+
 @info "==========================================================="
 @info "Running the acyclic algorithm on a spanning tree of RTS-96."
 @info "==========================================================="
@@ -25,11 +26,14 @@ end
 
 
 
+
 @info "================================================================"
 @info "Running the cyclic iterations on RTS-96, in three winding cells."
 @info "================================================================"
 
-Y = readdlm("ntw_data/rts96_w_Lg.csv",',') + im*readdlm("ntw_data/rts96_w_Lb.csv",',')
+L = readdlm("ntw_data/rts96_w2_L.csv",',')
+B,w,Bt = L2B(L)
+ϕs = vec(readdlm("ntw_data/rts96_w2_phi.csv",','))
 Bstd = pinv(Bst)
 
 include("ntw_data/rts96_w_cycles.jl")
@@ -38,9 +42,9 @@ u1 = Int64.(vec(readdlm("ntw_data/rts96_w_u1.csv",',')))
 u2 = Int64.(vec(readdlm("ntw_data/rts96_w_u2.csv",',')))
 u3 = Int64.(vec(readdlm("ntw_data/rts96_w_u3.csv",',')))
 
-ω = vec(readdlm("ntw_data/rts96_om1.csv",','))
+ω = vec(readdlm("ntw_data/rts96_w2_om.csv",','))
 
-h,hi,γ,B = load_ksakaguchi(Y)
+h,hi,γ = load_ksakaguchi([w;w],[ϕs;ϕs])
 Bb = [B -B]
 Bout = Bb.*(Bb .> 1e-2)
 n,m = size(B)
@@ -53,6 +57,7 @@ max_iter = 1000
 tol = 1e-5
 
 Δ0 = [((γ[i][2]-γ[i][1])*rand() + γ[i][1]) for i in 1:m]
+
 
 @info "First case:"
 Δ1,Δ1s = iterations(Δ0,B,C,u1,ω,h,γ,δ,s,max_iter,tol)
@@ -73,6 +78,7 @@ else
 end
 @info "-------------------------------------------"
 
+
 @info "Second case:"
 Δ2,Δ2s = iterations(Δ0,B,C,u2,ω,h,γ,δ,s,max_iter,tol)
 θ2 = Bstd'*Δ2[id_st]
@@ -92,6 +98,7 @@ else
 end
 @info "-------------------------------------------"
 
+@info "Third case:"
 Δ3,Δ3s = iterations(Δ0,B,C,u3,ω,h,γ,δ,s,max_iter,tol)
 θ3 = Bstd'*Δ3[id_st]
 q3 = winding(θ3,Σ)
