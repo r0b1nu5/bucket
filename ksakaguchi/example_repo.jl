@@ -3,9 +3,10 @@ include("cyclic_iterations_repo.jl")
 include("toolbox_repo.jl")
 
 
-@info "==========================================================="
+@info "----------------------------------------------------------------"
+@info "================================================================"
 @info "Running the acyclic algorithm on a spanning tree of RTS-96."
-@info "==========================================================="
+@info "----------------------------------------------------------------"
 
 Lst = readdlm("ntw_data/rts96_spantree_L.csv",',')
 Yst = readdlm("ntw_data/rts96_spantree_Lg.csv",',') + im*readdlm("ntw_data/rts96_spantree_Lb.csv",',')
@@ -26,10 +27,9 @@ end
 
 
 
-
 @info "================================================================"
-@info "Running the cyclic iterations on RTS-96, in three winding cells."
-@info "================================================================"
+@info "Running the cyclic iterations on RTS-96, in three winding cells (u1, u2, and u3)."
+@info "----------------------------------------------------------------"
 
 L = readdlm("ntw_data/rts96_w2_L.csv",',')
 B,w,Bt = L2B(L)
@@ -74,9 +74,9 @@ end
 if maximum(res1) - minimum(res1) > 1e-2
 	@info "Did not find a solution."
 else
-	@info "Found a solution."
+	@info "Found a solution, stored in θ1."
 end
-@info "-------------------------------------------"
+@info "----------------------------------------------------------------"
 
 
 @info "Second case:"
@@ -94,9 +94,9 @@ end
 if maximum(res2) - minimum(res2) > 1e-2
 	@info "Did not find a solution."
 else
-	@info "Found a solution."
+	@info "Found a solution, stored in θ2."
 end
-@info "-------------------------------------------"
+@info "----------------------------------------------------------------"
 
 @info "Third case:"
 Δ3,Δ3s = iterations(Δ0,B,C,u3,ω,h,γ,δ,s,max_iter,tol)
@@ -113,9 +113,9 @@ end
 if maximum(res3) - minimum(res3) > 1e-2
 	@info "Did not find a solution."
 else
-	@info "Found a solution."
+	@info "Found a solution, stored in θ3."
 end
-@info "-------------------------------------------"
+@info "================================================================"
 
 
 
