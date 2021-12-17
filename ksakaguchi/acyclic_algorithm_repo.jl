@@ -2,38 +2,41 @@ include("toolbox_repo.jl")
 
 # ================================================================================
 """
-	run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Function, γ::Tuple{Float64,Float64})
-	run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Vector{Function}, γ::Tuple{Float64,Float64})
+	run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Function, hi::Function, γ::Tuple{Float64,Float64})
+	run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Vector{Function}, hi::Vector{Function}, γ::Vector{Tuple{Float64,Float64}})
 
 Runs the algorithm to decide if a solution exist for the Dissipative Flow Problem [Delabays, Jafarpour, and Bullo (2021)] on an acyclic graph. The nodes and edges of the graph are first reordered in order to match requirements described in the paper. Then the original numbering is retrieved.
 
 _INPUT_:\\
 `B`: Incidence matrix of the graph considered, with n vertices and m edges. The graph is considered undirected and unweighted (weights can be incorporated in the coupling functions).\\
 `ω`: Vector of natural frequencies of the oscillators. \\
-`h`: Coupling function(s) and its (their) inverse(s) over the edges of the interaction graph. If a single function is given, the couplings are assumed to identical. Otherwise, a (2m)-vector of functions needs to be given. Edge indexing is such that for e = 1:m, the orientation of e corresponds to the one given by the e-th column of B, and for e = m+1:2*m, the orientation of e is the opposite of edge e-m.\\
+`h`: Coupling function(s) over the edges of the interaction graph. If a single function is given, the couplings are assumed to identical. Otherwise, a (2m)-vector of functions needs to be given. Edge indexing is such that for e = 1:m, the orientation of e corresponds to the one given by the e-th column of B, and for e = m+1:2*m, the orientation of e is the opposite of edge e-m.\\
+`hi`: Inverse(s) of the coupling function(s). 
 `γ`: Tuple(s) of the lower and upper bounds on the argument of the coupling function(s) `h`, such that they are strictly increasing. Dimension is the same as `h`.
 
 _OUTPUT_:\\
 `exists`: Returns true only if a solution exists. If the solution exists, then it is unique [Delabays, Jafarpour, and Bullo (2021)].\\
-`θ`: Solution (if it exists) of the Dissipative Flow Network problem, defined up to a constant angle shift. 
+`θ`: Solution (if it exists) of the Dissipative Flow Network problem, defined up to a constant angle shift. \\ 
 `ff`: Vector (of dimension 2m) of flows on the edges. For e = 1:m (resp. e = m+1:2*m), ff[e] is the flow over the edge defined by B0[:,e] (resp. -B0[:,e]).\\
 `φ`: Synchronous frequency corresponding to the solution. 
 """
-function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Tuple{Function,Function}, γ::Tuple{Float64,Float64})
+function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Function, hi::Function, γ::Tuple{Float64,Float64})
 	n,m = size(B)
 	
 	# For homogeneous couplings, construct a vector of identical transfer functions and give it the vectorial version.
-	h1 = Vector{Tuple{Function,Function}}()
+	h1 = Vector{Function}()
+	hi1 = Vector{Function}()
 	γ1 = Vector{Tuple{Float64,Float64}}()
 	for i in 1:2*m
 		push!(h1,h)
+		push!(hi1,hi)
 		push!(γ1,γ)
 	end
 	
-	return run_acyclic_algorithm(B,ω,h1,γ1)
+	return run_acyclic_algorithm(B,ω,h1,hi1,γ1)
 end
 
-function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Vector{Tuple{Function,Function}}, γ::Vector{Tuple{Float64,Float64}})
+function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, ω::Vector{Float64}, h::Vector{Function}, hi::Vector{Function}, γ::Vector{Tuple{Float64,Float64}})
 	n,m = size(B)
 	
 	# Dimension checks
@@ -55,18 +58,19 @@ function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,
 	B1 = B0[:,1:m]
 	ω1 = ω[id]
 	h1 = h[ed]
+	hi1 = hi[ed]
 	γ1 = γ[ed]
 
 	# Construct the transfer functions H[ij](f) = h[ij](h[ji]^{-1}(f)) and their domain.
 	H1 = Vector{Function}()
 	hγ1 = Vector{Tuple{Float64,Float64}}()
 	for i in 1:m
-		push!(H1,(f -> (h1[i][1](-h1[i+m][2](f)))))
-		push!(hγ1,(h1[i][1](γ1[i][1]),h1[i][1](γ1[i][2])))
+		push!(H1,(f -> (h1[i](-hi1[i+m](f)))))
+		push!(hγ1,(h1[i](γ1[i][1]),h1[i](γ1[i][2])))
 	end
 	for i in m+1:2*m
-		push!(H1,(f -> (h1[i][1](-h1[i-m][2](f)))))
-		push!(hγ1,(h1[i][1](γ1[i][1]),h1[i][1](γ1[i][2])))
+		push!(H1,(f -> (h1[i](-hi1[i-m](f)))))
+		push!(hγ1,(h1[i](γ1[i][1]),h1[i](γ1[i][2])))
 	end
 
 
@@ -81,7 +85,7 @@ function run_acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,
 
 		ff = f[de]
 
-		Δ = [h[i][2](ff[i]) for i in 1:2*m]
+		Δ = [hi[i](ff[i]) for i in 1:2*m]
 
 		Bd = pinv(Matrix(B))'
 		θ = Bd*Δ[1:m]
@@ -131,7 +135,7 @@ function acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int6
 		push!(F,(φ -> 0.))
 	end
 	
-	F[1] = retro_function(1,ω,H,et)
+	F[1] = retro_function(1,m,ω,H,et)
 
 	i = 1
 	
@@ -140,7 +144,7 @@ function acyclic_algorithm(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int6
 		i += 1
 
 		#... define the flow over edge i as a function of the synchronous frequency `φ`,...
-		F[i] = retro_function(i,ω,H,et)
+		F[i] = retro_function(i,m,ω,H,et)
 		
 		#...determine if a solution exists in the tolerated interval of values for the synchronous frequency `φ`. If it does, adapt the the bounds on `φ` so the flow functions are all well-defined.
 		Fl = F[i](l[i-1])

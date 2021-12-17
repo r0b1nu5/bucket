@@ -2,6 +2,44 @@ using LinearAlgebra, SparseArrays, Statistics
 
 # ================================================================================
 """
+	cohesiveness_adj(θ::Vector{Float64}, A::Matrix{Float64})
+
+Computes the maximal (in absolute value) angular difference over the edges, usgin the adjacency (or Laplacian) matrix of the graph. 
+
+_INPUT_:\\
+`θ`: Vector of angles. \\
+`A`: Adjacency or Laplacian matrix. 
+
+_OUTPUT_:\\
+`dθ`: Maximal angle difference over the edges. 
+""" 
+function cohesiveness_adj(θ::Vector{Float64}, A::Matrix{Float64})
+	n = length(θ)
+
+	B,w = L2B(-abs.(A))
+
+	return cohesiveness_inc(θ,B)
+end
+
+# ================================================================================
+"""
+	cohesiveness_inc(θ::Vector{Float64}, B::Matrix{Float64})
+
+Computes the maximal (in absolute value) angular difference over the edges, using the incidence matrix of the graph `B`.
+
+_INPUT_:\\
+`θ`: Vector of angles. \\
+`B`: Incidence matrix. 
+
+_OUTPUT_:
+`dθ`: Maximal angle difference over the edges. 
+"""
+function cohesiveness_inc(θ::Vector{Float64}, B::Matrix{Float64})
+	return maximum(abs.(mod.(transpose(B)*θ .+ π,2π) .- π))
+end
+
+# ================================================================================
+"""
 	cycle_proj(B::Matrix{Float64}, w::Vector{Float64}=Float64[])
 
 	Returns the cycle projection matrix `P`, possibly weighted by the weight vector `w`. See [Jafarpour et al., SIAM Review (2021)] for details.
@@ -25,6 +63,35 @@ function cycle_proj(B::Matrix{Float64}, w::Vector{Float64}=Float64[])
 	Id = diagm(0 => ones(m))
 	
 	return Id - W*B'*pinv(B*W*B')*B
+end
+
+# ================================================================================
+"""
+	dcc(x::Union{Float64,Vector{Float64},Matrix{Float64}})
+
+Takes the modulo 2π of `x`, in the interval [-π,π). Is applied elementwise. 
+
+_INPUT_:\\
+`x`: Value(s) whose modulo is to be taken. 
+
+_OUTPUT_:\\
+`d`: Result of the modulo. 
+"""
+function dcc(x::Float64)
+	return mod(x + π,2π) - π
+end
+
+function dcc(x::Array{Float64,1})
+	return [dcc(x[i]) for i in 1:length(x)]
+end
+
+function dcc(x::Array{Float64,2})
+	d = Array{Float64,2}(undef,size(x)[1],0)
+	for j in 1:size(x)[2]
+		d = [d dcc(x[:,j])]
+	end
+	
+	return d
 end
 
 # ================================================================================
@@ -205,7 +272,7 @@ _INPUT_:\\
 _OUTPUT_:\\
 `h`: Vector of the coupling functions, following the ordering of edges in the incidence matrix. Amplitudes are sqrt{B^2 + G^2} and phase frustrations are arctan(G/B).\\
 `hi`: Vector of the inverse of the coupling functions.\\
-`γ: Vector of tuples composed of the lower (1st component) and upper (2nd component) bounds on the coupling functions, so that they are strictly increasing on (γ[1],γ[2]).\\
+`γ`: Vector of tuples composed of the lower (1st component) and upper (2nd component) bounds on the coupling functions, so that they are strictly increasing on (γ[1],γ[2]).\\
 `B`: Incidence matrix of the underlying network (undirected).
 Computes the zero of the function F in the interval [l,u] with tolerance tol, if it exits. The
   function F is assumed strictly monotone and well-defined on [l,u]. The algorithm proceeds by
@@ -299,12 +366,13 @@ end
 
 # ================================================================================
 """
-	retro_function(i::Int64, ω::Vector{Float64}, H::Vector{Function}, et::Dict{Int64,Vector{Int64}}) 
+	retro_function(i::Int64, m::Int64, ω::Vector{Float64}, H::Vector{Function}, et::Dict{Int64,Vector{Int64}}) 
 
 Recursively defines the flow over an edge as a function of the synchronous frequency `φ`.
 
 _INPUT_:\\
 `i`: Index of the edge whose flow function has to be defined. Note that, according to indexing, `i` is also the index of the node at the source of edge `i`.\\
+`m`: Number of edges. \\
 `ω`: Vector of natural frequencies of the oscillators. \\
 `H`: Vector of the transfer functions over all (directed) edges. \\
 `et`: Dictionary associating to each node i, the list of nodes with lower index, connected to it. This is the second output of `targets`.
@@ -312,13 +380,13 @@ _INPUT_:\\
 _OUTPUT_:\\
 `F`: Flow function over edge `i`, with respect to the synchronous frequency `φ`.
 """
-function retro_function(i::Int64, ω::Vector{Float64}, H::Vector{Function}, et::Dict{Int64,Vector{Int64}})
+function retro_function(i::Int64, m::Int64, ω::Vector{Float64}, H::Vector{Function}, et::Dict{Int64,Vector{Int64}})
 	if length(et[i]) == 0
 		# If node i has a unique neighbor, the relation between flow and synchronous frequency is straightforward.
 		return (φ -> ω[i] - φ)
 		# If node i has multiple neighbors, the flow depends on the sum of the neighboring flows, hence the sum over neighbors (except one).
 	else
-		return (φ -> ω[i] - sum(H[j+m](retro_function(j,ω,H,et)(φ)) for j in et[i]) - φ)
+		return (φ -> ω[i] - sum(H[j+m](retro_function(j,m,ω,H,et)(φ)) for j in et[i]) - φ)
 	end
 end
 
@@ -356,6 +424,47 @@ function targets(B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}})
 	return te,et
 end
 
+# ================================================================================
+"""
+	winding(θ::Vector{Float64}, Σ::Vector{Int64})
 
+Computes the winding number associated to the state `θ` around the cycle `σ`. 
 
+_INPUT_:\\
+`θ`: Vector of angles.  \\
+`σ`: Sequence of node indices forming a cycle. 
+
+_OUTPUT_:\\
+`q`: Winding number.
+"""
+function winding(θ::Vector{Float64}, σ::Vector{Int64})
+	if length(θ) < 1
+		q = []
+	else
+		θ1 = θ[σ]
+		θ2 = θ[[σ[2:end];σ[1]]]
+
+		dθ = θ1 - θ2
+
+		q = round(Int,sum(mod.(dθ .+ π,2π) .- π)/(2π))
+	end
+
+	return q
+end
+
+# ================================================================================
+"""
+	winding(θ::Vector{Float64}, Σ::Vector{Vector{Int64}})
+
+Applies `winding` on each component of `Σ`.
+"""
+function winding(θ::Vector{Float64}, Σ::Vector{Vector{Int64}})
+	if length(Σ) < 1 || length(θ) < 1
+		qs = []
+	else
+		qs = [winding(θ,Σ[i]) for i in 1:length(Σ)]
+	end
+
+	return qs
+end
 

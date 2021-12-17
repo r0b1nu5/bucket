@@ -23,8 +23,8 @@ _INPUT_:\\
 `verb`: If true, enumerates the iterations.
 
 _OUTPUT_:\\
-`Δ`: Final state at the end of the interations. \\
-`Δs`: Sequenc of states along the iterations. 
+`Δ`: Final state at the end of the iterations. \\
+`Δs`: Sequence of states along the iterations. 
 """
 function iterations(Δ0::Vector{Float64}, B::Matrix{Float64}, C::Matrix{Float64}, u::Vector{Int64}, ω::Vector{Float64}, h::Union{Function,Vector{Function}}, γ::Union{Tuple{Float64,Float64},Vector{Tuple{Float64,Float64}}}, δ::Float64, s::Union{Float64,Vector{Float64}}=1., max_iter::Int64=100, tol::Float64=1e-6, verb::Bool=false)
 	n,m2 = size(B)
@@ -72,7 +72,7 @@ _INPUT_:\\
 `ω`: Vector of natural frequencies. \\
 `B`: Incidence matrix of the (undirected) graph. \\
 `Bout`: Out-incidence matrix of the bidirected graph. \\
-`P`: Cycle-projection matrix (see [Delabays et al. (2022)]. \\
+`P`: Cycle projection matrix (see [Delabays et al. (2022)]. \\
 `W`: Weight matrix to be tuned. In [Delabays et al. (2022)], we take the pseudoinverse of the Laplacian. \\
 `δ`: Scaling parameter which, if small enough, guarantees `Sδ` to be contracting. \\
 `h`: Vector of the (directed) coupling functions. If a single `Function` is given, the couplings are assumed homogeneous. \\
