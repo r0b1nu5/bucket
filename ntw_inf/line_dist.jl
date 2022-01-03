@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra, DelimitedFiles
 
 include("L2B.jl")
 include("cnoise.jl")
@@ -345,7 +345,7 @@ function linear_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float6
 end
 
 
-function linear_step(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float64,1}, ij::Tuple{Int64,Int64}, a0::Float64, T0::Float64=1., store::Bool=false, max_iter::Int64=10000, eps::Float64=1e-8, h::Float64=.01)
+function linear_step(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float64,1}, ij::Tuple{Int64,Int64}, a0::Float64, Ti::Float64, Tf::Float64, store::Bool=false, max_iter::Int64=10000, eps::Float64=1e-8, h::Float64=.01)
 	n = length(th0)
 	l = [ij[1],ij[2]]
 
@@ -372,7 +372,7 @@ function linear_step(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float6
 			@info "$iter"
 		end
 
-		xi = a0.*(iter*h > T0)
+		xi = a0.*(iter*h > Ti).*(iter*h < Tf)
 
 		th1 = copy(th2)
 		
