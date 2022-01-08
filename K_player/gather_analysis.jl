@@ -7,7 +7,7 @@ distri = ["pl","plc","yule"]
 n_threads = 50
 n_samp = 100
 
-for j in ["science_1940",] #journals_red_short
+for j in ["d_100018","d_100020","d_100022"] #journals_red_short
 	for dist in distri
 		params = vec(readdlm("analysis/"*j*"_"*dist*"_params_$(n_samp)_1.csv",','))
 		

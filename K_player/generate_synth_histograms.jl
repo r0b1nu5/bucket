@@ -62,6 +62,7 @@ for j in js
 ############## PLOT HISTOGRAM ##################################
 	if plots
 		col = "C$(mod(j,10))"
+		col = "gray"
 
 		for i in 1:size(num)[2]
 			figure(j)
