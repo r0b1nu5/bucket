@@ -37,10 +37,12 @@ line_rank/data/
 machine_learning/data1/
 machine_learning/data_cluster/
 machine_learning/figs/
+ntw_inf/2wave/
 ntw_inf/data1/
 ntw_inf/data2/
 ntw_inf/figs/
 ntw_inf/line_dist_data/
+ntw_inf/temp/
 sir/figs
 vote/data/
 vote/figs/

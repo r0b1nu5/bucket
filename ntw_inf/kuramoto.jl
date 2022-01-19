@@ -265,6 +265,21 @@ function kuramoto_sine(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Floa
 	return Ths
 end
 
+### NODAL DISTURBANCE!!! 
+
+function kuramoto_sine(L::SparseMatrixCSC{Float64,Int64}, P::Vector{Float64}, th0::Vector{Float64}, i::Int64, a0::Float64, w0::Float64, p0::Float64, store::Int64=1, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.1,file_name::String="data1")
+	B,w,Bt = L2B(L)
+	n,m = size(B)
+	a = zeros(m)
+	a[l] = a0
+	w = zeros(m)
+	w[l] = w0
+	p = zeros(m)
+	p[l] = p0
+
+	return kuramoto_sine(L,P,th0,a,w,p,store,max_iter,eps,h,file_name)
+end
+
 function kuramoto_sine(L::SparseMatrixCSC{Float64,Int64}, P::Array{Float64,1}, th0::Array{Float64,1}, a0::Array{Float64,1}, w0::Array{Float64,1}, p0::Array{Float64,1}, store::Int64=1, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.1, file_name::String="data1")
 	B,W,Bt = L2B(L)
 	W = spdiagm(0 => W)
