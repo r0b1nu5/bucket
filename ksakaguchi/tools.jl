@@ -174,6 +174,37 @@ function dcc(x::Array{Float64,2})
 	return d
 end
 
+function dcc2(x::Float64)
+	return mod(x + π/2,2π) - π/2
+end
+
+function dcc2(x::Array{Float64,1})
+	return [dcc2(x[i]) for i in 1:length(x)]
+end
+
+function dcc2(x::Array{Float64,2})
+	d = Array{Float64,2}(undef,size(x)[1],0)
+	for j in 1:size(x)[2]
+		d = [d dcc2(x[:,j])]
+	end
+	
+	return d
+end
+
+function winding2(θ::Array{Float64,1}, Σ::Array{Int64,1})
+	if length(θ) < 1
+		q = []
+	else
+		θ1 = θ[Σ]
+		θ2 = θ[[Σ[2:end];Σ[1]]]
+
+		dθ = θ1 - θ2
+
+		q = round(Int,sum(dcc2(dθ))/(2π))
+	end
+
+	return q
+end
 
 function L2B(L::Array{Float64,2})
 	n = size(L)[1]
