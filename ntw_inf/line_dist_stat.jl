@@ -4,14 +4,16 @@ include("line_dist.jl")
 
 #ntw = "euroroad_red"
 #ρ = .1
-#ntw = "ba1"
+ntw = "ba0" # Each new node connected to 1 other.
+ρ = .001
+#ntw = "ba1" # Each new node connected to 2 others.
 #ρ = .01
 #ntw = "pegase1354"
 #ρ = .1
-ntw = "ws1"
-ρ = .1
+#ntw = "ws1"
+#ρ = .1
 
-dosimu = false
+dosimu = true
 doplot = true
 
 n_t = 2
@@ -139,7 +141,7 @@ if dosimu
 end
 
 if doplot
-	# #=
+	 #=
 	τs = vec(readdlm("temp/"*ntw*"_ts.csv",','))
 	eff_θ = readdlm("temp/"*ntw*"_eff_t.csv",',')
 	eff_ψ = readdlm("temp/"*ntw*"_eff_p.csv",',')

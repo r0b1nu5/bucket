@@ -97,7 +97,7 @@ function kuramoto_sine(ntw::String, L::SparseMatrixCSC{Float64,Int64}, P::Array{
 	while err > eps && iter < max_iter
 		iter += 1
 		if iter%1000 == 0
-			@info ntw*"$iter"
+			@info ntw*": $iter"
 		end
 
 		xi = a0.*sin.(w0.*h.*iter + p0)
