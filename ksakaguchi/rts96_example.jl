@@ -97,6 +97,7 @@ u2 = Int64.(vec(readdlm("ntw_data/rts96_w_u2.csv",',')))
 
 Lst = readdlm("ntw_data/rts96_spantree_L.csv",',')
 Bst,w,Bstt = L2B(Lst)
+Bstd = pinv(Bst)
 id_st = Int64.(vec(readdlm("ntw_data/rts96_ids_spantree.csv",',')))
 
 θ1 = Bstd'*Δ1[id_st]
@@ -112,8 +113,7 @@ v1,t1,i1 = NR_solver(Y,v0,t00,P0,Q0,bt)
 v2,t2,i2 = NR_solver(Y,v0,t01,P0,Q0,bt)
 
 
-#subplot(2,1,2)
-figure()
+subplot(2,1,2)
 shift = -2.7
 PyPlot.plot([-1,1],[0,0],"k")
 PyPlot.plot([0,0],[-1,1],"k")

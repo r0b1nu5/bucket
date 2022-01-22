@@ -1,4 +1,4 @@
-using LinearAlgebra
+using PyPlot, LinearAlgebra
 
 function jacobian(th::Array{Float64,1}, LL::Array{Float64,2}=zeros(1,1))
 	n = length(th)
@@ -16,5 +16,33 @@ function jacobian(th::Array{Float64,1}, LL::Array{Float64,2}=zeros(1,1))
 
 	return J
 end
+
+function get_quartiles(x::Matrix{Float64})
+	n,m = size(x)
+
+	q0 = [quantile(x[:,i],0.) for i in 1:m]
+	q1 = [quantile(x[:,i],.25) for i in 1:m]
+	q2 = [quantile(x[:,i],.5) for i in 1:m]
+	q3 = [quantile(x[:,i],.75) for i in 1:m]
+	q4 = [quantile(x[:,i],1.) for i in 1:m]
+
+	return q0,q1,q2,q3,q4
+end
+
+function plot_quart(qs::Tuple{Any,Any,Any,Any,Any}, τs::Vector{Float64}, col::String="C0")
+	q0,q1,q2,q3,q4 = qs
+
+	n = length(τs)
+
+	PyPlot.plot(τs,q0,"x",color=col)
+	PyPlot.plot(τs,q4,"x",color=col)
+	for i in 1:n
+		PyPlot.plot([τs[i],τs[i]],[q1[i],q3[i]],"-",color=col,linewidth=2.)
+	end
+	PyPlot.plot(τs,q2,"o",color=col)
+
+	return nothing
+end
+
 
 

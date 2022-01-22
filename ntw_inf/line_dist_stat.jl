@@ -1,6 +1,7 @@
 using SparseArrays, DelimitedFiles, Statistics
 
 include("line_dist.jl")
+include("tools.jl")
 
 #ntw = "euroroad_red"
 #ρ = .1
@@ -8,12 +9,13 @@ include("line_dist.jl")
 #ρ = .001
 #ntw = "ba1" # Each new node connected to 2 others.
 #ρ = .01
-ntw = "pegase1354"
-ρ = .1
-#ntw = "ws1"
+#ntw = "pegase1354"
 #ρ = .1
+ntw = "ws1"
+ρ = .1
 
 dosimu = false
+doload = true
 doplot = true
 
 n_t = 2
@@ -140,21 +142,55 @@ if dosimu
 	# =#
 end
 
-if doplot
+if doload
 	# #=
 	τs = vec(readdlm("temp/"*ntw*"_ts.csv",','))
 	eff_θ = readdlm("temp/"*ntw*"_eff_t.csv",',')
 	eff_ψ = readdlm("temp/"*ntw*"_eff_p.csv",',')
+	confi_θ = readdlm("temp/"*ntw*"_confi_t.csv",',')
+	qs_ciθ = get_quartiles(confi_θ)
+	confj_θ = readdlm("temp/"*ntw*"_confj_t.csv",',')
+	qs_cjθ = get_quartiles(confj_θ)
+	confi_ψ = readdlm("temp/"*ntw*"_confi_p.csv",',')
+	qs_ciψ = get_quartiles(confi_ψ)
+	confj_ψ = readdlm("temp/"*ntw*"_confj_p.csv",',')
+	qs_cjψ = get_quartiles(confj_ψ)
+	erri_θ = readdlm("temp/"*ntw*"_erri_t.csv",',')
+	qs_eiθ = get_quartiles(erri_θ)
+	errj_θ = readdlm("temp/"*ntw*"_errj_t.csv",',')
+	qs_ejθ = get_quartiles(errj_θ)
+	erri_ψ = readdlm("temp/"*ntw*"_erri_p.csv",',')
+	qs_eiψ = get_quartiles(erri_ψ)
+	errj_ψ = readdlm("temp/"*ntw*"_errj_p.csv",',')
+	qs_ejψ = get_quartiles(errj_ψ)
 	n_i,n_t = size(eff_θ)
 	# =#
+end
+if doplot
 	# #=
-	figure(ntw)
+	figure("method_eff_"*ntw)
 	PyPlot.plot(τs,vec(sum(eff_θ .> .9,dims=1))./n_i,"o",color="C0")
 	PyPlot.plot(τs,vec(sum(eff_θ,dims=1)./n_i),"--",color="C0")
 	PyPlot.plot(τs,vec(sum(eff_ψ .> .9,dims=1))./n_i,"o",color="C1")
 	PyPlot.plot(τs,vec(sum(eff_ψ,dims=1))./n_i,"--",color="C1")
 	xlabel("τ")
 	ylabel("success rate")
+
+	figure("confidence_"*ntw)
+	#plot_quart(qs_ciθ,τs,"C0")
+	plot_quart(qs_cjθ,τs,"C0")
+	#plot_quart(qs_ciψ,τs,"C1")
+	plot_quart(qs_cjψ,τs,"C1")
+	xlabel("τ")
+	ylabel("confidence")
+
+	figure("err_"*ntw)
+	#plot_quart(qs_eiθ,τs,"C0")
+	plot_quart(qs_ejθ,τs,"C0")
+	#plot_quart(qs_eiψ,τs,"C1")
+	plot_quart(qs_ejψ,τs,"C1")
+	xlabel("τ")
+	ylabel("error")
 	# =#
 end
 		
