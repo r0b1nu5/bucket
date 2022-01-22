@@ -4,16 +4,16 @@ include("line_dist.jl")
 
 #ntw = "euroroad_red"
 #ρ = .1
-ntw = "ba0" # Each new node connected to 1 other.
-ρ = .001
+#ntw = "ba0" # Each new node connected to 1 other.
+#ρ = .001
 #ntw = "ba1" # Each new node connected to 2 others.
 #ρ = .01
-#ntw = "pegase1354"
-#ρ = .1
+ntw = "pegase1354"
+ρ = .1
 #ntw = "ws1"
 #ρ = .1
 
-dosimu = true
+dosimu = false
 doplot = true
 
 n_t = 2
@@ -60,8 +60,8 @@ if dosimu
 	λ2 = -λs[end-1]
 	λn = -λs[1]
 
-	τ1 = λ2/100
-	τ2 = λn*10
+	τ1 = 10/λ2
+	τ2 = 1/(10*λn)
 	τs = exp.(LinRange(log(τ1),log(τ2),n_t))
 		
 	eff_θ = zeros(n_i,n_t)
@@ -141,7 +141,7 @@ if dosimu
 end
 
 if doplot
-	 #=
+	# #=
 	τs = vec(readdlm("temp/"*ntw*"_ts.csv",','))
 	eff_θ = readdlm("temp/"*ntw*"_eff_t.csv",',')
 	eff_ψ = readdlm("temp/"*ntw*"_eff_p.csv",',')
