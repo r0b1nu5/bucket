@@ -13,6 +13,8 @@ include("tools.jl")
 #ρ = .1
 ntw = "ws1"
 ρ = .1
+#ntw = "ws2"
+#ρ = .1
 
 dosimu = false
 doload = true
@@ -164,15 +166,19 @@ if doload
 	errj_ψ = readdlm("temp/"*ntw*"_errj_p.csv",',')
 	qs_ejψ = get_quartiles(errj_ψ)
 	n_i,n_t = size(eff_θ)
+
+	eff_tot = (confj_θ .<= confj_ψ).*eff_ψ + (confj_θ .> confj_ψ).*eff_θ
 	# =#
 end
 if doplot
 	# #=
 	figure("method_eff_"*ntw)
 	PyPlot.plot(τs,vec(sum(eff_θ .> .9,dims=1))./n_i,"o",color="C0")
-	PyPlot.plot(τs,vec(sum(eff_θ,dims=1)./n_i),"--",color="C0")
+	PyPlot.plot(τs,vec(sum(eff_θ .> .2,dims=1))./n_i,"-",color="C0")
 	PyPlot.plot(τs,vec(sum(eff_ψ .> .9,dims=1))./n_i,"o",color="C1")
-	PyPlot.plot(τs,vec(sum(eff_ψ,dims=1))./n_i,"--",color="C1")
+	PyPlot.plot(τs,vec(sum(eff_ψ .> .2,dims=1))./n_i,"-",color="C1")
+	PyPlot.plot(τs,vec(sum(eff_tot .> .9,dims=1))./n_i,"--k")
+#	PyPlot.plot(τs,vec(sum(eff_tot .> .2,dims=1))./n_i,"--",color="C2")
 	xlabel("τ")
 	ylabel("success rate")
 
