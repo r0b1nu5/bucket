@@ -3,27 +3,27 @@ using SparseArrays, DelimitedFiles, Statistics
 include("line_dist.jl")
 include("tools.jl")
 
-#ntw = "euroroad_red"
-#ρ = .1
+ntw = "euroroad_red"
+ρ = .1
 #ntw = "ba0" # Each new node connected to 1 other.
 #ρ = .001
 #ntw = "ba1" # Each new node connected to 2 others.
 #ρ = .01
-ntw = "pegase1354"
-ρ = .1
+#ntw = "pegase1354"
+#ρ = .1
 #ntw = "ws1"
 #ρ = .1
 #ntw = "ws2"
 #ρ = .1
 
 dosimu = false
-doloadgroup = false
-doload = true
+doloadgroup = true
+doload = false
 doplot = true
 
 n_t = 2
 n_i = 2
-n_c = 1
+n_c = 10
 
 if dosimu
 
@@ -43,8 +43,6 @@ if dosimu
 #	e1 = -4.
 #	e2 = 1.
 #	τs = (10).^(LinRange(e1,e2,n_t))
-
-	ls = rand(1:m,n_i)
 
 	iter = 20000
 	while iter > 19000
@@ -82,6 +80,13 @@ if dosimu
 	errj_p = zeros(n_i,n_t)
 	
 	for c in 1:n_c
+		if m/n_c < 200
+			ls = c:n_c:m
+		else
+			dc = floor(Int64,m/100)
+			ls = c:dc:m
+		end
+
 		for i = 1:n_i
 			for t = 1:n_t
 				@info "=========== counter = $c, iter=$i/$(n_i), t=$t/$(n_t) ============"
@@ -151,7 +156,7 @@ end
 if doloadgroup
 	τs = vec(readdlm("temp/"*ntw*"_ts.csv",','))
 	n_t = length(τs)
-	eff_θ = Matrix{Float64}(undef,0,n_t)
+	global eff_θ = Matrix{Float64}(undef,0,n_t)
 	eff_ψ = Matrix{Float64}(undef,0,n_t)
 	confi_θ = Matrix{Float64}(undef,0,n_t)
 	confj_θ = Matrix{Float64}(undef,0,n_t)
@@ -161,18 +166,18 @@ if doloadgroup
 	errj_θ = Matrix{Float64}(undef,0,n_t)
 	erri_ψ = Matrix{Float64}(undef,0,n_t)
 	errj_ψ = Matrix{Float64}(undef,0,n_t)
-
+	
 	for c in 1:n_c
-		eff_θ = [eff_θ;readdlm("temp/"*ntw*"_eff_t_c$c.csv",',')]
-		eff_ψ = [eff_ψ;readdlm("temp/"*ntw*"_eff_p_c$c.csv",',')]
-		confi_θ = [confi_θ;readdlm("temp/"*ntw*"_confi_t_c$c.csv",',')]
-		confj_θ = [confj_θ;readdlm("temp/"*ntw*"_confj_t_c$c.csv",',')]
-		confi_ψ = [confi_ψ;readdlm("temp/"*ntw*"_confi_p_c$c.csv",',')]
-		confj_ψ = [confj_ψ;readdlm("temp/"*ntw*"_confj_p_c$c.csv",',')]
-		erri_θ = [erri_θ;readdlm("temp/"*ntw*"_erri_t_c$c.csv",',')]
-		errj_θ = [errj_θ;readdlm("temp/"*ntw*"_errj_t_c$c.csv",',')]
-		erri_ψ = [erri_ψ;readdlm("temp/"*ntw*"_erri_p_c$c.csv",',')]
-		errj_ψ = [errj_ψ;readdlm("temp/"*ntw*"_errj_p_c$c.csv",',')]
+		global eff_θ = [eff_θ;readdlm("temp/"*ntw*"_eff_t_c$c.csv",',')]
+		global eff_ψ = [eff_ψ;readdlm("temp/"*ntw*"_eff_p_c$c.csv",',')]
+		global confi_θ = [confi_θ;readdlm("temp/"*ntw*"_confi_t_c$c.csv",',')]
+		global confj_θ = [confj_θ;readdlm("temp/"*ntw*"_confj_t_c$c.csv",',')]
+		global confi_ψ = [confi_ψ;readdlm("temp/"*ntw*"_confi_p_c$c.csv",',')]
+		global confj_ψ = [confj_ψ;readdlm("temp/"*ntw*"_confj_p_c$c.csv",',')]
+		global erri_θ = [erri_θ;readdlm("temp/"*ntw*"_erri_t_c$c.csv",',')]
+		global errj_θ = [errj_θ;readdlm("temp/"*ntw*"_errj_t_c$c.csv",',')]
+		global erri_ψ = [erri_ψ;readdlm("temp/"*ntw*"_erri_p_c$c.csv",',')]
+		global errj_ψ = [errj_ψ;readdlm("temp/"*ntw*"_errj_p_c$c.csv",',')]
 	end
 	qs_ciθ = get_quartiles(confi_θ)
 	qs_cjθ = get_quartiles(confj_θ)
@@ -182,6 +187,8 @@ if doloadgroup
 	qs_ejθ = get_quartiles(errj_θ)
 	qs_eiψ = get_quartiles(erri_ψ)
 	qs_ejψ = get_quartiles(errj_ψ)
+	
+	eff_tot = (confj_θ .<= confj_ψ).*eff_ψ + (confj_θ .> confj_ψ).*eff_θ
 
 	n_i,n_t = size(eff_θ)
 end
