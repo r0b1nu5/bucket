@@ -3,8 +3,8 @@ using SparseArrays, DelimitedFiles, Statistics
 include("line_dist.jl")
 include("tools.jl")
 
-ntw = "euroroad_red"
-ρ = .1
+#ntw = "euroroad_red"
+#ρ = .1
 #ntw = "ba0" # Each new node connected to 1 other.
 #ρ = .001
 #ntw = "ba1" # Each new node connected to 2 others.
@@ -13,8 +13,8 @@ ntw = "euroroad_red"
 #ρ = .1
 #ntw = "ws1"
 #ρ = .1
-#ntw = "ws2"
-#ρ = .1
+ntw = "ws2"
+ρ = .1
 
 dosimu = false
 doloadgroup = true
@@ -221,19 +221,19 @@ if doload
 end
 
 if doplot
-	μ2 = τs[1]/10
-	μn = 10*τs[end]
+	ω2 = 10/τs[1]
+	ωn = 1/(10*τs[end])
 	# #=
 	figure("method_eff_"*ntw)
-	PyPlot.plot([μ2,μ2],[0.,1.],"--k")
-	PyPlot.plot([μn,μn],[0.,1.],"--k")
-	PyPlot.plot(τs,vec(sum(eff_θ .> .9,dims=1))./n_i,"o",color="C0")
-	PyPlot.plot(τs,vec(sum(eff_θ .> .2,dims=1))./n_i,"-",color="C0")
-	PyPlot.plot(τs,vec(sum(eff_ψ .> .9,dims=1))./n_i,"o",color="C1")
-	PyPlot.plot(τs,vec(sum(eff_ψ .> .2,dims=1))./n_i,"-",color="C1")
-	PyPlot.plot(τs,vec(sum(eff_tot .> .9,dims=1))./n_i,"--k")
-#	PyPlot.plot(τs,vec(sum(eff_tot .> .2,dims=1))./n_i,"--",color="C2")
-	xlabel("τ")
+	PyPlot.plot([ω2,ω2],[0.,1.],"--k")
+	PyPlot.plot([ωn,ωn],[0.,1.],"--k")
+	PyPlot.plot(1 ./τs,vec(sum(eff_θ .> .9,dims=1))./n_i,"o",color="C0")
+	PyPlot.plot(1 ./τs,vec(sum(eff_θ .> .2,dims=1))./n_i,"-",color="C0")
+	PyPlot.plot(1 ./τs,vec(sum(eff_ψ .> .9,dims=1))./n_i,"o",color="C1")
+	PyPlot.plot(1 ./τs,vec(sum(eff_ψ .> .2,dims=1))./n_i,"-",color="C1")
+	PyPlot.plot(1 ./τs,vec(sum(eff_tot .> .9,dims=1))./n_i,"--k")
+#	PyPlot.plot(1 ./τs,vec(sum(eff_tot .> .2,dims=1))./n_i,"--",color="C2")
+	xlabel("ω")
 	ylabel("success rate")
 
 	figure("confidence_"*ntw)
@@ -241,7 +241,7 @@ if doplot
 	plot_quart(qs_cjθ,τs,"C0")
 	#plot_quart(qs_ciψ,τs,"C1")
 	plot_quart(qs_cjψ,τs,"C1")
-	xlabel("τ")
+	xlabel("ω")
 	ylabel("confidence")
 
 	figure("err_"*ntw)
@@ -249,7 +249,7 @@ if doplot
 	plot_quart(qs_ejθ,τs,"C0")
 	#plot_quart(qs_eiψ,τs,"C1")
 	plot_quart(qs_ejψ,τs,"C1")
-	xlabel("τ")
+	xlabel("ω")
 	ylabel("error")
 	# =#
 end

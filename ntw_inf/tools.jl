@@ -34,12 +34,12 @@ function plot_quart(qs::Tuple{Any,Any,Any,Any,Any}, τs::Vector{Float64}, col::S
 
 	n = length(τs)
 
-	PyPlot.plot(τs,q0,"x",color=col)
-	PyPlot.plot(τs,q4,"x",color=col)
+	PyPlot.plot(1 ./τs,q0,"x",color=col)
+	PyPlot.plot(1 ./τs,q4,"x",color=col)
 	for i in 1:n
-		PyPlot.plot([τs[i],τs[i]],[q1[i],q3[i]],"-",color=col,linewidth=2.)
+		PyPlot.plot([1/τs[i],1/τs[i]],[q1[i],q3[i]],"-",color=col,linewidth=2.)
 	end
-	PyPlot.plot(τs,q2,"o",color=col)
+	PyPlot.plot(1 ./τs,q2,"o",color=col)
 
 	return nothing
 end
