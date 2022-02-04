@@ -40,12 +40,18 @@ J = J - spdiagm(0 => vec(sum(J,dims=2)))
 
 N88 = [92,93,109,239,216,527]
 
+ax = sort([maximum(θs[i,501:1000]) - minimum(θs[i,501:1000]) for i in [88;N88]])
+cx = 1 - ax[end-2]/ax[end-1]
+ap = sort([maximum(ψs[i,501:1000]) - minimum(ψs[i,501:1000]) for i in [88;N88]])
+cp = 1 - ap[end-2]/ap[end-1]
+
 figure()
 for i in [88;N88;150:200]
 	PyPlot.plot((501:1000)*τ,θs[i,501:1000] .- mean(θs[i,501:1000]))
 end
 xlabel("t")
 ylabel("x")
+title("confidence: $cx")
 
 figure()
 for i in [88;N88;150:200]
@@ -53,4 +59,5 @@ for i in [88;N88;150:200]
 end
 xlabel("t")
 ylabel("ψ")
+title("confidence: $cp")
 

@@ -9,21 +9,23 @@ include("tools.jl")
 #ρ = .001
 #ntw = "ba1" # Each new node connected to 2 others.
 #ρ = .01
+ntw = "ba5"
+ρ = .01
 #ntw = "pegase1354"
 #ρ = .1
 #ntw = "ws1"
 #ρ = .1
-ntw = "ws2"
-ρ = .1
+#ntw = "ws2"
+#ρ = .1
 
-dosimu = false
-doloadgroup = true
+dosimu = true
+doloadgroup = false
 doload = false
 doplot = true
 
 n_t = 2
 n_i = 2
-n_c = 10
+n_c = 1
 
 if dosimu
 
