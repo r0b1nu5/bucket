@@ -6,11 +6,12 @@ include("tools.jl")
 #ntw = "euroroad_red"
 #ρ = .1
 #ntw = "ba0" # Each new node connected to 1 other.
-#ρ = .001
+ntw = "ba00"
+ρ = .001
 #ntw = "ba1" # Each new node connected to 2 others.
 #ρ = .01
-ntw = "ba5"
-ρ = .01
+#ntw = "ba5"
+#ρ = .01
 #ntw = "pegase1354"
 #ρ = .1
 #ntw = "ws1"
@@ -18,13 +19,13 @@ ntw = "ba5"
 #ntw = "ws2"
 #ρ = .1
 
-dosimu = true
-doloadgroup = false
+dosimu = false
+doloadgroup = true
 doload = false
 doplot = true
 
-n_t = 2
-n_i = 2
+n_t = 20
+n_i = 100
 n_c = 1
 
 if dosimu
@@ -140,7 +141,7 @@ if dosimu
 		end	
 
 		# #=
-		writedlm("temp/"*ntw*"_ts_c.csv",τs,',')
+		writedlm("temp/"*ntw*"_ts.csv",τs,',')
 		writedlm("temp/"*ntw*"_eff_t_c$c.csv",eff_θ,',')
 		writedlm("temp/"*ntw*"_eff_p_c$c.csv",eff_ψ,',')
 		writedlm("temp/"*ntw*"_confi_t_c$c.csv",confi_t,',')
