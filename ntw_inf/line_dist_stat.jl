@@ -4,20 +4,23 @@ include("line_dist.jl")
 include("tools.jl")
 
 #ntw = "euroroad_red"
+#ntw = "euroroad_red00"
 #ρ = .1
 #ntw = "ba0" # Each new node connected to 1 other.
-ntw = "ba00"
-ρ = .001
+#ntw = "ba00"
+#ρ = .001
 #ntw = "ba1" # Each new node connected to 2 others.
 #ρ = .01
 #ntw = "ba5"
 #ρ = .01
 #ntw = "pegase1354"
+#ntw = "pegase135400"
 #ρ = .1
 #ntw = "ws1"
 #ρ = .1
 #ntw = "ws2"
-#ρ = .1
+ntw = "ws200"
+ρ = .1
 
 dosimu = false
 doloadgroup = true
@@ -26,7 +29,7 @@ doplot = true
 
 n_t = 20
 n_i = 100
-n_c = 1
+n_c = 7
 
 if dosimu
 
@@ -157,7 +160,8 @@ if dosimu
 end
 
 if doloadgroup
-	τs = vec(readdlm("temp/"*ntw*"_ts.csv",','))
+#	τs = vec(readdlm("temp/"*ntw*"_ts.csv",','))
+	τs = vec(readdlm("temp/"*ntw*"_ts_c.csv",','))
 	n_t = length(τs)
 	global eff_θ = Matrix{Float64}(undef,0,n_t)
 	eff_ψ = Matrix{Float64}(undef,0,n_t)
