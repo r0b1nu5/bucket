@@ -19,8 +19,11 @@ include("tools.jl")
 #ntw = "ws1"
 #ρ = .1
 #ntw = "ws2"
-ntw = "ws200"
-ρ = .1
+#ntw = "ws200"
+#ρ = .1
+
+@info "Which network?"
+ntw = readline()
 
 dosimu = false
 doloadgroup = true
@@ -105,9 +108,11 @@ if dosimu
 		
 				θs,it = kuramoto_sine(ntw,L,P,θ0,l,1.,1/τ,0.,true,1000,-1e-5,min(.01,τ/10))
 				nθ = [norm(θs[i,:] .- θs[i,1],Inf) for i in 1:n]
-				iθ = findmax(nθ)[2]
-				jθ = findmax([nθ[1:iθ-1];0.;nθ[iθ+1:n]])[2]
-				kθ = findmax([nθ[1:min(iθ,jθ)-1];0.;nθ[min(iθ,jθ)+1:max(iθ,jθ)-1];0.;nθ[max(iθ,jθ)+1:n]])[2]
+				lθ = Int64.(sortslices([nθ 1:n],dims=1,rev=true)[:,2])
+				rθ = Int64.(sortslices([lθ 1:n],dims=1)[:,2])
+				iθ = lθ[1]
+				jθ = lθ[2]
+				kθ = lθ[3]
 				uθ = union([sl,tl],[iθ,jθ])
 				if length(uθ) < 2
 					@info "Weird..."
@@ -119,14 +124,18 @@ if dosimu
 				end
 				confi_t[i,t] = 1 - nθ[kθ]/nθ[iθ]
 				confj_t[i,t] = 1 - nθ[kθ]/nθ[jθ]
-				erri_t[i,t] = 1 - maximum(nθ[[sl,tl]])/nθ[iθ]
-				errj_t[i,t] = 1 - minimum(nθ[[sl,tl]])/nθ[jθ]
+#				erri_t[i,t] = 1 - maximum(nθ[[sl,tl]])/nθ[iθ]
+#				errj_t[i,t] = 1 - minimum(nθ[[sl,tl]])/nθ[jθ]
+				erri_t[i,t] = sort(rθ[[sl,tl]])[1]
+				errj_t[i,t] = sort(rθ[[sl,tl]])[2]
 		
 				ψs = L*θs
 				nψ = [norm(ψs[i,:] .- ψs[i,1],Inf) for i in 1:n]
-				iψ = findmax(nψ)[2]
-				jψ = findmax([nψ[1:iψ-1];0.;nψ[iψ+1:n]])[2]
-				kψ = findmax([nψ[1:min(iψ,jψ)-1];0.;nψ[min(iψ,jψ)+1:max(iψ,jψ)-1];0.;nψ[max(iψ,jψ)+1:n]])[2]
+				lψ = Int64.(sortslices([nψ 1:n],dims=1,rev=true)[:,2])
+				rψ = Int64.(sortslices([lψ 1:n],dims=1)[:,2])
+				iψ = lψ[1]
+				jψ = lψ[2]
+				kψ = lψ[3]
 				uψ = union([sl,tl],[iψ,jψ])
 				if length(uψ) < 2
 					@info "Weird..."
@@ -138,8 +147,10 @@ if dosimu
 				end
 				confi_p[i,t] = 1 - nψ[kψ]/nψ[iψ]
 				confj_p[i,t] = 1 - nψ[kψ]/nψ[jψ]
-				erri_p[i,t] = 1 - maximum(nψ[[sl,tl]])/nψ[iψ]
-				errj_p[i,t] = 1 - minimum(nψ[[sl,tl]])/nψ[jψ]
+#				erri_p[i,t] = 1 - maximum(nψ[[sl,tl]])/nψ[iψ]
+#				errj_p[i,t] = 1 - minimum(nψ[[sl,tl]])/nψ[jψ]
+				erri_p[i,t] = sort(rψ[[sl,tl]])[1]
+				errj_p[i,t] = sort(rψ[[sl,tl]])[2]
 			end
 		end	
 
