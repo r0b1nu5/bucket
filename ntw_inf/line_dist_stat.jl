@@ -29,10 +29,11 @@ dosimu = false
 doloadgroup = true
 doload = false
 doplot = true
+plotrank = true
 
 n_t = 20
 n_i = 100
-n_c = 7
+n_c = 10
 
 if dosimu
 
@@ -77,17 +78,6 @@ if dosimu
 	τ2 = 1/(10*λn)
 	τs = exp.(LinRange(log(τ1),log(τ2),n_t))
 		
-	eff_θ = zeros(n_i,n_t)
-	eff_ψ = zeros(n_i,n_t)
-	confi_t = zeros(n_i,n_t)
-	confj_t = zeros(n_i,n_t)
-	confi_p = zeros(n_i,n_t)
-	confj_p = zeros(n_i,n_t)
-	erri_t = zeros(n_i,n_t)
-	errj_t = zeros(n_i,n_t)
-	erri_p = zeros(n_i,n_t)
-	errj_p = zeros(n_i,n_t)
-	
 	for c in 1:n_c
 		if m/n_c < 200
 			ls = c:n_c:m
@@ -95,7 +85,18 @@ if dosimu
 			dc = floor(Int64,m/100)
 			ls = c:dc:m
 		end
-
+	
+		eff_θ = zeros(n_i,n_t)
+		eff_ψ = zeros(n_i,n_t)
+		confi_t = zeros(n_i,n_t)
+		confj_t = zeros(n_i,n_t)
+		confi_p = zeros(n_i,n_t)
+		confj_p = zeros(n_i,n_t)
+		erri_t = zeros(n_i,n_t)
+		errj_t = zeros(n_i,n_t)
+		erri_p = zeros(n_i,n_t)
+		errj_p = zeros(n_i,n_t)
+	
 		for i = 1:n_i
 			for t = 1:n_t
 				@info "=========== counter = $c, iter=$i/$(n_i), t=$t/$(n_t) ============"
@@ -270,6 +271,19 @@ if doplot
 	xlabel("ω")
 	ylabel("error")
 	# =#
+	
+	if plotrank
+		aerrj = [mean(errj_ψ[:,t]) for t in 1:n_t]
+		qerrj = [quantile(errj_ψ[:,t],.99) for t in 1:n_t]
+		merrj = [maximum(errj_ψ[:,t]) for t in 1:n_t]
+
+		figure("rank_"*ntw)
+		PyPlot.plot([1/τs[1],1/τs[end]],[2.,2.],"--k")
+		PyPlot.plot(1 ./τs,qerrj,"o",color="C1")
+		PyPlot.plot(1 ./τs,merrj,"o",mfc="none",color="C1")
+		xlabel("ω")
+		ylabel("rank")
+	end
 end
 		
 
