@@ -10,6 +10,8 @@ grhyp/ntw_data/*.raw
 grhyp/ntw_data/*.RAW
 gs_failure/data/
 gs_failure/figs/
+gs_failure/ntw_data/
+gs_failure/temp/
 K_player/figures/
 K_player/refs/
 K_player/data/synth*
