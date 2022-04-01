@@ -1,48 +1,58 @@
 using LinearAlgebra, PyPlot
 
 include("L2B.jl")
+include("cycle.jl")
 
-n1 = 12
-k1 = 1
-n2 = 12
-k2 = 1
-n = n1 + n2
+ #=
+ns = [6,6,6,6,6,6]
+ks = [1,1,1,1,1,1]
+# =#
+# #=
+ns = [6,5]
+ks = [1,1]
+# =#
 
-q1 = 1
-q2 = -1
+n0 = length(ns)
+N = sum(ns)
 
-θ1 = Vector(q1*2π*(1:n1)./n1) .+ 2*rand() .-1
-θ2 = Vector(q2*2π*(1:n2)./n2) .+ 2*rand() .-1
-#θ2 = copy(θ1) .+ π
-θ = [θ1;θ2]
+As = [cycle(ns[i],ks[i]) for i in 1:n0]
 
-A1 = zeros(n1,n1)
-for k in 1:k1
-	global A1 += diagm(k => ones(n1-k)) + diagm(-k => ones(n1-k)) + diagm(n1-k => ones(k)) + diagm(k-n1 => ones(k))
+#A0 = cycle(n0)
+A0 = [0 1;1 0.]
+
+#qs = [1,1,1,1,1,1]
+qs = [1,-1]
+
+θs = [Vector(qs[i]*2π*(1:ns[i])/ns[i]) for i in 1:n0]
+θ0 = Vector{Float64}()
+for i in 1:n0
+	global θ0 = [θ0;θs[i]]
 end
-D1 = diagm(0 => vec(sum(A1,dims=1)))
-L1 = D1 - A1
 
-A2 = zeros(n2,n2)
-for k in 1:k2
-	global A2 += diagm(k => ones(n2-k)) + diagm(-k => ones(n2-k)) + diagm(n2-k => ones(k)) + diagm(k-n2 => ones(k))
+A = zeros(N,N)
+for i in 1:n0-1
+	i0 = sum(ns[1:i-1])
+	for j in i+1:n0
+		j0 = sum(ns[1:j-1])
+		A[i0+1:i0+ns[i],j0+1:j0+ns[j]] = A0[i,j]*ones(ns[i],ns[j])
+		A[j0+1:j0+ns[j],i0+1:i0+ns[i]] = A0[j,i]*ones(ns[j],ns[i])
+	end
+	A[i0+1:i0+ns[i],i0+1:i0+ns[i]] = As[i]
 end
-D2 = diagm(0 => vec(sum(A2,dims=1)))
-L2 = D2 - A2
-
-
-A = [A1 ones(n1,n2);ones(n2,n1) A2]
-#A = [A1 diagm(0 => ones(n1));diagm(0 => ones(n1)) A2]
-#A = [A1 A1;A2 A2]
+A[end-ns[end]+1:end,end-ns[end]+1:end] = As[end]
 D = diagm(0 => vec(sum(A,dims=1)))
 L = D - A
 B,w = L2B(L)
 
-dot = B*sin.(B'*θ)
+
+
+
+
+dot = B*sin.(B'*θ0)
 @info "Max. deriv.: $(maximum(abs.(dot)))"
 
 
-dθ = θ*ones(1,n) - ones(n)*θ'
+dθ = θ0*ones(1,N) - ones(N)*θ0'
 preJ = A.*cos.(dθ)
 DJ = diagm(0 => vec(sum(preJ,dims=1)))
 J = preJ - DJ
