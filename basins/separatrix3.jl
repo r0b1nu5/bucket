@@ -35,26 +35,31 @@ for i in 1:res
 	end
 end
 
-subplot(2,2,1)
+#subplot(2,2,1)
+subplot(1,4,1)
 imshow(V,origin="lower",extent=(-π,π,-π,π))
 colorbar(label="V")
 ylabel("θ2")
+xlabel("θ1")
 
-subplot(2,2,2)
+#subplot(2,2,2)
+subplot(1,4,2)
 #contour(abs.(Λ2),50)
 imshow(log.(abs.(Λ2)),origin="lower",extent=(-π,π,-π,π))
 colorbar(label="log|λ2|")
+xlabel("θ1")
 
-subplot(2,2,4)
+#subplot(2,2,4)
+subplot(1,4,3)
 #contour(abs.(Λ3),50)
 imshow(log.(abs.(Λ3)),origin="lower",extent=(-π,π,-π,π))
 colorbar(label="log|λ3|")
 xlabel("θ1")
 
-subplot(2,2,3)
+#subplot(2,2,3)
+subplot(1,4,4)
 imshow(log.(abs.(X)),origin="lower",extent=(-π,π,-π,π))
 colorbar(label="log|span. trees condition|")
 xlabel("θ1")
-ylabel("θ2")
 
 
