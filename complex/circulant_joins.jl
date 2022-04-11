@@ -15,10 +15,14 @@ ks = [1,1]
 n0 = length(ns)
 N = sum(ns)
 
-As = [cycle(ns[i],ks[i]) for i in 1:n0]
+Ls = [cycle(ns[i],ks[i]) for i in 1:n0]
+As = Vector{Matrix{Float64}}()
+for L in Ls
+	push!(As,diagm(0 => diag(L)) - L)
+end
 
 #A0 = cycle(n0)
-A0 = [0 1;1 0.]
+A0 = .1*[0 1;1 0.]
 
 #qs = [1,1,1,1,1,1]
 qs = [1,-1]
