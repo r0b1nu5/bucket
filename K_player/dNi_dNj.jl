@@ -7,8 +7,8 @@ gen_data = false # otherwise, load data
 ref_year = "00"
 
 #journal = "science"; col = "C2"; lw = 2.
-#journal = "prl"; col = "C3"; lw = 1.
-journal = "lancet"; col = "C0"; lw = 2.
+journal = "prl"; col = "C3"; lw = 1.
+#journal = "lancet"; col = "C0"; lw = 2.
 
 yi = 99
 yf = 8
@@ -54,15 +54,19 @@ end
 
 mi = union(ni)
 Rs = Dict{Int64,Vector{Float64}}(n => Float64[] for n in mi)
+Ds = Dict{Int64,Vector{Int64}}(n => Int64[] for n in mi)
 ρs = Vector{Float64}()
 for i in 1:length(ni)
 	ρ = ni[i]/nf[i]
 	push!(ρs,ρ)
 	push!(Rs[ni[i]],ρ)
+	push!(Ds[ni[i]],nf[i]-ni[i])
 end
 Qs = Dict{Int64,Vector{Float64}}()
+Ps = Dict{Int64,Vector{Float64}}()
 for k in keys(Rs)
 	Qs[k] = quantile(Rs[k],[0.,.1,.25,.5,.75,.9,1.])
+	Ps[k] = quantile(Ds[k],[0.,.1,.25,.5,.75,.9,1.])
 end
 
 # #=
@@ -99,6 +103,18 @@ PyPlot.plot(mi,[Qs[k][1] for k in mi],"x",color=col)
 PyPlot.plot(mi,[Qs[k][7] for k in mi],"x",color=col)
 xlabel("n")
 ylabel("ratio (1999-2008)")
+# =#
+
+# #=
+figure(journal*" 4")
+for k in mi
+	PyPlot.plot([k,k],[Ps[k][3],Ps[k][5]],color=col,linewidth=lw)
+end
+PyPlot.plot(mi,[Ps[k][4] for k in mi],"o",color=col)
+PyPlot.plot(mi,[Ps[k][1] for k in mi],"x",color=col)
+PyPlot.plot(mi,[Ps[k][7] for k in mi],"x",color=col)
+xlabel("n")
+ylabel("pub increase (1999-2008)")
 # =#
 
 
