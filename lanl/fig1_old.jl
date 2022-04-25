@@ -33,42 +33,24 @@ Lmi = minimum(L1)
 Lma = maximum(L1)
 
 cmap = get_cmap("plasma")
-colshift = .5
 
-figure("fig1",(15,4.5))
-
-subplot(1,3,1)
-x = LinRange(0,2π,4)
-lws = [4.,2.,4.]
-lts = ["-k","-k","--k"]
-bss = [40,20,10]
-for i in 1:3
-	PyPlot.plot(sin.(x[[i,i+1]]),cos.(x[[i,i+1]]),lts[i],linewidth=lws[i])
-end
-for i in 1:3
-	PyPlot.plot(sin(x[i]),cos(x[i]),"o",color=cmap(1-(i-1+colshift)/(2+colshift)),markersize=bss[i])
-end
-axis([-1.2,1.2,-1.2,1.2])
-axis("off")
-
-#=
 figure("fig1_$(run)",(19,4.5))
 
 subplot2grid((2,44),(0,0),colspan=10,rowspan=1)
 for i in 1:3
-	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i,1:51]),color=cmap(1-(i-1+colshift)/(2+colshift)))
+	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i,1:51]),color=cmap((i-1)/2))
 end
 PyPlot.text(.95,5500.,"(a)")
 
 subplot2grid((2,44),(1,0),colspan=10,rowspan=1)
 for i in 1:3
-	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i+3,1:51]),color=cmap(1-(i-1+colshift)/(2+colshift)))
+	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i+3,1:51]),color=cmap((i-1)/2))
 end
 PyPlot.text(.95,19000.,"(b)")
 
 subplot2grid((2,44),(0,11),colspan=10,rowspan=2)
 for i in 1:3
-	PyPlot.plot(ks/T,L0[i,:],"-",color=cmap(1-(i-1+colshift)/(2+colshift)))
+	PyPlot.plot(ks/T,L0[i,:],"-",color=cmap((i-1)/2))
 end
 PyPlot.text(.95,-14.57,"(c)")
 xlabel("freq")

@@ -2,8 +2,11 @@ using PyPlot, DelimitedFiles
 
 cmap = get_cmap("plasma")
 
-ntw1 = "pen_5"
-ntw2 = "pen_8"
+@info "Plot pen_x and pen_y."
+@info "x = ? (2, 3, 4, 5, or 8)"
+ntw1 = "pen_"*readline()
+@info "x = ? (2, 3, 4, 5, or 8)"
+ntw2 = "pen_"*readline()
 
 ntws = Dict{String,Any}("pen_2" => (129,Array(5000:50:6000),1260.,1000.),
 			"pen_3" => (130,Array(8500:50:10000),660.,-.024),

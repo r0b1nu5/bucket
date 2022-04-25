@@ -2,41 +2,39 @@ using PyPlot, DelimitedFiles
 
 cmap = get_cmap("plasma")
 
-# #=
-ntw = "pen_2"
-n = 129
-ks = Array(5000:50:6000)
-T = 1260. 
-file = "pen_2"
-# =#
- #=
-ntw = "pen_3"
-n = 130
-ks = Array(8500:50:10000)
-T = 660.
-file = "pen_3"
-# =#
- #=
-ntw = "pen_4"
-n = 129
-ks = Array(6000:50:7000)
-T = 600.
-file = "pen_4"
-# =#
- #=
-ntw = "pen_5"
-n = 130
-ks = Array(5000:50:6500)
-T = 1260.
-file = "pen_5"
-# =#
- #=
-ntw = "pen_8"
-n = 134
-ks = Array(9000:50:10000)
-T = 1260.
-file = "pen_8"
-# =#
+@info "Plot pen_x."
+@info "x = ? (2, 3, 4, 5, or 8)"
+
+ntw = "pen_"*readline()
+
+if ntw == "pen_2"
+	n = 129
+	ks = Array(5000:50:6000)
+	T = 1260. 
+	file = "pen_2"
+elseif ntw == "pen_3"
+	n = 130
+	ks = Array(8500:50:10000)
+	T = 660.
+	file = "pen_3"
+elseif ntw == "pen_4"
+	n = 129
+	ks = Array(6000:50:7000)
+	T = 600.
+	file = "pen_4"
+elseif ntw == "pen_5"
+	n = 130
+	ks = Array(5000:50:6500)
+	T = 1260.
+	file = "pen_5"
+elseif ntw == "pen_8"
+	n = 134
+	ks = Array(9000:50:10000)
+	T = 1260.
+	file = "pen_8"
+else
+	@info "Invalid entry."
+end
 
 ls = 1:n
 
