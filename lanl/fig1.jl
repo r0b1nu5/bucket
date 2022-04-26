@@ -7,12 +7,18 @@ nn,N = size(Xs)
 n = Int64(nn/2)
 τ = .001
 T = (N-1)*τ
+ff = 1/2π
 
-FX = Array{Complex{Float64},2}(undef,nn,N)
+FX = Matrix{Complex{Float64}}(undef,nn,N)
+nFX = Matrix{Float64}(undef,nn,N)
 
 for i in 1:nn
 	FX[i,:] = fft(Xs[i,:])
+	nFX[i,:] = norm.(FX[i,:])
 end
+
+nFX[1:n,:] ./= maximum(nFX[1:n,:])
+nFX[n+1:nn,:] ./= maximum(nFX[n+1:nn,:])
 
 ks = 1:50
 L0 = zeros(n,length(ks))
@@ -21,7 +27,9 @@ for i in 1:n
 		L0[i,j] = readdlm("data/ntw3_$(run)_l0_$(i).$(ks[j])_obj.csv",',')[1]
 	end
 end
+nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
 
+ #=
 L1 = Array{Float64,1}()
 γ1 = Array{Array{Float64,1},1}()
 for j in 1:length(ks)
@@ -31,9 +39,11 @@ end
 
 Lmi = minimum(L1)
 Lma = maximum(L1)
+# =#
 
 cmap = get_cmap("plasma")
 colshift = .5
+cols = [cmap(1-(i+colshift)/(2+colshift)) for i in 0:2]
 
 figure("fig1",(15,4.5))
 
@@ -46,42 +56,36 @@ for i in 1:3
 	PyPlot.plot(sin.(x[[i,i+1]]),cos.(x[[i,i+1]]),lts[i],linewidth=lws[i])
 end
 for i in 1:3
-	PyPlot.plot(sin(x[i]),cos(x[i]),"o",color=cmap(1-(i-1+colshift)/(2+colshift)),markersize=bss[i])
+	PyPlot.plot(sin(x[i]),cos(x[i]),"o",color=cols[i],markersize=bss[i])
 end
-axis([-1.2,1.2,-1.2,1.2])
-axis("off")
+PyPlot.plot(LinRange(-1.,-.5,200),.1*sin.(LinRange(0.,4π,200)) .+ 1.,color="C7")
+axis([-1.,1.,-.7,1.3])
+#axis("off")
+
+subplot(1,3,2)
+PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
+for i in 1:3
+	PyPlot.plot((0:50)/(50001*τ),nFX[i,1:51],color=cols[i])
+	PyPlot.plot((0:50)/(50001*τ),nFX[i+3,1:51],"--",color=cols[i])
+end
+axis([0.,50/(50001*τ),-.1,1.1])
+xlabel("freq")
+ylabel("normalized FT")
+
+subplot(1,3,3)
+PyPlot.plot([ff,ff],[-1.1,.1],"--",color="C7")
+for i in 1:3
+	PyPlot.plot(ks/T,nL0[i,:],color=cols[i])
+end
+axis([0.,50/(50001*τ),-1.1,.1])
+xlabel("freq")
+ylabel("normalized inverse log-likelihood")
+
 
 #=
-figure("fig1_$(run)",(19,4.5))
-
-subplot2grid((2,44),(0,0),colspan=10,rowspan=1)
-for i in 1:3
-	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i,1:51]),color=cmap(1-(i-1+colshift)/(2+colshift)))
-end
-PyPlot.text(.95,5500.,"(a)")
-
-subplot2grid((2,44),(1,0),colspan=10,rowspan=1)
-for i in 1:3
-	PyPlot.plot((0:50)/(50001*τ),norm.(FX[i+3,1:51]),color=cmap(1-(i-1+colshift)/(2+colshift)))
-end
-PyPlot.text(.95,19000.,"(b)")
-
-subplot2grid((2,44),(0,11),colspan=10,rowspan=2)
-for i in 1:3
-	PyPlot.plot(ks/T,L0[i,:],"-",color=cmap(1-(i-1+colshift)/(2+colshift)))
-end
-PyPlot.text(.95,-14.57,"(c)")
-xlabel("freq")
-ylabel("obj")
 
 subplot2grid((2,44),(0,22),colspan=10,rowspan=2)
 PyPlot.plot(ks/T,L1,color=cmap(.4))
-#= 
-for i in 1:length(L1)
-	α = cmap(1 - (L1[i] - Lma)/(Lmi - Lma))
-	PyPlot.plot(ks[i]/T,L1[i],".",color=α)
-end
-=#
 PyPlot.text(.95,-14.57,"(d)")
 xlabel("freq")
 ylabel("obj")
@@ -106,7 +110,7 @@ axis([0,1,Lmi,Lma])
 xticks([])
 ylabel("obj")
 
-
+=#
 
 
 
