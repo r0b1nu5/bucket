@@ -2,6 +2,10 @@ using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
 run = 1
 
+L = readdlm("data_marc/L.csv",',')
+us = eigvecs(L)
+λs = round.(eigvals(L))
+
 Xs = readdlm("data_marc/Xs$(run).csv",',')
 nn,N = size(Xs)
 n = Int64(nn/2)
@@ -45,6 +49,7 @@ cmap = get_cmap("plasma")
 colshift = .5
 cols = [cmap(1-(i+colshift)/(2+colshift)) for i in 0:2]
 
+ #=
 figure("fig1",(15,4.5))
 
 subplot(1,3,1)
@@ -81,6 +86,58 @@ axis([0.,50/(50001*τ),-1.1,.1])
 xlabel("freq")
 ylabel("normalized inverse log-likelihood")
 
+# =#
+
+figure("test",(18,7))
+
+subplot2grid((2,3),(0,0),colspan=1,rowspan=1)
+for i in 1:3
+	PyPlot.plot((0:N-1)*τ,Xs[i,:],color=cols[i])
+end
+xlabel("t[s]")
+ylabel("x(t)")
+
+subplot2grid((2,3),(0,1),colspan=1,rowspan=1)
+for i in 1:3
+	PyPlot.plot((0:N-1)*τ,Xs[i+3,:],color=cols[i])
+end
+xlabel("t[s]")
+ylabel("p(t)")
+
+subplot2grid((2,3),(0,2),colspan=1,rowspan=1)
+PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
+for i in 1:3
+	PyPlot.plot((0:50)/(N*τ),nFX[i,1:51],color=cols[i])
+	PyPlot.plot((0:50)/(N*τ),nFX[i+3,1:51],"--",color=cols[i])
+end
+xlabel("freq")
+ylabel("normalized FT")
+axis([0.,50/(50001*τ),-.1,1.1])
+
+subplot2grid((2,3),(1,0),colspan=2,rowspan=1)
+θ = LinRange(0,2π,4)
+α = 2.5
+#ms = (2.).^(log.(abs.(us)) .+ 5)
+ms = 5 .+ 15*(abs.(us) .- minimum(abs.(us)))./(maximum(abs.(us)) - minimum(abs.(us)))
+for v in 1:3
+	PyPlot.plot(sin.(θ) .+ α*v,cos.(θ),"k")
+	PyPlot.text(α*v,0.,"λ = $(λs[v])")
+	for i in 1:3
+		PyPlot.plot(sin(θ[i]) + α*v,cos(θ[i]),"o",color=cols[i],markersize=ms[i,v])
+	end
+end
+axis([1.,9.,-.9,1.4])
+xticks([])
+yticks([])
+
+subplot2grid((2,3),(1,2),colspan=1,rowspan=1)
+PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
+for i in 1:3
+	PyPlot.plot(ks/T,-nL0[i,:],color=cols[i])
+end
+xlabel("freq")
+ylabel("normalized log-likelihood")
+axis([0.,50/(50001*τ),-.1,1.1])
 
 #=
 
@@ -111,6 +168,8 @@ xticks([])
 ylabel("obj")
 
 =#
+
+
 
 
 

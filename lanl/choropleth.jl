@@ -1,6 +1,6 @@
 #=
 
-NOTE: You must install this data set for this gist: https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip
+NOTE: You must install this data set for this gist: https://www2.census.gov/geo/tiger/TIGER2021/STATE/tl_2021_us_state.zip
 
 Copyright 2021 Jacob Zelko (aka TheCedarPrince)
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
