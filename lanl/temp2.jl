@@ -4,14 +4,16 @@ figure(k,(10,7))
 
 #for k in 1:56
 #Xs = readdlm("data_melvyn/temp/$(k)_1.85_data",',')
-Xs = readdlm("data_melvyn/temp/$(k)_2.0_data",',')
+#Xs = readdlm("data_melvyn/temp/$(k)_2.0_data",',')
+Xs = readdlm("data_melvyn/temp/17_1.85_data",',')
 nn,N = size(Xs)
 n = Int64(nn/2)
 τ = .1
 T = (N-1)*τ
-ff = 2.0/2π
+ff = 1.85/2π
 
-ks = 180:200
+ks = 1:500
+#ks = 180:200
 
 FX = Matrix{Complex{Float64}}(undef,nn,N-1)
 nFX = Matrix{Float64}(undef,nn,N-1)
