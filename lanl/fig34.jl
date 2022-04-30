@@ -6,24 +6,24 @@ cmap = get_cmap("plasma")
 colshift = .5
 cols = [cmap(1-(i+colshift)/(2+colshift)) for i in 0:2]
 
-@info "Plot pen_x1 and pen_x2."
+@info "Plot ebc_x1 and ebc_x2."
 @info "x1 = ? (2, 3, 4, 5, or 8)"
-ntw1 = "pen_"*readline()
+ntw1 = "ebc_"*readline()
 
-n1, ks1, T1, file1, date1, nL01, j1, k1 = pen_preprocess_data(ntw1)
+n1, ks1, T1, file1, date1, nL01, j1, k1 = ebc_preprocess_data(ntw1)
 AAA = nL01
 
 figure("Dan - UTK",(11,8))
 
 subplot2grid((2,11),(0,0),colspan=4,rowspan=1)
 
-ixy = readdlm("data_pen/deathvalley_coord.dat")
+ixy = readdlm("data_ebc/coord.dat")
 idx = Int64.(ixy[:,1])
 x = ixy[:,2]
 y = ixy[:,3]
 PyPlot.plot(x,y,"ok",markersize=3.)
 
-idate1 = Int64.(vec(readdlm("data_pen/pen_"*date1*"_ids.csv",',')))[j1] - 1
+idate1 = Int64.(vec(readdlm("data_ebc/ebc_"*date1*"_ids.csv",',')))[j1] - 1
 a,row1 = findmin(abs.(idx .- idate1))
 PyPlot.plot(x[row1],y[row1],"o",color=cols[2],markersize=8.)
 xticks([])

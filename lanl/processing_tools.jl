@@ -4,41 +4,41 @@ include("LoadTsatTxt.jl")
 include("data_naspi/osc_init.jl")
 include("data_naspi/naspi_files.jl")
 
-function pen_preprocess_data(ntw::String)
+function ebc_preprocess_data(ntw::String)
 	n = 0
 	ks = 0:0
 	T = 0.
 	file = "none"
 	date = "none"
-	if ntw == "pen_2"
+	if ntw == "ebc_2"
 		n = 129
 		ks = Array(5000:50:6000)
 		T = 1260. 
-		file = "pen_2"
+		file = "ebc_2"
 		date = "2013-03-10_04"
-	elseif ntw == "pen_3"
+	elseif ntw == "ebc_3"
 		n = 130
 		ks = Array(8500:50:10000)
 		T = 660.
-		file = "pen_3"
+		file = "ebc_3"
 		date = "2013-04-03_02"
-	elseif ntw == "pen_4"
+	elseif ntw == "ebc_4"
 		n = 129
 		ks = Array(6000:50:7000)
 		T = 600.
-		file = "pen_4"
+		file = "ebc_4"
 		date = "2013-04-03_03"
-	elseif ntw == "pen_5"
+	elseif ntw == "ebc_5"
 		n = 130
 		ks = Array(5000:50:6500)
 		T = 1260.
-		file = "pen_5"
+		file = "ebc_5"
 		date = "2013-04-03_07"
-	elseif ntw == "pen_8"
+	elseif ntw == "ebc_8"
 		n = 134
 		ks = Array(9000:50:10000)
 		T = 1260.
-		file = "pen_8"
+		file = "ebc_8"
 		date = "2013-07-30_09"
 	else
 		@info "Invalid entry."

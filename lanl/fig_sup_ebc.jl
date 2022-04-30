@@ -2,17 +2,17 @@ using PyPlot, DelimitedFiles
 
 cmap = get_cmap("plasma")
 
-@info "Plot pen_x and pen_y."
+@info "Plot ebc_x and ebc_y."
 @info "x = ? (2, 3, 4, 5, or 8)"
-ntw1 = "pen_"*readline()
+ntw1 = "ebc_"*readline()
 @info "x = ? (2, 3, 4, 5, or 8)"
-ntw2 = "pen_"*readline()
+ntw2 = "ebc_"*readline()
 
-ntws = Dict{String,Any}("pen_2" => (129,Array(5000:50:6000),1260.,1000.),
-			"pen_3" => (130,Array(8500:50:10000),660.,-.024),
-			"pen_4" => (129,Array(6000:50:7000),600.,-.03),
-			"pen_5" => (130,Array(5000:50:6500),1260.,-.015),
-			"pen_8" => (134,Array(9000:50:10000),1260.,1000.)
+ntws = Dict{String,Any}("ebc_2" => (129,Array(5000:50:6000),1260.,1000.),
+			"ebc_3" => (130,Array(8500:50:10000),660.,-.024),
+			"ebc_4" => (129,Array(6000:50:7000),600.,-.03),
+			"ebc_5" => (130,Array(5000:50:6500),1260.,-.015),
+			"ebc_8" => (134,Array(9000:50:10000),1260.,1000.)
 			)
 
 n1,ks1,T1,omax1 = ntws[ntw1]

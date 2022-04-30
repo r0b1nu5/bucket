@@ -1,11 +1,11 @@
 using PyPlot, LinearAlgebra
 
-function pen_plot_vec(v::Vector{Float64}, cols::String="plasma")
-	pen_plot_vec(v,vec(1:length(v)),cols)
+function ebc_plot_vec(v::Vector{Float64}, cols::String="plasma")
+	ebc_plot_vec(v,vec(1:length(v)),cols)
 end
 
-function pen_plot_vec(v::Vector{Float64}, ids::Vector{Int64}, cols::String="plasma")
-	ixy = readdlm("data_pen/deathvalley_coord.dat")
+function ebc_plot_vec(v::Vector{Float64}, ids::Vector{Int64}, cols::String="plasma")
+	ixy = readdlm("data_ebc/coord.dat")
 	idx = Int64.(ixy[:,1]) .+ 1
 	i2i = Dict{Int64,Int64}()
 	for i in 1:length(idx)

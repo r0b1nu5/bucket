@@ -5,14 +5,14 @@ using Distributed
 @everywhere dates = ["2013-01-15_00", "2013-03-10_04", "2013-04-03_02", "2013-04-03_03", "2013-04-03_07", "2013-07-30_01", "2013-07-30_04", "2013-07-30_09"]
 
 
-# Loads the data of Pennsylvania as a 2nxT matrix, ready to use in our algorithm.
+# Loads the data of "ebc" as a 2nxT matrix, ready to use in our algorithm.
 # Missing data are interpolated.
 # Angles are converted from degrees to radians.
 # Last oscillator is considered as the reference node.
 
-function load_pen(date::String)
-	th = readdlm("data_pen/th_"*date*".csv",',')' * pi/180
-	fs = readdlm("data_pen/fs_"*date*".csv",',')'
+function load_ebc(date::String)
+	th = readdlm("data_ebc/th_"*date*".csv",',')' * pi/180
+	fs = readdlm("data_ebc/fs_"*date*".csv",',')'
 
 	N,T = size(fs)
 
@@ -39,7 +39,7 @@ function load_pen(date::String)
 	z2 = sort(union(z1,cc))
 	zc = setdiff((1:N),z2)
 	
-	writedlm("data_pen/pen_"*date*"_ids.csv",zc,',')
+	writedlm("data_ebc/ebc_"*date*"_ids.csv",zc,',')
 
 	tth = th[:,1]
 	dth = th[:,2:end] - th[:,1:end-1]
@@ -60,16 +60,16 @@ end
 
 
 
-# Extracts phases and frequencies from the raw data of Pennsylvania.
+# Extracts phases and frequencies from the raw data of "ebc".
 
-@everywhere function treat_pen(date::String)
-	x = readdir("data_pen")
+@everywhere function treat_ebc(date::String)
+	x = readdir("data_ebc")
 
 	for f in x
 		if f[1:13] == date
 			@info "Start: "*f
 
-			y = Float64.(readdlm("data_pen/"*f,',')[2:end,2:end])
+			y = Float64.(readdlm("data_ebc/"*f,',')[2:end,2:end])
 	
 			N = Int(maximum(y[:,1])+1)
 			n,m = size(y)
@@ -86,10 +86,10 @@ end
 				th = [th T]
 			end
 	
-			open("data_pen/fs_"*date*".csv","a") do f
+			open("data_ebc/fs_"*date*".csv","a") do f
 				writedlm(f,fs',',')
 			end
-			open("data_pen/th_"*date*".csv","a") do f
+			open("data_ebc/th_"*date*".csv","a") do f
 				writedlm(f,th',',')
 			end
 
