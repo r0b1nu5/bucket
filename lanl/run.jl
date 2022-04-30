@@ -1,8 +1,8 @@
 using Dates
 
 # Choose between l0 and l1 penalty.
-#approach = "l0"
-approach = "l1"
+approach = "l0"
+#approach = "l1"
 
 include("final_par.jl")
 
@@ -20,9 +20,9 @@ ids = [
 #       "ntw20_4",
 #       "ieee57_1",
 #       "ieee57_2",
-	"uk_1"
+#	"uk_1"
 #	"pen_1",
-#       "pen_2",
+       "pen_2",
 #       "pen_3",
 #       "pen_4",
 #       "pen_5",
@@ -172,9 +172,9 @@ for id in ids
 	n = Int(nn/2)
 
 	if approach == "l0"
-		xxx = run_l0_par(id,Xs,taus[id],Array(1:1:n),Ks[id],false)
+		global xxx = run_l0_par(id,Xs,taus[id],Array(1:1:n),Ks[id],false)
 	elseif approach == "l1"
-		xxx = run_l1_par(id,Xs,taus[id],Ks[id],false)
+		global xxx = run_l1_par(id,Xs,taus[id],Ks[id],false)
 	end
 end
 

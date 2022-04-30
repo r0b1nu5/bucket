@@ -1,11 +1,11 @@
 using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
-Xs = readdlm("data_melvyn/temp/ieee57_Xs_28.csv",',')
+Xs = readdlm("data_melvyn/temp/ieee57_Xs.csv",',')
 nn,N = size(Xs)
 n = Int64(nn/2)
 τ = .1
 T = (N-1)*τ
-ff = .088/2π
+ff = 1.85/2π
 
 FX = Matrix{Complex{Float64}}(undef,nn,N-1)
 nFX = Matrix{Float64}(undef,nn,N-1)
@@ -18,7 +18,8 @@ end
 nFX[1:n,:] ./= maximum(nFX[1:n,:])
 nFX[n+1:nn,:] ./= maximum(nFX[n+1:nn,:])
 
-ks = 6:10
+ks = [1:15;150:205;260:275]
+ksF = 1:400
 L0 = zeros(n,length(ks))
 for i in 1:n
 	for j in 1:length(ks)
@@ -43,24 +44,28 @@ cmap = get_cmap("plasma")
 colshift = .5
 cols = [cmap(1-(i+colshift)/(2+colshift)) for i in 0:2]
 
-figure("fig1",(15,4.5))
+figure("fig1",(7,10))
 
-subplot(1,2,1)
+subplot(2,1,1)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 for i in 1:n
-	PyPlot.plot((1:50)/(N*τ),nFX[i,1:50],color=cmap(i/n))
-	PyPlot.plot((1:50)/(N*τ),nFX[i+n,1:50],"--",color=cmap(i/n))
+	PyPlot.plot(ksF/(N*τ),nFX[i,ksF],color=cmap(i/n))
+	PyPlot.plot(ksF/(N*τ),nFX[i+n,ksF],"--",color=cmap(i/n))
+#	PyPlot.plot(ksF,nFX[i,ksF],color=cmap(i/n))
+#	PyPlot.plot(ksF,nFX[i+n,ksF],"--",color=cmap(i/n))
 end
 #axis([0.,50/(N*τ),-.1,1.1])
+axis([0.,ks[end]/(N*τ),-.1,1.1])
 xlabel("freq")
 ylabel("normalized FT")
 
-subplot(1,2,2)
-PyPlot.plot([ff,ff],[-1.1,.1],"--",color="C7")
+subplot(2,1,2)
+PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 for i in 1:n
-	PyPlot.plot(ks/T,nL0[i,:],"o-",color=cmap(i/n))
+	PyPlot.plot(ks/T,-nL0[i,:],"o-",color=cmap(i/n))
 end
 #axis([35/(N*τ),45/(N*τ),-1.1,.1])
+axis([0.,ks[end]/(N*τ),-.1,1.1])
 xlabel("freq")
 ylabel("normalized inverse log-likelihood")
 
