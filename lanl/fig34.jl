@@ -6,8 +6,8 @@ cmap = get_cmap("plasma")
 colshift = .5
 cols = [cmap(1-(i+colshift)/(2+colshift)) for i in 0:2]
 
-@info "Plot ebc_x1 and ebc_x2."
-@info "x1 = ? (2, 3, 4, 5, or 8)"
+@info "Plot ebc_x and utk."
+@info "x = ? (2, 3, 4, 5, or 8)"
 ntw1 = "ebc_"*readline()
 
 n1, ks1, T1, file1, date1, nL01, j1, k1 = ebc_preprocess_data(ntw1)
