@@ -1,8 +1,8 @@
 using PyPlot, DelimitedFiles, RecipesBase, Shapefile, Colors
 
 include("LoadTsatTxt.jl")
-include("data_naspi/osc_init.jl")
-include("data_naspi/naspi_files.jl")
+#include("data_naspi/osc_init.jl")
+#include("data_naspi/naspi_files.jl")
 
 function ebc_preprocess_data(ntw::String)
 	n = 0
@@ -49,7 +49,7 @@ function ebc_preprocess_data(ntw::String)
 	L0 = zeros(length(ls),length(ks))
 	for i in 1:length(ls)
 		for j in 1:length(ks)
-			L0[i,j] = readdlm("data/"*file*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
+			L0[i,j] = readdlm("data/ebc/"*file*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
 		end
 	end
 	nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))

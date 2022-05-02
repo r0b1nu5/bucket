@@ -28,7 +28,7 @@ ks = 1:50
 L0 = zeros(n,length(ks))
 for i in 1:n
 	for j in 1:length(ks)
-		L0[i,j] = readdlm("data/ntw3_$(run)_l0_$(i).$(ks[j])_obj.csv",',')[1]
+		L0[i,j] = readdlm("data/ntw3/ntw3_$(run)_l0_$(i).$(ks[j])_obj.csv",',')[1]
 	end
 end
 nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))

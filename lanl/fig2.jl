@@ -20,7 +20,7 @@ ff = .01
 L0 = zeros(length(ls),length(ks0))
 for i in 1:length(ls)
 	for j in 1:length(ks0)
-		L0[i,j] = readdlm("data/"*file*"_l0_$(ls[i]).$(ks0[j])_obj.csv",',')[1]
+		L0[i,j] = readdlm("data/ieee57/"*file*"_l0_$(ls[i]).$(ks0[j])_obj.csv",',')[1]
 	end
 end
 nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
@@ -71,7 +71,7 @@ ff = .01
 L0 = zeros(length(ls),length(ks0))
 for i in 1:length(ls)
 	for j in 1:length(ks0)
-		L0[i,j] = readdlm("data/"*file*"_l0_$(ls[i]).$(ks0[j])_obj.csv",',')[1]
+		L0[i,j] = readdlm("data/uk/"*file*"_l0_$(ls[i]).$(ks0[j])_obj.csv",',')[1]
 	end
 end
 nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))

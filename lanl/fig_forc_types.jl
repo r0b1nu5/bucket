@@ -26,7 +26,7 @@ ks = Array(10:10:200)
 L = zeros(20,20)
 for i in 1:20
 	for j in 1:20
-		L[i,j] = readdlm("data/ntw20_multisine_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
+		L[i,j] = readdlm("data/ntw20/ntw20_multisine_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
 	end
 end
 nL = (L .- maximum(L))./(maximum(L) - minimum(L))
@@ -59,7 +59,7 @@ ks = Array(10:10:200)
 L = zeros(20,20)
 for i in 1:20
 	for j in 1:20
-		L[i,j] = readdlm("data/ntw20_saw_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
+		L[i,j] = readdlm("data/ntw20/ntw20_saw_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
 	end
 end
 nL = (L .- maximum(L))./(maximum(L) - minimum(L))
@@ -92,7 +92,7 @@ ks = Array(10:10:200)
 L = zeros(20,20)
 for i in 1:20
 	for j in 1:20
-		L[i,j] = readdlm("data/ntw20_step_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
+		L[i,j] = readdlm("data/ntw20/ntw20_step_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
 	end
 end
 nL = (L .- maximum(L))./(maximum(L) - minimum(L))

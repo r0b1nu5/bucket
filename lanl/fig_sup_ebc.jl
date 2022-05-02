@@ -27,7 +27,7 @@ ls2 = 1:n2
 L0 = zeros(length(ls1),length(ks1))
 for i in 1:length(ls1)
 	for j in 1:length(ks1)
-		L0[i,j] = readdlm("data/"*ntw1*"_l0_$(ls1[i]).$(ks1[j])_obj.csv",',')[1]
+		L0[i,j] = readdlm("data/ebc/"*ntw1*"_l0_$(ls1[i]).$(ks1[j])_obj.csv",',')[1]
 	end
 end
 L0mi = minimum(L0)
@@ -36,8 +36,8 @@ L1 = Array{Float64,1}()
 γ1 = Array{Array{Float64,1},1}()
 
 for j in 1:length(ks1)
-	push!(L1,readdlm("data/"*ntw1*"_l1_$(ks1[j])_obj.csv",',')[1])
-	push!(γ1,vec(readdlm("data/"*ntw1*"_l1_$(ks1[j])_g.csv",',')))
+	push!(L1,readdlm("data/ebc/"*ntw1*"_l1_$(ks1[j])_obj.csv",',')[1])
+	push!(γ1,vec(readdlm("data/ebc/"*ntw1*"_l1_$(ks1[j])_g.csv",',')))
 end
 L1mi,iii = findmin(L1)
 
@@ -66,7 +66,7 @@ ylabel("amplitude")
 L0 = zeros(length(ls2),length(ks2))
 for i in 1:length(ls2)
 	for j in 1:length(ks2)
-		L0[i,j] = readdlm("data/"*ntw2*"_l0_$(ls2[i]).$(ks2[j])_obj.csv",',')[1]
+		L0[i,j] = readdlm("data/ebc/"*ntw2*"_l0_$(ls2[i]).$(ks2[j])_obj.csv",',')[1]
 	end
 end
 L0mi = minimum(L0)
@@ -75,8 +75,8 @@ L1 = Array{Float64,1}()
 γ1 = Array{Array{Float64,1},1}()
 
 for j in 1:length(ks2)
-	push!(L1,readdlm("data/"*ntw2*"_l1_$(ks2[j])_obj.csv",',')[1])
-	push!(γ1,vec(readdlm("data/"*ntw2*"_l1_$(ks2[j])_g.csv",',')))
+	push!(L1,readdlm("data/ebc/"*ntw2*"_l1_$(ks2[j])_obj.csv",',')[1])
+	push!(γ1,vec(readdlm("data/ebc/"*ntw2*"_l1_$(ks2[j])_g.csv",',')))
 end
 L1mi,iii = findmin(L1)
 
