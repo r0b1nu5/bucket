@@ -1,6 +1,9 @@
 using PyPlot, DelimitedFiles
 
 cmap = get_cmap("plasma")
+colshift1 = .5
+colshift2 = .5
+cols = [cmap(1-(i+colshift1)/(2+colshift1+colshift2)) for i in 0:2]
 
 @info "Plot ebc_x and ebc_y."
 @info "x = ? (2, 3, 4, 5, or 8)"

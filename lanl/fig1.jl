@@ -46,8 +46,9 @@ Lma = maximum(L1)
 # =#
 
 cmap = get_cmap("plasma")
-colshift = .5
-cols = [cmap(1-(i+colshift)/(2+colshift)) for i in 0:2]
+colshift1 = .5
+colshift2 = .5
+cols = [cmap(1-(i+colshift1)/(2+colshift1+colshift2)) for i in 0:2]
 
  #=
 figure("fig1",(15,4.5))

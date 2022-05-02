@@ -3,8 +3,9 @@ using PyPlot, DelimitedFiles
 figure("fig5",(7.,10.))
 
 cmap = get_cmap("plasma")
-colshift = .5
-cols = [cmap(1-(i+colshift)/(2+colshift)) for i in 0:2]
+colshift1 = .5
+colshift2 = .5
+cols = [cmap(1-(i+colshift1)/(2+colshift1+colshift2)) for i in 0:2]
 
 f = .3
 t = LinRange(-1,11,200)
