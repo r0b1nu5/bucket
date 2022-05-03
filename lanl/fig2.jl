@@ -1,17 +1,17 @@
 using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
- #=
+# #=
 ntw = "ieee57"
 ex = 1
 ls = 1:57
 ks = [1:15;150:205;260:275]
-ksF = 1:400
+ksF = 1:330
 τ = .1
 fs = 17
 ff = 1.85/2π
 # =#
 
-# #=
+ #=
 ntw = "uk"
 ex = 1
 ls = 1:43
@@ -79,7 +79,7 @@ subplot(3,1,1)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fxmax[ksF];Fxmin[ksF[end:-1:1]]],color="C7")
 PyPlot.plot(ksF/(N*τ),nFX[Fsolx,ksF],color=cols[1])
-PyPlot.plot(ksF/(N*τ),nFX[sol+3,ksF],color=cols[2])
+PyPlot.plot(ksF/(N*τ),nFX[sol,ksF],color=cols[2])
 axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 #axis([ksF[1],ksF[end],-.1,1.1])
 #xlabel("freq")
@@ -90,7 +90,7 @@ subplot(3,1,2)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fpmax[ksF];Fpmin[ksF[end:-1:1]]],color="C7")
 PyPlot.plot(ksF/(N*τ),nFX[n+Fsolp,ksF],color=cols[3])
-PyPlot.plot(ksF/(N*τ),nFX[n+sol+3,ksF],color=cols[2])
+PyPlot.plot(ksF/(N*τ),nFX[n+sol,ksF],color=cols[2])
 axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 #axis([ksF[1],ksF[end],-.1,1.1])
 #xlabel("freq")
