@@ -1,107 +1,122 @@
-using PyPlot, DelimitedFiles
+using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
+
+ #=
+ntw = "ieee57"
+ex = 1
+ls = 1:57
+ks = [1:15;150:205;260:275]
+ksF = 1:400
+τ = .1
+fs = 17
+ff = 1.85/2π
+# =#
+
+# #=
+ntw = "uk"
+ex = 1
+ls = 1:43
+ks = 90:10:330
+ksF = 1:400
+τ = .1
+fs = 14
+ff = 2.41/2π
+# =#
+
+Xs = readdlm("data_melvyn/"*ntw*"/"*ntw*"_ex$(ex)_Xs.csv",',')
+
+nn,N = size(Xs)
+n = Int64(nn/2)
+T = (N-1)*τ
+
+
+L0 = zeros(n,length(ks))
+for i in ls
+	for j in 1:length(ks)
+#		L0[i,j] = readdlm("data_melvyn/temp/28_test__l0_$(i).$(ks[j])_obj.csv",',')[1]
+		L0[i,j] = readdlm("data_melvyn/"*ntw*"/"*ntw*"_ex$(ex)_l0_$(i).$(ks[j])_obj.csv",',')[1]
+	end
+end
+nL0 = (L0[ls,:] .- maximum(L0[ls,:]))./(maximum(L0[ls,:]) - minimum(L0[ls,:]))
 
 cmap = get_cmap("plasma")
 colshift1 = .5
 colshift2 = .5
 cols = [cmap(1-(i+colshift1)/(2+colshift1+colshift2)) for i in 0:2]
 
-# #=
-ntw = "ieee57"
-n = 57
-ls = 1:n
-ks0 = 1:50
-ks1 = 1:50
-T = 200000*2e-3
-file = "mysterious_forcing_57"
-fs = 2
-ff = .01
-# =#
+FX = Matrix{Complex{Float64}}(undef,nn,N-1)
+nFX = Matrix{Float64}(undef,nn,N-1)
 
-L0 = zeros(length(ls),length(ks0))
-for i in 1:length(ls)
-	for j in 1:length(ks0)
-		L0[i,j] = readdlm("data/ieee57/"*file*"_l0_$(ls[i]).$(ks0[j])_obj.csv",',')[1]
-	end
+for i in 1:nn
+	FX[i,:] = fft(Xs[i,:])[2:end]
+	nFX[i,:] = norm.(FX[i,:])
 end
-nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
 
-figure("fig2 (new, bis)",(10,4.5))
+nFX[1:n,:] ./= maximum(nFX[1:n,:])
+nFX[n+1:nn,:] ./= maximum(nFX[n+1:nn,:])
 
-subplot(1,2,1)
-xy0 = readdlm("data_melvyn/ieee57_xy.csv",',')
-adj = Int.(readdlm("data_melvyn/ieee57_adj.csv",','))
-xmi = .028
-xma = .1045
-ymi = -.9
-yma = -.2
-xy = [(xy0[:,1]*(xma-xmi) .+ xmi) (xy0[:,2]*(yma-ymi) .+ ymi)]
-for i in 1:2:size(adj)[1]
-#	PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],color=cols[3],linewidth=1.)
-	PyPlot.plot(xy[adj[i,1:2],1],-xy[adj[i,1:2],2],"k",linewidth=1.)
-end
-#PyPlot.plot(xy[:,1],xy[:,2],"o",color=cols[3],markersize=5.)
-PyPlot.plot(xy[:,1],-xy[:,2],"ok",markersize=5.)
-PyPlot.plot(xy[fs,1],-xy[fs,2],"o",color=cols[2],markersize=8.)
+xxx = findmax(nFX[1:n,:])
+Fsolx = xxx[2][1]
+Fxred = nFX[1:n,:]
+Fxmax = [maximum(Fxred[:,i]) for i in 1:size(Fxred)[2]]
+Fxmin = [minimum(Fxred[:,i]) for i in 1:size(Fxred)[2]]
 
-L0red = [nL0[1:fs-1,:];nL0[fs+1:end,:]]
-L0max = [maximum(L0red[:,i]) for i in 1:size(L0red)[2]]
-L0min = [minimum(L0red[:,i]) for i in 1:size(L0red)[2]]
-PyPlot.fill([ks0;ks0[end:-1:1]]/T,-[L0max;L0min[end:-1:1]],color="C7",alpha=.7)
-PyPlot.plot([ff,ff],[1.1,-.1],"--",color="C7")
-PyPlot.plot(ks0/T,-nL0[fs,:],"-",color=cols[2])
-axis([0.,50/T,-.1,1.1])
+xxx = findmax(nFX[n+1:nn,:])
+Fsolp = xxx[2][1]
+Fpred = nFX[n+1:nn,:]
+Fpmax = [maximum(Fpred[:,i]) for i in 1:size(Fpred)[2]]
+Fpmin = [minimum(Fpred[:,i]) for i in 1:size(Fpred)[2]]
+
+xxx = findmin(nL0)
+sol = xxx[2][1]
+nLred = nL0[[1:sol-1;sol+1:size(nL0)[1]],:]
+nLmax = [maximum(nLred[:,i]) for i in 1:size(nLred)[2]]
+nLmin = [minimum(nLred[:,i]) for i in 1:size(nLred)[2]]
+
+
+figure(ntw*"FT vs. l0",(10,5))
+
+subplot(3,1,1)
+PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
+PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fxmax[ksF];Fxmin[ksF[end:-1:1]]],color="C7")
+PyPlot.plot(ksF/(N*τ),nFX[Fsolx,ksF],color=cols[1])
+PyPlot.plot(ksF/(N*τ),nFX[sol+3,ksF],color=cols[2])
+axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
+#axis([ksF[1],ksF[end],-.1,1.1])
+#xlabel("freq")
+#xlable("k")
+ylabel("normalized FT(x)")
+
+subplot(3,1,2)
+PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
+PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fpmax[ksF];Fpmin[ksF[end:-1:1]]],color="C7")
+PyPlot.plot(ksF/(N*τ),nFX[n+Fsolp,ksF],color=cols[3])
+PyPlot.plot(ksF/(N*τ),nFX[n+sol+3,ksF],color=cols[2])
+axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
+#axis([ksF[1],ksF[end],-.1,1.1])
+#xlabel("freq")
+#xlable("k")
+ylabel("normalized FT(p)")
+
+subplot(3,1,3)
+PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
+PyPlot.fill([ks;ks[end:-1:1]]/(N*τ),-[nLmax;nLmin[end:-1:1]],color="C7")
+PyPlot.plot(ks/(N*τ),-nL0[sol,:],color=cols[2])
+axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 xlabel("freq")
-ylabel("normalized log-likelihodd")
+ylabel("normalized \n log-likelihood")
 
 
+figure(ntw*": ntw")
 
+xy = readdlm("data_melvyn/"*ntw*"/"*ntw*"_xy.csv",',')
+adj = Int64.(readdlm("data_melvyn/"*ntw*"/"*ntw*"_adj.csv",','))
 
-# #=
-ntw = "uk"
-n = 120
-ls = 1:n
-ks0 = 1:50
-ks1 = 1:50
-T = 50000*.01
-file = "mysterious_forcing_UK"
-fs = 2
-ff = .01
-# =#
-
-L0 = zeros(length(ls),length(ks0))
-for i in 1:length(ls)
-	for j in 1:length(ks0)
-		L0[i,j] = readdlm("data/uk/"*file*"_l0_$(ls[i]).$(ks0[j])_obj.csv",',')[1]
-	end
-end
-nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
-
-subplot(1,2,2)
-xy0 = readdlm("data_melvyn/uk_xy.csv",',')
-xyb = readdlm("data_melvyn/uk_bord.csv",',')
-adj = Int.(readdlm("data_melvyn/uk_adj.csv",','))
-xmi = .01
-xma = .095
-ymi = .1
-yma = 1.
-xy = [(xyb[:,1]*(xma-xmi) .+ xmi) (xyb[:,2]*(yma-ymi) .+ ymi)]
-PyPlot.plot(xy[:,1],xy[:,2],"k",linewidth=.5)
-xy = [(xy0[:,1]*(xma-xmi) .+ xmi) (xy0[:,2]*(yma-ymi) .+ ymi)]
 for i in 1:2:size(adj)[1]
-#	PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],color=cols[3],linewidth=.8)
-	PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],"k",linewidth=.8)
+	PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],"k",linewidth=1.)
 end
-#PyPlot.plot(xy[:,1],xy[:,2],"o",color=cols[3],markersize=3.)
-PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=3.)
-PyPlot.plot(xy[fs,1],xy[fs,2],"o",color=cols[2],markersize=5.)
-
-L0red = [nL0[1:fs-1,:];nL0[fs+1:end,:]]
-L0max = [maximum(L0red[:,i]) for i in 1:size(L0red)[2]]
-L0min = [minimum(L0red[:,i]) for i in 1:size(L0red)[2]]
-PyPlot.fill([ks0;ks0[end:-1:1]]/T,-[L0max;L0min[end:-1:1]],color="C7",alpha=.7)
-PyPlot.plot([ff,ff],[1.1,-.1],"--",color="C7")
-PyPlot.plot(ks0/T,-nL0[fs,:],"-",color=cols[2])
-axis([0.,50/T,-.1,1.1])
-xlabel("freq")
-ylabel("normalized log-likelihodd")
-
+PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=5.)
+PyPlot.plot(xy[sol+3,1],xy[sol+3,2],"o",color=cols[2],markersize=8.)
+PyPlot.plot(xy[Fsolx,1],xy[Fsolx,2],"o",color=cols[1],markersize=8.)
+PyPlot.plot(xy[Fsolp,1],xy[Fsolp,2],"o",color=cols[3],markersize=8.)
+xticks([])
+yticks([])

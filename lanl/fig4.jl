@@ -17,12 +17,14 @@ fs1 = 51
 
 L0 = zeros(length(ls),length(ks))
 for i in 1:length(ls)
+	@info "i = $i"
 	for j in 1:length(ks)
 		L0[i,j] = readdlm("data/utk/"*file*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
 	end
 end
 nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
 
+@info "L0 is loaded."
 
 ##############################################################
 
@@ -30,6 +32,7 @@ figure("UTK",(14,4.5))
 
 subplot(1,2,1)
 
+ #=
 s_xy, red_i, name, l_xy, lids, lakes = utk_preprocess_boundaries()
 
 for i in 1:length(s_xy)
@@ -46,6 +49,8 @@ for i in 1:length(l_xy)
 	PyPlot.fill(l[1][ids],l[2][ids],color=(1.,1.,1.,1.))
 	PyPlot.plot(l[1][ids],l[2][ids],"-k",linewidth=.5)
 end
+
+# =#
 
 xy = readdlm("data_utk/utk1_coord.csv",',')
 ids = (1:size(xy)[1]).*(xy[:,1] .< -55.)
