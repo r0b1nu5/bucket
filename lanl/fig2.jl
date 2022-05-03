@@ -1,8 +1,9 @@
 using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
-# #=
+ #=
 ntw = "ieee57"
 ex = 1
+show_graph = false
 ls = 1:57
 ks = [1:15;150:205;260:275]
 ksF = 1:330
@@ -11,12 +12,13 @@ fs = 17
 ff = 1.85/2π
 # =#
 
- #=
+# #=
 ntw = "uk"
 ex = 1
-ls = 1:43
-ks = 90:10:330
-ksF = 1:400
+show_graph = false
+ks = 80:10:330
+ls = 1:120
+ksF = 1:330
 τ = .1
 fs = 14
 ff = 2.41/2π
@@ -106,17 +108,26 @@ xlabel("freq")
 ylabel("normalized \n log-likelihood")
 
 
-figure(ntw*": ntw")
+if show_graph
+	figure(ntw*": ntw")
 
-xy = readdlm("data_melvyn/"*ntw*"/"*ntw*"_xy.csv",',')
-adj = Int64.(readdlm("data_melvyn/"*ntw*"/"*ntw*"_adj.csv",','))
-
-for i in 1:2:size(adj)[1]
-	PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],"k",linewidth=1.)
+	xy = readdlm("data_melvyn/"*ntw*"/"*ntw*"_xy.csv",',')
+	adj = Int64.(readdlm("data_melvyn/"*ntw*"/"*ntw*"_adj.csv",','))
+	
+	for i in 1:2:size(adj)[1]
+		PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],"k",linewidth=1.)
+	end
+	PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=5.)
+	PyPlot.plot(xy[sol+3,1],xy[sol+3,2],"o",color=cols[2],markersize=8.)
+	PyPlot.plot(xy[Fsolx,1],xy[Fsolx,2],"o",color=cols[1],markersize=8.)
+	PyPlot.plot(xy[Fsolp,1],xy[Fsolp,2],"o",color=cols[3],markersize=8.)
+	xticks([])
+	yticks([])
 end
-PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=5.)
-PyPlot.plot(xy[sol+3,1],xy[sol+3,2],"o",color=cols[2],markersize=8.)
-PyPlot.plot(xy[Fsolx,1],xy[Fsolx,2],"o",color=cols[1],markersize=8.)
-PyPlot.plot(xy[Fsolp,1],xy[Fsolp,2],"o",color=cols[3],markersize=8.)
-xticks([])
-yticks([])
+
+
+
+
+
+
+
