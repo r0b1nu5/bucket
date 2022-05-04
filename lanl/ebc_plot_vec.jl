@@ -31,7 +31,7 @@ function ebc_plot_vec(v::Vector{Float64}, cols::String="plasma")
 end
 
 function ebc_plot_vec(v::Vector{Float64}, ids::Vector{Int64}, cols::String="plasma")
-	ixy = readdlm("data_ebc/coord2.csv"',')
+	ixy = readdlm("data_ebc/coord2.csv",',')
 	idx = Int64.(ixy[:,1]) .+ 1
 	i2i = Dict{Int64,Int64}()
 	for i in 1:length(idx)
@@ -50,6 +50,8 @@ function ebc_plot_vec(v::Vector{Float64}, ids::Vector{Int64}, cols::String="plas
 		ii = ids[i]
 		PyPlot.plot(x[i2i[ii]],y[i2i[ii]],"o",color=cmap((v[i]-vmin)/(vmax-vmin)))
 	end
+
+	title("[$vmin, $vmax]")
 
 	return nothing
 end

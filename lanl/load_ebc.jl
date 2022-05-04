@@ -11,7 +11,7 @@ using Distributed
 # Last oscillator is considered as the reference node.
 
 function load_ebc(date::String)
-	th = readdlm("data_ebc/th_"*date*".csv",',')' * pi/180
+	th = readdlm("data_ebc/th_"*date*".csv",',')' * π/180
 	fs = readdlm("data_ebc/fs_"*date*".csv",',')'
 
 	N,T = size(fs)
@@ -45,12 +45,29 @@ function load_ebc(date::String)
 	dth = th[:,2:end] - th[:,1:end-1]
 	gp = dth .> pi
 	lp = dth .< -pi
-	tth = [th[:,1] th[:,2:end]+2pi*(lp - gp)]
+	cgp = [zeros(size(gp)[1]) Float64.(gp)]
+	clp = [zeros(size(lp)[1]) Float64.(lp)]
+	for k in 1:size(gp)[1]
+		ma = 1000.
+		while ma > cgp[k,end]
+			m,b = findmax(cgp[k,:])
+			cgp[k,:] += [zeros(b);ones(length(cgp[k,:])-b)]
+			ma = maximum(cgp[k,:])
+		end
+		ma = 1000.
+		while ma > clp[k,end]
+			m,b = findmax(clp[k,:])
+			clp[k,:] += [zeros(b);ones(length(clp[k,:])-b)]
+			ma = maximum(clp[k,:])
+		end
+	end
+	#tth = [th[:,1] th[:,2:end]+2pi*(lp - gp)]
+	tth = th + 2π*(clp - cgp)
 
-	ffs = (fs .- 60) * pi/180
+	ffs = (fs .- 60) * π/180
 	
 	# I cannot explain why we need this 2.5 factor, but it is needed to have the same measured and empirical derivative, i.e., to have ω_i(t) \approx (θ_i(t)-θ_i(t-1))*dt
-	tth *= 2.5
+	ffs /= 2.5
 
 	Xs = [tth[zc,:]; ffs[zc,:]]
 

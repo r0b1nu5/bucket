@@ -20,7 +20,7 @@ figure("Dan",(15,6))
 
 subplot2grid((2,3),(0,0),rowspan=2,colspan=2)
 
-ixy = readdlm("data_ebc/coord.dat")
+ixy = readdlm("data_ebc/coord2.csv",',')
 idx = Int64.(ixy[:,1])
 x = ixy[:,2]
 y = ixy[:,3]
