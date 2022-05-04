@@ -87,6 +87,8 @@ function run_l0(Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::Array
 		plot_l0(Ls_l0, L_l0, l_l0, k_l0, ks, T, n)
 	end
 
+	rm("data/times.csv")
+
 	return Ls_l0, (L_l0,A_l0,d_l0,γ_l0,l_l0,k_l0)
 end
 
@@ -175,6 +177,8 @@ function run_l1(Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplac
 		subplot(1,2,2)
 		plot_l1_2(Ls_l1, L_l1, γ_l1, l_l1)
 	end
+
+	rm("data/times.csv")
 
 	return Ls_l1, (L_l1,A_l1,d_l1,γ_l1,l_l1,k_l1)
 end
