@@ -13,7 +13,7 @@ ntw1 = "ebc_"*readline()
 
 n1, ks1, T1, file1, date1, nL01, j1, k1 = ebc_preprocess_data(ntw1)
 
-figure("fig3",(14,4.5))
+figure("ebc 1",(11,5))
 
 subplot(1,2,1)
 

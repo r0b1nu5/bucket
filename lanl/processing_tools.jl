@@ -10,6 +10,7 @@ function ebc_preprocess_data(ntw::String)
 	T = 0.
 	file = "none"
 	date = "none"
+	xid = Int64[]
 	if ntw == "ebc_2"
 		n = 129
 		ks = Array(5000:50:6000)
@@ -22,18 +23,21 @@ function ebc_preprocess_data(ntw::String)
 		T = 660.
 		file = "ebc_3"
 		date = "2013-04-03_02"
+		xid = [46,]
 	elseif ntw == "ebc_4"
 		n = 129
 		ks = Array(6000:50:7000)
 		T = 600.
 		file = "ebc_4"
 		date = "2013-04-03_03"
+		xid = [46,] 
 	elseif ntw == "ebc_5"
 		n = 130
 		ks = Array(5000:50:6500)
 		T = 1260.
 		file = "ebc_5"
 		date = "2013-04-03_07"
+		xid = [46,] 
 	elseif ntw == "ebc_8"
 		n = 134
 		ks = Array(9000:50:10000)
@@ -52,13 +56,14 @@ function ebc_preprocess_data(ntw::String)
 			L0[i,j] = readdlm("data/ebc/"*file*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
 		end
 	end
+	L0 = L0[setdiff(1:n,xid),:]
 	nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
 	
 	mi,pos = findmin(nL0)
 	j = pos[1]
 	k = pos[2]
 
-	return n, ks, T, file, date, nL0, j, k
+	return n-length(xid), ks, T, file, date, nL0, j, k
 end
 
 function utk_preprocess_boundaries()
