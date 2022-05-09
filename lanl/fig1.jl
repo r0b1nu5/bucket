@@ -45,10 +45,15 @@ Lmi = minimum(L1)
 Lma = maximum(L1)
 # =#
 
+ #=
 cmap = get_cmap("plasma")
 colshift1 = .5
 colshift2 = .5
 cols = [cmap(1-(i+colshift1)/(2+colshift1+colshift2)) for i in 0:2]
+# =#
+# #=
+cols = [(243,111,33)./255,(0,145,194)./255,(161,0,202)./255]
+# =#
 
  #=
 figure("fig1",(15,4.5))
@@ -97,6 +102,7 @@ for i in 1:3
 end
 xlabel("t[s]")
 ylabel("x(t)")
+axis([0.,(N-1)*τ,-.79,.55])
 
 subplot2grid((2,3),(0,1),colspan=1,rowspan=1)
 for i in 1:3
@@ -104,6 +110,7 @@ for i in 1:3
 end
 xlabel("t[s]")
 ylabel("p(t)")
+axis([0.,(N-1)*τ,-1.7,1.7])
 
 subplot2grid((2,3),(0,2),colspan=1,rowspan=1)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")

@@ -2,12 +2,17 @@ using PyPlot, DelimitedFiles
 
 include("processing_tools.jl")
 
+ #=
 cmap = get_cmap("plasma")
 colshift1 = .5
 colshift2 = .5
 cols = [cmap(1-(i+colshift1)/(2+colshift1+colshift2)) for i in 0:2]
+# =#
+# #=
+cols = [(243,111,33)./255,(0,145,194)./255,(161,0,202)./255]
+# =#
 
-@info "Plot ebc_x1."
+@info "Plot ebc_x1 and ebc_x2."
 @info "x1 = ? (2, 3, 4, 5, or 8)"
 ntw1 = "ebc_"*readline()
 

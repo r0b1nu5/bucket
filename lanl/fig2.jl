@@ -3,10 +3,10 @@ using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
  #=
 ntw = "ieee57"
 ex = 1
-show_graph = false
+show_graph = true
 ls = 1:57
 ks = [1:15;150:205;260:275]
-ksF = 1:330
+ksF = 1:275
 τ = .1
 fs = 17
 ff = 1.85/2π
@@ -20,11 +20,12 @@ ex = 1
 ks = [80:10:220;222:2:238;240:10:330]
 τ = .1
 # =#
+
 # #=
 ks = [5:10:105;110:120;125:10:205]
 ex = 2
 τ = .1
-# +#
+# =#
 ls = 1:120
 ksF = 1:205
 fs = 14
@@ -46,10 +47,15 @@ for i in ls
 end
 nL0 = (L0[ls,:] .- maximum(L0[ls,:]))./(maximum(L0[ls,:]) - minimum(L0[ls,:]))
 
+ #=
 cmap = get_cmap("plasma")
 colshift1 = .5
 colshift2 = .5
 cols = [cmap(1-(i+colshift1)/(2+colshift1+colshift2)) for i in 0:2]
+# =#
+# #=
+cols = [(243,111,33)./255,(0,145,194)./255,(161,0,202)./255]
+# =#
 gra = (.8,.8,.8,1.)
 
 FX = Matrix{Complex{Float64}}(undef,nn,N-1)
@@ -87,8 +93,8 @@ figure(ntw*"FT vs. l0",(10,5))
 subplot(3,1,1)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fxmax[ksF];Fxmin[ksF[end:-1:1]]],color=gra)
-PyPlot.plot(ksF/(N*τ),nFX[Fsolx,ksF],color=cols[1])
-PyPlot.plot(ksF/(N*τ),nFX[sol,ksF],color=cols[2])
+PyPlot.plot(ksF/(N*τ),nFX[Fsolx,ksF],color=cols[2])
+PyPlot.plot(ksF/(N*τ),nFX[sol,ksF],color=cols[1])
 axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 #axis([ksF[1],ksF[end],-.1,1.1])
 #xlabel("freq")
@@ -99,7 +105,7 @@ subplot(3,1,2)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fpmax[ksF];Fpmin[ksF[end:-1:1]]],color=gra)
 PyPlot.plot(ksF/(N*τ),nFX[n+Fsolp,ksF],color=cols[3])
-PyPlot.plot(ksF/(N*τ),nFX[n+sol,ksF],color=cols[2])
+PyPlot.plot(ksF/(N*τ),nFX[n+sol,ksF],color=cols[1])
 axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 #axis([ksF[1],ksF[end],-.1,1.1])
 #xlabel("freq")
@@ -111,7 +117,7 @@ PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 #PyPlot.fill([ks;ks[end:-1:1]]/(N*τ),-[nLmax;nLmin[end:-1:1]],color="C7")
 #PyPlot.plot(ks/(N*τ),-nL0[sol,:],color=cols[2])
 PyPlot.fill([1;ks;ks[end:-1:1];1]/(N*τ),-[nLmax[1];nLmax;nLmin[end:-1:1];nLmin[1]],color=gra)
-PyPlot.plot([1;ks]/(N*τ),-[nL0[sol,1];nL0[sol,:]],color=cols[2])
+PyPlot.plot([1;ks]/(N*τ),-[nL0[sol,1];nL0[sol,:]],color=cols[1])
 axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 xlabel("freq")
 ylabel("normalized \n log-likelihood")
@@ -127,8 +133,8 @@ if show_graph
 		PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],"k",linewidth=1.)
 	end
 	PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=5.)
-	PyPlot.plot(xy[sol+3,1],xy[sol+3,2],"o",color=cols[2],markersize=8.)
-	PyPlot.plot(xy[Fsolx,1],xy[Fsolx,2],"o",color=cols[1],markersize=8.)
+	PyPlot.plot(xy[sol,1],xy[sol,2],"o",color=cols[1],markersize=8.)
+	PyPlot.plot(xy[Fsolx,1],xy[Fsolx,2],"o",color=cols[2],markersize=8.)
 	PyPlot.plot(xy[Fsolp,1],xy[Fsolp,2],"o",color=cols[3],markersize=8.)
 	xticks([])
 	yticks([])
