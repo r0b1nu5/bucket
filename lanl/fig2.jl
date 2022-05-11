@@ -1,18 +1,18 @@
 using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
- #=
+# #=
 ntw = "ieee57"
 ex = 1
 show_graph = true
 ls = 1:57
-ks = [1:15;150:205;260:275]
-ksF = 1:275
+ks = [1:15;55:10:150;150:205;260:275;275:10:330]
+ksF = 1:325
 τ = .1
 fs = 17
 ff = 1.85/2π
 # =#
 
-# #=
+ #=
 ntw = "uk"
 show_graph = false
  #=
