@@ -1,36 +1,46 @@
 using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
-# #=
-ntw = "ieee57"
+ntw = "ntw20"
 ex = 1
-show_graph = true
-ls = 1:57
-ks = [1:15;55:10:150;150:205;260:275;275:10:330]
-ksF = 1:325
-τ = .1
-fs = 17
-ff = 1.85/2π
-# =#
-
- #=
-ntw = "uk"
 show_graph = false
- #=
-ex = 1
-ks = [80:10:220;222:2:238;240:10:330]
+ks = Int64[]
+ls = Int64[]
+ksF = Int64[]
 τ = .1
-# =#
+fs = 1
+ff = 1/2π
 
-# #=
-ks = [5:10:105;110:120;125:10:205]
-ex = 2
-τ = .1
-# =#
-ls = 1:120
-ksF = 1:205
-fs = 14
-ff = 2.41/2π
-# =#
+if ntw == "uk" && ex == 1
+	ks = [80:10:220;222:2:238;240:10:330]
+	ls = 1:120
+	ksF = 1:205
+	fs = 14
+	ff = 2.41/2π
+elseif ntw == "uk" && ex == 2
+	ks = [5:10:105;110:120;125:10:205]
+	ls = 1:120
+	ksF = 1:205
+	fs = 14
+	ff = 2.41/2π
+elseif ntw == "ieee57" && ex == 1
+	ks = [1:205;260:275;275:10:330]
+	ls = 1:57
+	ksF = 1:160
+	fs = 17
+	ff = 1.85/2π
+elseif ntw == "ieee57" && ex == 2
+	ks = 10:160
+	ls = 1:57
+	ksF = 1:160
+	fs = 17
+	ff = 1.85/2π
+elseif ntw == "ntw20" && ex == 1
+	ks = 1:40
+	ls = 1:20
+	ksF = 1:40
+	fs = 20
+	ff = .08
+end
 
 Xs = readdlm("data_melvyn/"*ntw*"/"*ntw*"_ex$(ex)_Xs.csv",',')
 
