@@ -24,11 +24,11 @@ lanl/code_naspi*
 lanl/data/
 lanl/data2/
 lanl/data_ebc/
+lanl/data_marc.zip
 lanl/data_marc/fle*
-lanl/data_melvyn/
+lanl/data_melvyn*
 lanl/data_naspi/
-lanl/data_pen/
-lanl/data_utk/
+lanl/data_utk*
 lanl/data_uk10/
 lanl/export2cluster.sh
 lanl/failed/

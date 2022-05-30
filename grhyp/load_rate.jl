@@ -49,7 +49,7 @@ function anglediff_rate(θ::Array{Float64,1}, angbnd::SparseMatrixCSC{Float64,In
 				PyPlot.bar(k-(l-1)*max_x,L[k],.9,0.,color=col[c[k]])
 			end
 				
-			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I[i]),$(J[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
+			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I2[i]),$(J2[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
 			ylabel("angle ratio")
 		end
 	end
@@ -111,7 +111,7 @@ function flow_rate(θ::Vector{Float64}, v::Vector{Float64}, angbnd::SparseMatrix
 				PyPlot.bar(k-(l-1)*max_x,L[k],.9,0.,color=col[c[k]])
 			end
 			
-			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I[i]),$(J[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
+			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I2[i]),$(J2[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
 			ylabel("flow ratio")
 		end
 	end
@@ -165,7 +165,7 @@ function active_flow(θ::Vector{Float64}, v::Vector{Float64}, B::SparseMatrixCSC
 				PyPlot.bar(k-(l-1)*max_x,L[k],.9,0.,color="C0")
 			end
 			
-			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I[i]),$(J[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
+			xticks(Array(1:min(max_x,length(ids) - (l-1)*max_x)),["($(I2[i]),$(J2[i]))" for i in ((l-1)*max_x + 1):min(l*max_x,length(ids))],rotation=90)
 			ylabel("active pf")
 		end
 	end
@@ -348,6 +348,35 @@ function get_weighted_L(BB::SparseMatrixCSC{Float64,Int64}, θ::Array{Float64,1}
 	D = spdiagm(0 => vec(sum(Ri,dims=1)))
 
 	return D - Ri
+end
+
+
+function get_ptdf(nd::Dict{String,Any})
+	n = length(nd["bus"])
+	m = length(nd["branch"])
+
+	ptdf = zeros(0,n)
+	I = Int64[]
+	J = Int64[]
+
+	for k in 1:m
+		i = nd["branch"]["$k"]["f_bus"]
+		j = nd["branch"]["$k"]["t_bus"]
+		new = true
+		for l in 1:size(ptdf)[1]
+			if (i == I[l] && j == J[l]) || (i == J[l] && j == I[l])
+				new = false
+			end
+		end
+		if new
+			ptdf = [ptdf;calc_basic_ptdf_row(nd,k)']
+			push!(I,i)
+			push!(J,j)
+		end
+	end
+
+
+	return I,J,ptdf
 end
 
 
