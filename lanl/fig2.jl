@@ -1,7 +1,7 @@
 using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
-ntw = "ntw20"
-ex = 1
+ntw = "ieee57"
+ex = 2
 show_graph = false
 ks = Int64[]
 ls = Int64[]

@@ -96,7 +96,10 @@ ylabel("normalized inverse log-likelihood")
 
 figure("test",(18,7))
 
-subplot2grid((2,3),(0,0),colspan=1,rowspan=1)
+#subplot2grid((2,3),(0,0),colspan=1,rowspan=1)
+#subplot2grid((4,4),(0,1),colspan=2,rowspan=1)
+#subplot2grid((4,7),(0,2),colspan=3,rowspan=1)
+subplot(3,2,3)
 for i in 1:3
 	PyPlot.plot((0:N-1)*τ,Xs[i,:],color=cols[i])
 end
@@ -104,7 +107,10 @@ xlabel("t[s]")
 ylabel("x(t)")
 axis([0.,(N-1)*τ,-.79,.55])
 
-subplot2grid((2,3),(0,1),colspan=1,rowspan=1)
+#subplot2grid((2,3),(0,1),colspan=1,rowspan=1)
+#subplot2grid((4,4),(1,1),colspan=2,rowspan=1)
+#subplot2grid((4,7),(1,2),colspan=3,rowspan=1)
+subplot(3,2,5)
 for i in 1:3
 	PyPlot.plot((0:N-1)*τ,Xs[i+3,:],color=cols[i])
 end
@@ -112,7 +118,10 @@ xlabel("t[s]")
 ylabel("p(t)")
 axis([0.,(N-1)*τ,-1.7,1.7])
 
-subplot2grid((2,3),(0,2),colspan=1,rowspan=1)
+#subplot2grid((2,3),(0,2),colspan=1,rowspan=1)
+#subplot2grid((4,4),(0,3),colspan=1,rowspan=2)
+#subplot2grid((4,7),(0,5),colspan=2,rowspan=2)
+subplot(3,2,4)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 for i in 1:3
 	PyPlot.plot((0:50)/(N*τ),nFX[i,1:51],color=cols[i])
@@ -122,7 +131,10 @@ xlabel("freq")
 ylabel("normalized FT")
 axis([0.,50/(50001*τ),-.1,1.1])
 
-subplot2grid((2,3),(1,0),colspan=2,rowspan=1)
+#subplot2grid((2,3),(1,0),colspan=2,rowspan=1)
+#subplot2grid((4,4),(2,0),colspan=3,rowspan=2)
+#subplot2grid((4,7),(2,0),colspan=5,rowspan=2)
+subplot(3,2,1)
 θ = LinRange(0,2π,4)
 α = 2.5
 #ms = (2.).^(log.(abs.(us)) .+ 5)
@@ -138,7 +150,10 @@ axis([1.,9.,-.9,1.4])
 xticks([])
 yticks([])
 
-subplot2grid((2,3),(1,2),colspan=1,rowspan=1)
+#subplot2grid((2,3),(1,2),colspan=1,rowspan=1)
+#subplot2grid((4,4),(2,3),colspan=1,rowspan=2)
+#subplot2grid((4,7),(2,5),colspan=2,rowspan=2)
+subplot(3,2,6)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 for i in 1:3
 	PyPlot.plot(ks/T,-nL0[i,:],color=cols[i])
