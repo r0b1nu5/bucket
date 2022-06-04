@@ -82,8 +82,8 @@ nγ1 = γ1[solk1]./maximum(γ1[solk1])
 
 figure(ntw*"FT vs. l0/l1 (sup)",(10,9))
 
-#subplot(5,1,1)
-subplot2grid((5,20),(0,0),rowspan=1,colspan=20)
+subplot(5,1,1)
+#subplot2grid((5,20),(0,0),rowspan=1,colspan=20)
 
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fxmax[ksF];Fxmin[ksF[end:-1:1]]],color=gra)
@@ -95,8 +95,8 @@ axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 #xlable("k")
 ylabel("normalized FT(x)")
 
-#subplot(5,1,2)
-subplot2grid((5,20),(1,0),rowspan=1,colspan=20)
+subplot(5,1,2)
+#subplot2grid((5,20),(1,0),rowspan=1,colspan=20)
 
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fpmax[ksF];Fpmin[ksF[end:-1:1]]],color=gra)
@@ -108,8 +108,8 @@ axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 #xlable("k")
 ylabel("normalized FT(p)")
 
-#subplot(5,1,3)
-subplot2grid((5,20),(2,0),rowspan=1,colspan=20)
+subplot(5,1,3)
+#subplot2grid((5,20),(2,0),rowspan=1,colspan=20)
 
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ks;ks[end:-1:1]]/(N*τ),-[nL0max;nL0min[end:-1:1]],color="C7")
@@ -120,8 +120,8 @@ axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 xlabel("freq")
 ylabel("normalized \n log-likelihood")
 
-#subplot(5,1,4)
-subplot2grid((5,20),(3,0),rowspan=1,colspan=20)
+subplot(5,1,4)
+#subplot2grid((5,20),(3,0),rowspan=1,colspan=20)
 
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.plot(ks/(N*τ),-nL1,color=cols[1])
@@ -129,8 +129,8 @@ axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 xlabel("freq")
 ylabel("normalized \n log-likelihood")
 
-#subplot(5,1,5)
-subplot2grid((5,20),(4,0),rowspan=1,colspan=12)
+subplot(5,1,5)
+#subplot2grid((5,20),(4,0),rowspan=1,colspan=12)
 
 PyPlot.plot([fs,fs],[-.1,1.1],"--",color="C7")
 PyPlot.plot(ls,nγ1,"ok",markersize=4.)
