@@ -3,8 +3,11 @@ using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 run = 1
 
 L = readdlm("data_marc/L.csv",',')
-us = eigvecs(L)
-λs = round.(eigvals(L))
+d = vec(readdlm("data_marc/d.csv",','))
+A = [zeros(3,3) diagm(0 => -ones(3));L diagm(0 => d)]
+us = eigvecs(A)
+λs = eigvals(A)
+μs = imag.(λs)
 
 Xs = readdlm("data_marc/Xs$(run).csv",',')
 nn,N = size(Xs)
@@ -138,10 +141,12 @@ subplot(3,2,1)
 θ = LinRange(0,2π,4)
 α = 2.5
 #ms = (2.).^(log.(abs.(us)) .+ 5)
-ms = 5 .+ 15*(abs.(us) .- minimum(abs.(us)))./(maximum(abs.(us)) - minimum(abs.(us)))
+uselect = [us[4:6,1] us[1:3,4] us[4:6,4]]
+λselect = [λs[1],λs[4],λs[4]]
+ms = 5 .+ 15*(abs.(uselect) .- minimum(abs.(uselect)))./(maximum(abs.(uselect)) - minimum(abs.(uselect)))
 for v in 1:3
 	PyPlot.plot(sin.(θ) .+ α*v,cos.(θ),"k")
-	PyPlot.text(α*v,0.,"λ = $(λs[v])")
+	PyPlot.text(α*v,0.,"Im(λ) = $(round(imag(λselect[v]),digits=3))")
 	for i in 1:3
 		PyPlot.plot(sin(θ[i]) + α*v,cos(θ[i]),"o",color=cols[i],markersize=ms[i,v])
 	end
