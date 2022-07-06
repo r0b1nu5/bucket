@@ -11,7 +11,7 @@ number_sample = 2500
 precision = 1e-4
 
 ############## JOURNALS TO USE ########################################
-js = ["cha",]
+js = ["lancet",]
 
 ################ DO / DON'T LIST #######################################
 plots = true
