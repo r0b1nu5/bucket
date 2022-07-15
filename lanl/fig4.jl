@@ -18,6 +18,7 @@ n = 99
 ls = 1:n
 ks = 1:1500
 T = 300.
+τ = .1
 file = "mysterious_forcing"
 fs1 = 85
 
