@@ -259,7 +259,7 @@ _OUTPUT_:
 	`k_l1`: Estimate frequency index (see theory).
 	`l_l1`: Estimate of the forcing location.
 """
-function run_l1(Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool=false, plot::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+function run_l1_asym(Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool=false, plot::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 	writedlm("data/times.csv",[0.,0.],',')
 
 	nn,NN = size(Xs)
@@ -424,7 +424,7 @@ function Lmin_l1_asym(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Compl
 # tr((L_{l,:})^T*D_{l,:}*F(k)) = tr((D_{l,:})^T*L_{l,:}*F(k))
 	@NLexpression(system_id, AAF2a[l = 1:n], 
 		      sum(A1[l,i]*a2[l]*Fk[n+l,i] for i = 1:n))
-	@NLexpression(system_id, AAF2a[l = 1:n], 
+	@NLexpression(system_id, AAF2b[l = 1:n], 
 		      sum(a2[l]*A1[l,j]*Fk[j,n+l] for j = 1:n))
 
 # tr((D_{l,:})^T*D_{l,:}*F(k))

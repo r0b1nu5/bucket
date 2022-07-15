@@ -199,7 +199,7 @@ Parallelized version of "run_l1_asym".
 The parameter "id" identifies the system to be identified.
 """
 =#
-@everywhere function run_l1_par(id::String, Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool=asym, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+@everywhere function run_l1_asym_par(id::String, Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -218,8 +218,8 @@ The parameter "id" identifies the system to be identified.
 
 # Compute warm start
 #	XXX,A1h,a2h = get_Ah_correl(Xs,τ) # Performs poorly.
-	A1h = .1*ones(n,n) #zeros(n,n)
-	a2h = .1*ones(n) #zeros(n)
+	A1h = zeros(n,n)
+	a2h = ones(n)
 
 # Run the optimizations
 	args = Array{Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Tuple{Float64,Float64},Float64,Float64},1}()
@@ -237,12 +237,12 @@ end
 
 #=
 """
-	Lmin_l1_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l1_asym_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of Lmin_l1.
 """
 =#
-@everywhere function Lmin_l1_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Tuple{Float64,Float64},Float64,Float64})
+@everywhere function Lmin_l1_asym_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Tuple{Float64,Float64},Float64,Float64})
 	id,x,Dx,xt,Dxt,k,A1h,a2h,b,μ,bp = tups
 	
 	@info "===================================================================================="
