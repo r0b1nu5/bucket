@@ -49,7 +49,7 @@ function run_l0_asym(Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::
 
 # Compute warm start
 #	XXX,A1h,a2h = get_Ah_correl(Xs,τ) # Performs poorly for Laplcian dynamics, warm start at zero is better.
-	A1h = zeros(n,n)
+	A1h = ones(n,n) 
 	a2h = ones(n)
 
 # Run the optimizations
@@ -138,7 +138,7 @@ function Lmin_l0_asym(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Compl
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => μ, "bound_push" => bp))
 	@variable(system_id, A1[i = 1:n, j = 1:n])
-	@constraint(system_id, c2[i=1:n-1,j=i+1:n], A1[i,j]*A1[j,i] >= 0.)
+#	@constraint(system_id, c2[i=1:n-1,j=i+1:n], A1[i,j]*A1[j,i] >= 0.)
 	for i = 1:n
 		for j = 1:n
 			set_start_value(A1[i,j],A1h[i,j])
@@ -202,8 +202,9 @@ function Lmin_l0_asym(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Compl
 	@NLexpression(system_id, γ2, γ^2)
 
 	
-	@NLobjective(system_id, Min, T1 + 2*T2 + .5*γ2 - 2*γ/sqrt(N)*sqrt(T3 + 2*T4 + glk) + b*sum(abs(A1[i,j])+abs(A1[j,i]) for i = 1:n-1 for j = i+1:n))
+	@NLobjective(system_id, Min, T1 + 2*T2 + .5*γ2 - 2*γ/sqrt(N)*sqrt(T3 + 2*T4 + glk) + b*sum(abs(A1[i,j]) for i = 1:n for j = 1:n))
 
+	set_optimizer_attribute(system_id,"max_iter",200)
 	optimize!(system_id)
 
 	mL = zeros(n,n)
@@ -372,7 +373,7 @@ function Lmin_l1_asym(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Compl
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => μ, "bound_push" => bp))
 
 	@variable(system_id, A1[i = 1:n, j = 1:n])
-	@constraint(system_id, c2[i=1:n-1,j=i+1:n], A1[i,j]*A1[j,i] >= 0.)
+#	@constraint(system_id, c2[i=1:n-1,j=i+1:n], A1[i,j]*A1[j,i] >= 0.)
 	for i in 1:n
 		for j in 1:n
 			set_start_value(A1[i,j],A1h[i,j])

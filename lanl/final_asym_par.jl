@@ -94,7 +94,7 @@ Parallelized version of "Lmin_l0_asym", i.e., stores the data in files.
 # Definition of the optimization problem.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => μ, "bound_push" => bp))
 	@variable(system_id, A1[i = 1:n, j = 1:n])
-	@constraint(system_id, c2[i=1:n-1,j=i+1:n], A1[i,j]*A1[j,i] >= 0.)
+#	@constraint(system_id, c2[i=1:n-1,j=i+1:n], A1[i,j]*A1[j,i] >= 0.)
 	for i = 1:n
 		for j = 1:n
 			set_start_value(A1[i,j],A1h[i,j])
@@ -269,7 +269,7 @@ Parallelized version of Lmin_l1.
 	system_id = Model(optimizer_with_attributes(Ipopt.Optimizer, "mu_init" => μ, "bound_push" => bp))
 
 	@variable(system_id, A1[i = 1:n, j = 1:n])
-	@constraint(system_id, c2[i=1:n-1,j=i+1:n], A1[i,j]*A1[j,i] >= 0.)
+#	@constraint(system_id, c2[i=1:n-1,j=i+1:n], A1[i,j]*A1[j,i] >= 0.)
 	for i in 1:n
 		for j in 1:n
 			set_start_value(A1[i,j],A1h[i,j])
