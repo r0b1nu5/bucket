@@ -99,5 +99,11 @@ function complex_k1(L::Matrix{Float64}, ω::Vector{Float64}, z0::Vector{Complex{
 	return Zs
 end
 		
+function jacobian(L::Matrix{Float64}, θ::Vector{Float64})
+	B,w = L2B(L)
+	C = diagm(0 => w.*cos.(B'*θ))
+
+	return B*C*B'
+end
 
 
