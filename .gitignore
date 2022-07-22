@@ -48,6 +48,5 @@ ntw_inf/figs/
 ntw_inf/line_dist_data/
 ntw_inf/temp/pegase1354re*
 ntw_inf/temp0/
+opinion_dyn/GMG/data_gmg/*
 sir/figs
-vote/data/
-vote/figs/
