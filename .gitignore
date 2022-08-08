@@ -34,6 +34,7 @@ lanl/export2cluster.sh
 lanl/failed/
 lanl/figs/
 lanl/Mas16/
+lanl/MT*
 lanl/pennsylvania*
 lanl/send/
 lanl/useless_data/

@@ -14,20 +14,27 @@ cols = [(243,111,33)./255,(0,145,194)./255,(161,0,202)./255]
 gra = (.8,.8,.8,1.)
 
 ntw = "utk"
-n = 99
+n = 98
 ls = 1:n
 ks = 1:1500
+#nok = Tuple{Int64,Int64}[]
+nok = [(3,684),(5,635),(15,771),(15,775),(16,1016),(16,1044),(16,1045),(17,793),(25,451),(25,784),(29,1223),(34,705),(35,141),(35,980),(35,1171),(36,1332),(36,1437),(37,1053),(37,1187),(38,20),(38,53),(39,1445),(42,666),(42,1300),(43,119),(44,1104),(44,1107),(46,923),(54,969),(66,470),(66,617),(66,965),(67,624),(68,76),(69,389),(72,479),(73,1173),(73,1177),(74,1344),(78,12),(80,253),(80,260),(80,267),(86,30),(87,1450),(88,659),(94,377),(94,484),(94,660),(94,1347),(94,1348),(97,825),(98,376),(98,415),(98,1189)]
 T = 300.
 τ = .1
-file = "mysterious_forcing"
-fs1 = 85
+file = "mysterious_forcingDrift"
+fs1 = 51
+#fs1 = 66
 
-# #=
+ #=
 L0 = zeros(length(ls),length(ks))
 for i in 1:length(ls)
 	@info "i = $i"
 	for j in 1:length(ks)
-		L0[i,j] = readdlm("data/utk/"*file*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
+		if length(intersect([(i,j),],nok)) == 0
+			L0[i,j] = readdlm("data/utk/"*file*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
+		else
+			L0[i,j] = 0.
+		end
 	end
 end
 nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
@@ -37,9 +44,9 @@ nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
 # =#
 ##############################################################
 
-figure("UTK",(14,10))
+figure("UTK",(14,5))
 
-subplot2grid((4,6),(0,0),colspan=3,rowspan=2)
+subplot2grid((2,6),(0,0),colspan=3,rowspan=2)
 
 # #=
 s_xy, red_i, name, l_xy, lids, lakes = utk_preprocess_boundaries()
@@ -71,7 +78,7 @@ PyPlot.xticks([])
 PyPlot.yticks([])
 
 
-subplot2grid((4,6),(0,3),colspan=3,rowspan=2)
+subplot2grid((2,6),(0,3),colspan=3,rowspan=2)
 
 L0red = nL0[[1:fs1-1;fs1+1:size(nL0)[1]],:]
 L0max = [maximum(L0red[:,i]) for i in 1:size(L0red)[2]]
@@ -82,124 +89,4 @@ axis([0.,maximum(ks)/T,-.1,1.1])
 xlabel("freq")
 ylabel("normalized log-likelihodd")
 legend()
-
-########################## FORCING TYPES #######################
-
-f = .3
-t = LinRange(-1,11,200)
-
-# Multi-sine
-
-subplot2grid((4,6),(3,0),colspan=2,rowspan=1)
-PyPlot.plot(t,sin.(2π*f*t) + sin.(4π*f*t) + sin.(6π*f*t),"k",linewidth=3.)
-axis([0.,10.,-2.8,2.8])
-xticks([])
-yticks([])
-#ylabel("forcing")
-#xlabel("t")
-
-# l0
-ls = Array(1:20)
-ks = Array(10:10:200)
-δk = 10
-L = zeros(20,20)
-for i in 1:20
-	for j in 1:20
-		L[i,j] = readdlm("data/ntw20/ntw20_multisine_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
-	end
-end
-nL = (L .- maximum(L))./(maximum(L) - minimum(L))
-nLmi,ii = findmin(nL)
-iii = ii[1]
-nLmax = [maximum(nL[[1:iii-1;iii+1:size(nL)[1]],i]) for i in 1:size(nL)[2]]
-nLmin = [minimum(nL[[1:iii-1;iii+1:size(nL)[1]],i]) for i in 1:size(nL)[2]]
-freq = round(ks[ii[2]]/100.,digits=3)
-
-subplot2grid((4,6),(2,0),colspan=2,rowspan=1)
-PyPlot.fill([ks[1]-δk;ks;ks[end]+δk;ks[end]+δk;ks[end:-1:1];ks[1]-δk]/100.,-[nLmax[1];nLmax;nLmax[end];nLmin[end];nLmin[end:-1:1];nLmin[1]],color=gra)
-for i in 1:length(ks)
-	k = ks[i]
-	PyPlot.plot([1,1]*k/100.,[0.,-nL[iii,i]],color=cols[1])
-end
-PyPlot.plot(ks/100.,-nL[iii,:],"o",color=cols[1])
-xlabel("freq")
-ylabel("normalized log-likelihood")
-axis([(ks[1]-δk/2)/100.,(ks[end]+δk/2)/100.,-.1,1.1])
-
-
-# Saw
-subplot2grid((4,6),(3,2),colspan=2,rowspan=1)
-PyPlot.plot(t,2*mod.(f*t,1.) .- 1,"k",linewidth=3.)
-axis([0.,10.,-1.1,1.1])
-xticks([])
-yticks([])
-#ylabel("forcing")
-#xlabel("t")
-
-# l0
-ls = Array(1:20)
-ks = Array(10:10:200)
-L = zeros(20,20)
-for i in 1:20
-	for j in 1:20
-		L[i,j] = readdlm("data/ntw20/ntw20_saw_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
-	end
-end
-nL = (L .- maximum(L))./(maximum(L) - minimum(L))
-nLmi,ii = findmin(nL)
-iii = ii[1]
-nLmax = [maximum(nL[[1:iii-1;iii+1:size(nL)[1]],i]) for i in 1:size(nL)[2]]
-nLmin = [minimum(nL[[1:iii-1;iii+1:size(nL)[1]],i]) for i in 1:size(nL)[2]]
-freq = round(ks[ii[2]]/100.,digits=3)
-
-subplot2grid((4,6),(2,2),colspan=2,rowspan=1)
-PyPlot.fill([ks[1]-δk;ks;ks[end]+δk;ks[end]+δk;ks[end:-1:1];ks[1]-δk]/100.,-[nLmax[1];nLmax;nLmax[end];nLmin[end];nLmin[end:-1:1];nLmin[1]],color=gra)
-for i in 1:length(ks)
-	k = ks[i]
-	PyPlot.plot([1,1]*k/100.,[0.,-nL[iii,i]],color=cols[1])
-end
-PyPlot.plot(ks/100.,-nL[iii,:],"o",color=cols[1])
-xlabel("freq")
-ylabel("normalized log-likelihood")
-axis([(ks[1]-δk/2)/100.,(ks[end]+δk/2)/100.,-.1,1.1])
-
-
-# Step
-subplot2grid((4,6),(3,4),colspan=2,rowspan=1)
-PyPlot.plot(t,2*mod.(floor.(f*t*2),2).-1,"k",linewidth=3.)
-axis([0.,10.,-1.1,1.1])
-xticks([])
-yticks([])
-#ylabel("forcing")
-#xlabel("t")
-
-# l0
-ls = Array(1:20)
-ks = Array(10:10:200)
-L = zeros(20,20)
-for i in 1:20
-	for j in 1:20
-		L[i,j] = readdlm("data/ntw20/ntw20_step_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
-	end
-end
-nL = (L .- maximum(L))./(maximum(L) - minimum(L))
-nLmi,ii = findmin(nL)
-iii = ii[1]
-nLmax = [maximum(nL[[1:iii-1;iii+1:size(nL)[1]],i]) for i in 1:size(nL)[2]]
-nLmin = [minimum(nL[[1:iii-1;iii+1:size(nL)[1]],i]) for i in 1:size(nL)[2]]
-freq = round(ks[ii[2]]/100.,digits=3)
-
-
-subplot2grid((4,6),(2,4),colspan=2,rowspan=1)
-PyPlot.fill([ks[1]-δk;ks;ks[end]+δk;ks[end]+δk;ks[end:-1:1];ks[1]-δk]/100.,-[nLmax[1];nLmax;nLmax[end];nLmin[end];nLmin[end:-1:1];nLmin[1]],color=gra)
-for i in 1:length(ks)
-	k = ks[i]
-	PyPlot.plot([1,1]*k/100.,[0.,-nL[iii,i]],color=cols[1])
-end
-PyPlot.plot(ks/100.,-nL[iii,:],"o",color=cols[1])
-xlabel("freq")
-ylabel("normalized log-likelihood")
-axis([(ks[1]-δk/2)/100.,(ks[end]+δk/2)/100.,-.1,1.1])
-
-
 
