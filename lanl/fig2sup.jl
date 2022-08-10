@@ -1,7 +1,7 @@
 using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
 ntw = "ieee57"
-ex = 2
+ex = 3
 ks = 1:160
 ls = 1:57
 ksF = 1:160

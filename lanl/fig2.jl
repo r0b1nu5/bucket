@@ -1,7 +1,7 @@
 using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
-ntw = "ieee57"
-ex = 2
+ntw = "uk"
+ex = 3
 show_graph = false
 ks = Int64[]
 ls = Int64[]
@@ -22,6 +22,12 @@ elseif ntw == "uk" && ex == 2
 	ksF = 1:205
 	fs = 14
 	ff = 2.41/2π
+elseif ntw == "uk" && ex == 3
+	ks = [5:5:100;110:120;125:5:145;155:5:205]
+	ls = 1:120
+	ksF = 1:205
+	fs = 14
+	ff = 2.41/2π
 elseif ntw == "ieee57" && ex == 1
 	ks = [1:205;260:275;275:10:330]
 	ls = 1:57
@@ -34,15 +40,24 @@ elseif ntw == "ieee57" && ex == 2
 	ksF = 1:160
 	fs = 17
 	ff = 1.85/2π
+elseif ntw == "ieee57" && ex == 3
+	ks = 1:160
+	ls = 1:57
+	ksF = 1:160
+	fs = 17 
+	ff = 1.85/2π 
 elseif ntw == "ntw20" && ex == 1
 	ks = 1:40
 	ls = 1:20
 	ksF = 1:40
 	fs = 20
 	ff = .08
+else
+	@info "No data matching the inputs..."
 end
 
 Xs = readdlm("data_melvyn/"*ntw*"/"*ntw*"_ex$(ex)_Xs.csv",',')
+Xs = Xs[:,1:3000]
 
 nn,N = size(Xs)
 n = Int64(nn/2)
