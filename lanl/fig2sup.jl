@@ -28,7 +28,7 @@ L1 = Vector{Float64}()
 γ1 = Vector{Vector{Float64}}()
 for j in 1:length(ks)
 	push!(L1,readdlm("data_melvyn/"*ntw*"/"*ntw*"_ex$(ex)_l1_$(ks[j])_obj.csv",',')[1])
-	push!(γ1,vec(readdlm("data_melvyn/"*ntw*"/"*ntw*"_ex$(ex)_l1_$(ks[j])_gamma.csv",',')))
+	push!(γ1,vec(readdlm("data_melvyn/"*ntw*"/"*ntw*"_ex$(ex)_l1_$(ks[j])_g.csv",',')))
 end
 nL1 = (L1 .- maximum(L1))./(maximum(L1) - minimum(L1))
 
@@ -68,7 +68,7 @@ Fpmin = [minimum(Fpred[:,i]) for i in 1:size(Fpred)[2]]
 
 xxx = findmin(nL0)
 sol0 = xxx[2][1]
-nL0red = nL0[[1:sol-1;sol+1:size(nL0)[1]],:]
+nL0red = nL0[[1:sol0-1;sol0+1:size(nL0)[1]],:]
 nL0max = [maximum(nL0red[:,i]) for i in 1:size(nL0red)[2]]
 nL0min = [minimum(nL0red[:,i]) for i in 1:size(nL0red)[2]]
 
@@ -88,7 +88,7 @@ subplot(5,1,1)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fxmax[ksF];Fxmin[ksF[end:-1:1]]],color=gra)
 PyPlot.plot(ksF/(N*τ),nFX[Fsolx,ksF],color=cols[2])
-PyPlot.plot(ksF/(N*τ),nFX[sol,ksF],color=cols[1])
+PyPlot.plot(ksF/(N*τ),nFX[sol0,ksF],color=cols[1])
 axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 #axis([ksF[1],ksF[end],-.1,1.1])
 #xlabel("freq")
@@ -101,7 +101,7 @@ subplot(5,1,2)
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ksF;ksF[end:-1:1]]/(N*τ),[Fpmax[ksF];Fpmin[ksF[end:-1:1]]],color=gra)
 PyPlot.plot(ksF/(N*τ),nFX[n+Fsolp,ksF],color=cols[3])
-PyPlot.plot(ksF/(N*τ),nFX[n+sol,ksF],color=cols[1])
+PyPlot.plot(ksF/(N*τ),nFX[n+sol0,ksF],color=cols[1])
 axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
 #axis([ksF[1],ksF[end],-.1,1.1])
 #xlabel("freq")
@@ -113,7 +113,7 @@ subplot(5,1,3)
 
 PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.fill([ks;ks[end:-1:1]]/(N*τ),-[nL0max;nL0min[end:-1:1]],color="C7")
-PyPlot.plot(ks/(N*τ),-nL0[sol,:],color=cols[1])
+PyPlot.plot(ks/(N*τ),-nL0[sol0,:],color=cols[1])
 #PyPlot.fill([1;ks;ks[end:-1:1];1]/(N*τ),-[nLmax[1];nLmax;nLmin[end:-1:1];nLmin[1]],color=gra)
 #PyPlot.plot([1;ks]/(N*τ),-[nL0[sol0,1];nL0[sol0,:]],color=cols[1])
 axis([ksF[1]/(N*τ),ksF[end]/(N*τ),-.1,1.1])
