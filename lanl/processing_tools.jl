@@ -17,6 +17,12 @@ function ebc_preprocess_data(ntw::String)
 		T = 1260. 
 		file = "ebc_2"
 		date = "2013-03-10_04"
+	elseif ntw =="ebc_22"
+		n = 129
+		ks = Array(5000:50:6000)
+		T = 1260.
+		file = "ebc_22"
+		date = "2013-03-10_04"
 	elseif ntw == "ebc_3"
 		n = 130
 		ks = Array(8500:50:10000)
@@ -38,6 +44,15 @@ function ebc_preprocess_data(ntw::String)
 		file = "ebc_5"
 		date = "2013-04-03_07"
 		xid = [46,] 
+	elseif ntw == "ebc_55"
+		#n = 130
+		#ks = Array(5000:50:6500)
+		n = 129
+		ks = Array(5000:50:6000)
+		T = 1260.
+		file = "ebc_55"
+		date = "2013-04-03_07"
+		xid = [46,]
 	elseif ntw == "ebc_8"
 		n = 134
 		ks = Array(9000:50:10000)
