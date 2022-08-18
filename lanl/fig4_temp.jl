@@ -24,7 +24,10 @@ file = "mysterious_forcingDrift"
 id0 = Int64.(vec(readdlm("data_utk/utk2_ids.csv",',')))
 fs1 = 51
 fs1id = id0[fs1]
-#fs1 = 66
+fs2 = 66
+fs2id = id0[fs2]
+fs3 = 27
+fs3id = id0[fs3]
 
 # #=
 L0 = zeros(length(ls),length(ks))
@@ -70,6 +73,8 @@ ids = (1:size(xy)[1]).*(xy[:,1] .< -55.)
 ids = setdiff(ids,[0,])
 PyPlot.plot(xy[ids,1],xy[ids,2],"ok",markersize=5.)
 PyPlot.plot(xy[fs1,1],xy[fs1,2],"o",color=cols[1],markersize=10.)
+PyPlot.plot(xy[fs2,1],xy[fs2,2],"o",color=cols[2],markersize=10.)
+PyPlot.plot(xy[fs3,1],xy[fs3,2],"o",color=cols[3],markersize=10.)
 axis([-105.,-63.,24.,48.])
 PyPlot.xticks([])
 PyPlot.yticks([])
@@ -82,6 +87,8 @@ L0max = [maximum(L0red[:,i]) for i in 1:size(L0red)[2]]
 L0min = [minimum(L0red[:,i]) for i in 1:size(L0red)[2]]
 PyPlot.fill([ks;ks[end:-1:1]]/T,-[L0max;L0min[end:-1:1]],color=gra)
 PyPlot.plot(ks/T,-nL0[fs1,:],"-",color=cols[1],linewidth=2.,label="$fs1id")
+PyPlot.plot(ks/T,-nL0[fs2,:],"-",color=cols[2],linewidth=2.,label="$fs2id")
+PyPlot.plot(ks/T,-nL0[fs3,:],"-",color=cols[3],linewidth=2.,label="$fs3id")
 axis([0.,maximum(ks)/T,-.1,1.1])
 xlabel("freq")
 ylabel("normalized log-likelihodd")
