@@ -45,10 +45,10 @@ function ebc_preprocess_data(ntw::String)
 		date = "2013-04-03_07"
 		xid = [46,] 
 	elseif ntw == "ebc_55"
-		#n = 130
-		#ks = Array(5000:50:6500)
-		n = 129
-		ks = Array(5000:50:6000)
+		n = 130
+		ks = Array(5000:50:6500)
+		#n = 129
+		#ks = Array(5000:50:6000)
 		T = 1260.
 		file = "ebc_55"
 		date = "2013-04-03_07"

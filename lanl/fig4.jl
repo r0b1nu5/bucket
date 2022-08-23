@@ -1,89 +1,96 @@
-using PyPlot, DelimitedFiles, RecipesBase, Shapefile, Colors
+using PyPlot, DelimitedFiles, FFTW, LinearAlgebra
 
-include("processing_tools.jl")
+τ = .1
+N = 3000
+T = N*τ
+n1 = 19
+n2 = 20
 
- #=
-cmap = get_cmap("plasma")
-colshift1 = .5
-colshift2 = .5
-cols = [cmap(1-(i+colshift1)/(2+colshift1+colshift2)) for i in 0:2]
-# =#
-# #=
+ls1 = 1:n1
+ls2 = 1:n2
+ks1 = [5:5:100;110:120;125:5:205]
+ks2 = [5:5:35;40:60;110:120;125:5:205]
+
+ff1 = 2.4
+ff2 = ff1*.4
+
+ntw = "ntw20"
+show_graph = true
+
+L1 = zeros(n1,length(ks1))
+for i in ls1
+	for j in 1:length(ks1)
+		L1[i,j] = readdlm("data_melvyn/"*ntw*"/missing_hidden_20_test__l0_$(i).$(ks1[j])_obj.csv",',')[1]
+	end
+end
+nL1 = (L1[ls1,:] .- maximum(L1[ls1,:]))./(maximum(L1[ls1,:]) - minimum(L1[ls1,:]))
+
+L2 = zeros(n2,length(ks2))
+for i in ls2
+	for j in 1:length(ks2)
+		L2[i,j] = readdlm("data_melvyn/"*ntw*"/2_hidden_20_test__l0_$(i).$(ks2[j])_obj.csv",',')[1]
+	end
+end
+nL2 = (L2[ls2,:] .- maximum(L2[ls2,:]))./(maximum(L2[ls2,:]) - minimum(L2[ls2,:]))
+
 cols = [(243,111,33)./255,(0,145,194)./255,(161,0,202)./255]
-# =#
 gra = (.8,.8,.8,1.)
 
-ntw = "utk"
-n = 98
-ls = 1:n
-ks = 1:1500
-#nok = [(3,684),(5,635),(15,771),(15,775),(16,1016),(16,1044),(16,1045),(17,793),(25,451),(25,784),(29,1223),(34,705),(35,141),(35,980),(35,1171),(36,1332),(36,1437),(37,1053),(37,1187),(38,20),(38,53),(39,1445),(42,666),(42,1300),(43,119),(44,1104),(44,1107),(46,923),(54,969),(66,470),(66,617),(66,965),(67,624),(68,76),(69,389),(72,479),(73,1173),(73,1177),(74,1344),(78,12),(80,253),(80,260),(80,267),(86,30),(87,1450),(88,659),(94,377),(94,484),(94,660),(94,1347),(94,1348),(97,825),(98,376),(98,415),(98,1189)]
-T = 300.
-τ = .1
-file = "mysterious_forcingDrift"
-id0 = Int64.(vec(readdlm("data_utk/utk2_ids.csv",',')))
-fs1 = 51
-fs1id = id0[fs1]
-#fs1 = 66
+x1 = findmin(nL1)
+sol1 = x1[2][1]
+nL1red = nL1[[1:sol1-1;sol1+1:size(nL1)[1]],:]
+nL1max = [maximum(nL1red[:,i]) for i in 1:size(nL1red)[2]]
+nL1min = [minimum(nL1red[:,i]) for i in 1:size(nL1red)[2]]
 
-# #=
-L0 = zeros(length(ls),length(ks))
-for i in 1:length(ls)
-	@info "i = $i"
-	for j in 1:length(ks)
-		L0[i,j] = readdlm("data/utk/"*file*"_l0_$(ls[i]).$(ks[j])_obj.csv",',')[1]
-	end
-end
-nL0 = (L0 .- maximum(L0))./(maximum(L0) - minimum(L0))
-
-@info "L0 is loaded."
-
-# =#
-##############################################################
-
-figure("UTK",(14,5))
-
-subplot2grid((2,6),(0,0),colspan=3,rowspan=2)
-
-# #=
-s_xy, red_i, name, l_xy, lids, lakes = utk_preprocess_boundaries()
-
-for i in 1:length(s_xy)
-	s = s_xy[i]
-	for j in 1:length(red_i[i])
-		PyPlot.fill(s[1][red_i[i][j]],s[2][red_i[i][j]],color=(.95,.95,.95,1.))
-		PyPlot.plot(s[1][red_i[i][j]],s[2][red_i[i][j]],"-k",linewidth=.5)
-	end
-end
-
-for i in 1:length(l_xy)
-	l = l_xy[i]
-	ids = lids[i]
-	PyPlot.fill(l[1][ids],l[2][ids],color=(1.,1.,1.,1.))
-	PyPlot.plot(l[1][ids],l[2][ids],"-k",linewidth=.5)
-end
-
-# =#
-
-xy = readdlm("data_utk/utk1_coord.csv",',')[id0,:]
-ids = (1:size(xy)[1]).*(xy[:,1] .< -55.)
-ids = setdiff(ids,[0,])
-PyPlot.plot(xy[ids,1],xy[ids,2],"ok",markersize=5.)
-PyPlot.plot(xy[fs1,1],xy[fs1,2],"o",color=cols[1],markersize=10.)
-axis([-105.,-63.,24.,48.])
-PyPlot.xticks([])
-PyPlot.yticks([])
+x2 = findmin(nL2)
+sol2 = x2[2][1]
+nL2red = nL2[[1:sol2-1;sol2+1:size(nL2)[1]],:]
+nL2max = [maximum(nL2red[:,i]) for i in 1:size(nL2red)[2]]
+nL2min = [minimum(nL2red[:,i]) for i in 1:size(nL2red)[2]]
 
 
-subplot2grid((2,6),(0,3),colspan=3,rowspan=2)
 
-L0red = nL0[[1:fs1-1;fs1+1:size(nL0)[1]],:]
-L0max = [maximum(L0red[:,i]) for i in 1:size(L0red)[2]]
-L0min = [minimum(L0red[:,i]) for i in 1:size(L0red)[2]]
-PyPlot.fill([ks;ks[end:-1:1]]/T,-[L0max;L0min[end:-1:1]],color=gra)
-PyPlot.plot(ks/T,-nL0[fs1,:],"-",color=cols[1],linewidth=2.,label="$fs1id")
-axis([0.,maximum(ks)/T,-.1,1.1])
+
+
+figure("ntw20",(10,5))
+
+
+subplot(2,1,1)
+PyPlot.plot([ff1,ff1],[-.1,1.1],"--",color="C7")
+PyPlot.fill([1;ks1;ks1[end:-1:1];1]/(N*τ),-[nL1max[1];nL1max;nL1min[end:-1:1];nL1min[1]],color=gra)
+PyPlot.plot([1;ks1]/(N*τ),-[nL1[sol1,1];nL1[sol1,:]],color=cols[1])
+axis([ks1[1]/(N*τ),ks1[end]/(N*τ),-.1,1.1])
 xlabel("freq")
-ylabel("normalized log-likelihodd")
-legend()
+ylabel("normalized \n log-likelihood")
+
+subplot(2,1,2)
+PyPlot.plot([ff1,ff1],[-.1,1.1],"--",color="C7")
+PyPlot.fill([1;ks2;ks2[end:-1:1];1]/(N*τ),-[nL2max[1];nL2max;nL2min[end:-1:1];nL2min[1]],color=gra)
+PyPlot.plot([1;ks2]/(N*τ),-[nL2[sol2,1];nL2[sol2,:]],color=cols[1])
+axis([ks2[1]/(N*τ),ks2[end]/(N*τ),-.1,1.1])
+xlabel("freq")
+ylabel("normalized \n log-likelihood")
+
+
+
+if show_graph
+	figure(ntw*": ntw")
+
+	xy = readdlm("data_melvyn/"*ntw*"/"*ntw*"_xy.csv",',')
+	adj = Int64.(readdlm("data_melvyn/"*ntw*"/"*ntw*"_adj.csv",','))
+	
+	for i in 1:2:size(adj)[1]
+		PyPlot.plot(xy[adj[i,1:2],1],xy[adj[i,1:2],2],"k",linewidth=1.)
+	end
+	PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=5.)
+	PyPlot.plot(xy[sol1,1],xy[sol1,2],"o",color=cols[1],markersize=8.)
+	xticks([])
+	yticks([])
+end
+
+
+
+
+
+
 
