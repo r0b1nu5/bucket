@@ -8,8 +8,8 @@ n2 = 20
 
 ls1 = 1:n1
 ls2 = 1:n2
-ks1 = [5:5:100;110:120;125:5:205]
-ks2 = [5:5:35;40:60;110:120;125:5:205]
+ks1 = 5:205
+ks2 = 5:205
 
 ff1 = 2.4
 ff2 = ff1*.4
@@ -20,7 +20,7 @@ show_graph = true
 L1 = zeros(n1,length(ks1))
 for i in ls1
 	for j in 1:length(ks1)
-		L1[i,j] = readdlm("data_melvyn/"*ntw*"/missing_hidden_20_test__l0_$(i).$(ks1[j])_obj.csv",',')[1]
+		L1[i,j] = readdlm("data_melvyn/"*ntw*"/l0_missing_hidden_20_test__l0_$(i).$(ks1[j])_obj.csv",',')[1]
 	end
 end
 nL1 = (L1[ls1,:] .- maximum(L1[ls1,:]))./(maximum(L1[ls1,:]) - minimum(L1[ls1,:]))
@@ -28,7 +28,7 @@ nL1 = (L1[ls1,:] .- maximum(L1[ls1,:]))./(maximum(L1[ls1,:]) - minimum(L1[ls1,:]
 L2 = zeros(n2,length(ks2))
 for i in ls2
 	for j in 1:length(ks2)
-		L2[i,j] = readdlm("data_melvyn/"*ntw*"/2_hidden_20_test__l0_$(i).$(ks2[j])_obj.csv",',')[1]
+		L2[i,j] = readdlm("data_melvyn/"*ntw*"/l0_2_hidden_20_test__l0_$(i).$(ks2[j])_obj.csv",',')[1]
 	end
 end
 nL2 = (L2[ls2,:] .- maximum(L2[ls2,:]))./(maximum(L2[ls2,:]) - minimum(L2[ls2,:]))
