@@ -366,3 +366,13 @@ function find_ortho_vec(A::Array{Float64,2})
 	return v
 end
 
+function gen_R(n::Int64)
+	R = zeros(n-1,n)
+	for i in 1:n-1
+		R[i,1:i] = ones(1,i)./sqrt(i+i^2)
+		R[i,i+1] = -i/sqrt(i+i^2)
+	end
+
+	return R
+end
+

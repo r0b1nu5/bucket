@@ -1,32 +1,62 @@
-using LinearAlgebra
+using LinearAlgebra, DelimitedFiles
 
-n = 10
-P = diagm(0 => ones(n)) - ones(n)*ones(1,n)/n
-V = eigvecs(P)[:,2:n]
-R = V'
+n = 3
+ϕ = .3
+λ2 = 3.
+δ = 2.
 
-test = true
+B = [1. 1. 0.;-1 0. 1.;0. -1. -1.]
+Bt = [1. -1. 0.;1. 0. -1.;0. 1. -1.]
+Id = diagm(0 => ones(n))
+Π = Id - ones(n,n)./n
+v1 = [1.,-1.,0.]./sqrt(2)
+v2 = [1.,1.,-2.]./sqrt(6)
+R = [v1'; v2']
+Rd = pinv(R)
+
+cohes = Vector{Float64}()
+avcoh = Vector{Float64}()
+μs = Vector{Float64}()
+
+iter = 0
+max_iter = 100
 c = 0
+test = true
 
-while test && c < 1000000
-	global c,n,P,V,R
+γbar = atan(λ2/(δ*tan(ϕ)))
 
-	c += 1
-	if c%100 == 0
-		@info "c = $c"
+x = rand(n)
+xs = Vector{Vector{Float64}}()
+
+while test
+	global x,xs,bar,iter,c,cohes,avcoh,μs,Bt,ϕ,Id,R,Rd
+
+	iter += 1
+
+	x = 2π*[rand(),rand(),0.]
+
+	dx = mod.(Bt*x .+ π,2π) .- π
+
+	cohes = maximum(abs.(dx))
+
+	J = cos.(dx .- ϕ).*(1 .- Id)
+	J -= diagm(0 => vec(sum(J,dims=2)))
+	Jr = R*J*Rd
+
+	μs = maximum((eigvals(Jr + Jr'))/2)
+	
+	if iter%1000 == 0
+		@info "iter: $iter"
 	end
 
-	θ = π/2*rand(n)
-	As = sin.(θ*ones(1,n) - ones(n)*θ')
-	Ds = diagm(0 => vec(sum(As,dims=2)))
-	Ls = Ds - As
-	Ms = (P*Ls + Ls'*P)/2
-	
-	λs = eigvals(Ls)
-	μs = eigvals(Ms)
+	if cohes < γbar && μs > 0.
+		push!(xs,x)
+	end
 
-	test = (minimum(Ds) <= minimum(λs))*(maximum(Ds) >= maximum(λs))*(minimum(Ds) <= minimum(μs))*(maximum(Ds) >= maximum(μs))
+	test = (cohes > γbar) || μs < 0.
+	
 end
+
 
 
 
