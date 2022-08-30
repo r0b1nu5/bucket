@@ -13,6 +13,8 @@ B = [1 1 0;-1 0 1;0 -1 -1.]
 C = [1 -1 1.]
 L = B*B'
 
+cols = [(161,207,239)./255,(76,163,224)./255,(31,119,180)./255]
+
 #=
 xres = 1000
 xmin = -4π
@@ -25,7 +27,6 @@ lmin = floor(Int64,(ymin+π)/(2π))
 ymax = 5π/2
 lmax = ceil(Int64,(ymax-π)/(2π))
 
-cols = [(161,207,239)./255,(76,163,224)./255,(31,119,180)./255]
 
 xs = repeat(Vector(LinRange(xmin,xmax,xres))',yres,1)
 ys = repeat(Vector(LinRange(ymin,ymax,yres)),1,xres)
@@ -52,13 +53,13 @@ vv = v.*(speed .> .05)
 res = 200
 xs = repeat((Vector(LinRange(-π,π,res+1))[1:res])',res,1)
 ys = repeat(Vector(LinRange(-π,π,res+1))[1:res],1,res)
-ks = -2:3
+ks = -2:2
 ls = -1:1
 Xs = zeros(length(ls)*res,length(ks)*res)
 Ys = zeros(length(ls)*res,length(ks)*res)
 xmin = -4π
-xmax = 6π + π/2
-ymin = -2π+1
+xmax = 4π + π/2
+ymin = -2π+2.5
 ymax = 5π/2
 for k in 1:length(ks)
 	for l in 1:length(ls)
@@ -74,7 +75,7 @@ v = zeros(l1,l2)
 
 for i in 1:l1
 	for j in 1:l2
-		f = (B*(sin.(B'*[Xs[j],Ys[i],0.] .+ ϕ) .- sin(ϕ)))[1:2]
+		f = (ω - B*(sin.(B'*[Xs[i,j],Ys[i,j],0.] .- ϕ) .+ sin(ϕ)))[1:2]
 		u[i,j] = f[1]
 		v[i,j] = f[2]
 	end
@@ -110,10 +111,10 @@ for k in ks #kmin:kmax
 	end
 end
 
-ρ = .7
+ρ = .9
 
 #PyPlot.streamplot(xs,ys,u,v,density=4,linewidth=.5,color="black",arrowsize=.7)#,maxlength=.5)
-PyPlot.streamplot(Xs,Ys,u,v,density=2.5,linewidth=ρ*speed./maximum(speed).+(1-ρ),color="black",arrowsize=.7)#,maxlength=.5)
+PyPlot.streamplot(Xs,Ys,u,v,density=5,linewidth=2*(ρ*speed./maximum(speed).+(1-ρ)),color="black",arrowsize=.8)#,maxlength=.5)
 #PyPlot.streamplot(xs,ys,u,v,density=4,linewidth=.8,color=speed,cmap="plasma",arrowsize=.8,maxlength=.2,integration_direction="forward")
 
 axis([xmin,xmax,ymin,ymax])
