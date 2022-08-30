@@ -32,10 +32,12 @@ ntw = ntws[1]
 	PyPlot.plot([0,maximum(cohes)],[0,0],"k")
 	PyPlot.plot([0,0],[min(0.,minimum(μs)),max(0.,maximum(μs))],"k")
 	PyPlot.fill([0,γbar,γbar,0,0],[0,0,maximum(μs),maximum(μs),0],color=(.8,.8,.8,1.))
-	#PyPlot.plot(cohes,μs,".")
+	PyPlot.plot(cohes[1:1000],μs[1:1000],".")
+	#=
 	for i in 1:1000
 		PyPlot.plot(cohes[i],μs[i],".",color=cmap(α[i]))
 	end
+	=#
 
 PyPlot.text(γbar,0,"γbar")
 ylabel("μ_Π(Dh)")
