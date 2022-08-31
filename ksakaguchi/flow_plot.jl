@@ -53,14 +53,14 @@ vv = v.*(speed .> .05)
 res = 200
 xs = repeat((Vector(LinRange(-π,π,res+1))[1:res])',res,1)
 ys = repeat(Vector(LinRange(-π,π,res+1))[1:res],1,res)
-ks = -2:2
-ls = -1:1
+ks = -1:2
+ls = -1:2
 Xs = zeros(length(ls)*res,length(ks)*res)
 Ys = zeros(length(ls)*res,length(ks)*res)
-xmin = -4π
-xmax = 4π + π/2
+xmin = -2π+1
+xmax = 4π 
 ymin = -2π+2.5
-ymax = 5π/2
+ymax = 7π/2
 for k in 1:length(ks)
 	for l in 1:length(ls)
 		Xs[(l-1)*res+1:l*res,(k-1)*res+1:k*res] = xs[1:res,1:res] .+ 2π*ks[k]
@@ -114,7 +114,7 @@ end
 ρ = .9
 
 #PyPlot.streamplot(xs,ys,u,v,density=4,linewidth=.5,color="black",arrowsize=.7)#,maxlength=.5)
-PyPlot.streamplot(Xs,Ys,u,v,density=5,linewidth=2*(ρ*speed./maximum(speed).+(1-ρ)),color="black",arrowsize=.8)#,maxlength=.5)
+PyPlot.streamplot(Xs,Ys,u,v,density=4.5,linewidth=2*(ρ*speed./maximum(speed).+(1-ρ)),color="black",arrowsize=.8)#,maxlength=.5)
 #PyPlot.streamplot(xs,ys,u,v,density=4,linewidth=.8,color=speed,cmap="plasma",arrowsize=.8,maxlength=.2,integration_direction="forward")
 
 axis([xmin,xmax,ymin,ymax])
