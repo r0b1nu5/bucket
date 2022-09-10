@@ -1,1 +1,0 @@
-d = Dict{String,Any}("id" => 100005, "n_year" => 30, "ppyear" => 1000, "rho0" => 0.7, "amin" => 20, "amax" => 80)
