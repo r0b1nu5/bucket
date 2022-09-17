@@ -16,14 +16,14 @@ end
 
 #=
 """
-	run_l0_asym_par(id::String, Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::Array{Int64,1}, is_laplacian::Bool=false, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+	run_l0_asym_par(id::String, Xs::Matrix{Float64}, τ::Float64, ls::Vector{Int64}, ks::Vector{Int64}, is_laplacian::Bool=false, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized verions of "run_l0_asym".
 
 The parameter "id" identifies the system to be identified.
 """
 =#
-@everywhere function run_l0_asym_par(id::String, Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::Array{Int64,1}, is_laplacian::Bool=false, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+@everywhere function run_l0_asym_par(id::String, Xs::Matrix{Float64}, τ::Float64, ls::Vector{Int64}, ks::Vector{Int64}, is_laplacian::Bool=false, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -45,7 +45,7 @@ The parameter "id" identifies the system to be identified.
 	A1h = zeros(n,n)
 	a2h = ones(n)
 
-	args = Array{Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64},1}()
+	args = Array{Tuple{String,Matrix{Float64},Matrix{Float64},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Matrix{Float64},Vector{Float64},Float64,Float64,Float64},1}()
 
 	for l in ls
 		for k in ks
@@ -63,12 +63,12 @@ end
 
 #=
 """
-	Lmin_l0_asym_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l0_asym_par(id::String, x::Matrix{Float64}, Dx::Matrix{Float64}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Matrix{Float64}, a1h::Vector{Float64}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of "Lmin_l0_asym", i.e., stores the data in files.
 """
 =#
-@everywhere function Lmin_l0_asym_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Array{Float64,2},Array{Float64,1},Float64,Float64,Float64})
+@everywhere function Lmin_l0_asym_par(tups::Tuple{String,Matrix{Float64},Matrix{Float64},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Int64,Matrix{Float64},Vector{Float64},Float64,Float64,Float64})
 	id,x,Dx,xt,Dxt,l,k,A1h,a2h,b,μ,bp = tups
 
 	@info "===================================================================================="
@@ -192,14 +192,14 @@ end
 
 #=
 """
-	run_l1_asym_par(Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+	run_l1_asym_par(Xs::Matrix{Float64}, τ::Float64, ks::Vector{Int64}, is_laplacian::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of "run_l1_asym".
 
 The parameter "id" identifies the system to be identified.
 """
 =#
-@everywhere function run_l1_asym_par(id::String, Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+@everywhere function run_l1_asym_par(id::String, Xs::Matrix{Float64}, τ::Float64, ks::Vector{Int64}, is_laplacian::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 	nn,NN = size(Xs)
 	n = Int(nn/2)
 	N = NN-1
@@ -222,7 +222,7 @@ The parameter "id" identifies the system to be identified.
 	a2h = ones(n)
 
 # Run the optimizations
-	args = Array{Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Tuple{Float64,Float64},Float64,Float64},1}()
+	args = Array{Tuple{String,Matrix{Float64},Matrix{Float64},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Matrix{Float64},Vector{Float64},Tuple{Float64,Float64},Float64,Float64},1}()
 
 	for k in ks
 		push!(args,(id,x,Dx,xt,Dxt,k,A1h,a2h,b,μ,bp))
@@ -237,12 +237,12 @@ end
 
 #=
 """
-	Lmin_l1_asym_par(id::String, x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l1_asym_par(id::String, x::Matrix{Float64}, Dx::Matrix{Float64}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Matrix{Float64}, a2h::Vector{Float64}, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 
 Parallelized version of Lmin_l1.
 """
 =#
-@everywhere function Lmin_l1_asym_par(tups::Tuple{String,Array{Float64,2},Array{Float64,2},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Array{Float64,2},Array{Float64,1},Tuple{Float64,Float64},Float64,Float64})
+@everywhere function Lmin_l1_asym_par(tups::Tuple{String,Matrix{Float64},Matrix{Float64},Array{Complex{Float64},2},Array{Complex{Float64},2},Int64,Matrix{Float64},Vector{Float64},Tuple{Float64,Float64},Float64,Float64})
 	id,x,Dx,xt,Dxt,k,A1h,a2h,b,μ,bp = tups
 	
 	@info "===================================================================================="

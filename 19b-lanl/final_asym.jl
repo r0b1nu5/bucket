@@ -3,7 +3,7 @@ using DelimitedFiles, PyPlot, LinearAlgebra, JuMP, Ipopt, FFTW
 include("final.jl")
 
 """
-	run_l0_asym(Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::Array{Int64,1}, is_laplacian::Bool=false, plot::Bool=false, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+	run_l0_asym(Xs::Matrix{Float64}, τ::Float64, ls::Vector{Int64}, ks::Vector{Int64}, is_laplacian::Bool=false, plot::Bool=false, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Identifies dynamics and forcing characteristics baded only on measurements. Approximation of the forcing's frequency is discretized as 2*π*k/T, with k integer.
 
@@ -28,7 +28,7 @@ _OUTPUT_:
 	`k_l0`: Estimate frequency index (see theory).
 	`l_l0`: Estimate of the forcing location.
 """
-function run_l0_asym(Xs::Array{Float64,2}, τ::Float64, ls::Array{Int64,1}, ks::Array{Int64,1}, is_laplacian::Bool=false, plot::Bool=false, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+function run_l0_asym(Xs::Matrix{Float64}, τ::Float64, ls::Vector{Int64}, ks::Vector{Int64}, is_laplacian::Bool=false, plot::Bool=false, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 	writedlm("data/times.csv",[0.,0.],',')
 
 	nn,NN = size(Xs)
@@ -95,7 +95,7 @@ end
 
 
 """
-	Lmin_l0_asym(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a1h::Array{Float64,1}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l0_asym(x::Matrix{Float64}, Dx::Matrix{Float64}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, l::Int64, k::Int64, A1h::Matrix{Float64}, a1h::Vector{Float64}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 
 Minimizes the quadratic error in the estimation of the forced trajectory, for a fixed frequency (k) and location (l) of the forcing. The optimization parameters are the dynamics matrix (A1), the damings (a2), and the forcing amplitude (γ). 
 
@@ -118,7 +118,7 @@ _OUTPUT_:
 `a2`: Best estimate of the dampings.
 `γ`: Best estimate of the forcing amplitude.
 """
-function Lmin_l0_asym(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, l::Int64, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
+function Lmin_l0_asym(x::Matrix{Float64}, Dx::Matrix{Float64}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, l::Int64, k::Int64, A1h::Matrix{Float64}, a2h::Vector{Float64}, b::Float64=0., μ::Float64=1e-1, bp::Float64=1e-1)
 	t0 = time()
 	
 	nn,N = size(x)
@@ -236,7 +236,7 @@ end
 
 
 """
-	run_l1_asym(Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool=false, plot::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+	run_l1_asym(Xs::Matrix{Float64}, τ::Float64, ks::Vector{Int64}, is_laplacian::Bool=false, plot::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 
 Identifies dynamics and forcing characteristics baded only on measurements. Approximation of the forcing's frequency is discretized as 2*π*k/T, with k integer.
 
@@ -260,7 +260,7 @@ _OUTPUT_:
 	`k_l1`: Estimate frequency index (see theory).
 	`l_l1`: Estimate of the forcing location.
 """
-function run_l1_asym(Xs::Array{Float64,2}, τ::Float64, ks::Array{Int64,1}, is_laplacian::Bool=false, plot::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+function run_l1_asym(Xs::Matrix{Float64}, τ::Float64, ks::Vector{Int64}, is_laplacian::Bool=false, plot::Bool=false, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 	writedlm("data/times.csv",[0.,0.],',')
 
 	nn,NN = size(Xs)
@@ -328,7 +328,7 @@ end
 
 
 """
-	Lmin_l1_asym(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+	Lmin_l1_asym(x::Matrix{Float64}, Dx::Matrix{Float64}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64,2}, k::Int64, A1h::Matrix{Float64}, a2h::Vector{Float64}, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 
 Minimizes the quadratic error in the estimation of the forced trajectory, for a fixed frequency (k) of the forcing. The optimization parameters are the dynamics matrix (A1), the damings (a2), and the forcing amplitude (γ). 
 
@@ -350,7 +350,7 @@ _OUTPUT_:
 `a2`: Best estimate of the dampings.
 `γ`: Best estimate of the forcing amplitude at each possible location.
 """
-function Lmin_l1_asym(x::Array{Float64,2}, Dx::Array{Float64,2}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, k::Int64, A1h::Array{Float64,2}, a2h::Array{Float64,1}, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
+function Lmin_l1_asym(x::Matrix{Float64}, Dx::Matrix{Float64}, xt::Array{Complex{Float64},2}, Dxt::Array{Complex{Float64},2}, k::Int64, A1h::Matrix{Float64}, a2h::Vector{Float64}, b::Tuple{Float64,Float64}=(0.,0.), μ::Float64=1e-1, bp::Float64=1e-1)
 	t0 = time()
 	
 	nn,N = size(x)
