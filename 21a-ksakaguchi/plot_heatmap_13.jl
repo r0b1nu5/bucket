@@ -41,14 +41,14 @@ v2 ./= norm(v2)
 V = [v1 v2]
 
 R = gen_R(n)
-P = V*pinv(R*V)*R
+P = pinv(R*V)*R
 
-#x1 = [v1';v2']*θ1
-#x2 = [v1';v2']*θ2
-x1 = P*θ1
-x2 = P*θ2
-x3 = P*θ3
-x4 = P*θ4
+x1 = [v1';v2']*θ1
+x2 = [v1';v2']*θ2
+#x1 = P*θ1
+#x2 = P*θ2
+#x3 = P*θ3
+#x4 = P*θ4
 
 xmin = min(0.,x1[1],x2[1])
 xmax = max(0.,x1[1],x2[1])
@@ -105,7 +105,8 @@ ylabel("x2")
 
 figure("yyy")
 PyPlot.contourf(X,Y,μtilde,50,cmap=cm)
-PyPlot.plot([0.,x1[1],x2[1],x3[1],x4[1]],[0.,x1[2],x2[2],x3[2],x4[2]],"ok")
+PyPlot.plot([0.,x1[1],x2[1]],[0.,x1[2],x2[2]],"ok")
+#PyPlot.plot([0.,x1[1],x2[1],x3[1],x4[1]],[0.,x1[2],x2[2],x3[2],x4[2]],"ok")
 
 title("μmin = $mi, μmax = $ma")
 colorbar(label="μ")
