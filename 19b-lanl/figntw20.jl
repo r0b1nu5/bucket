@@ -19,7 +19,11 @@ n = Int64(nn/2)
 ls = 1:n
 ks = 1:40
 δk = 1.
+τ = .1
 T = (N-1)*τ
+
+ff = .08
+fs = 20
 
 L0 = zeros(n,length(ks))
 for i in ls
@@ -65,7 +69,7 @@ PyPlot.fill([ks[1]-δk;ks;ks[end]+δk;ks[end]+δk;ks[end:-1:1];ks[1]-δk]./T,-[L
 PyPlot.plot(ks/T,-nL0[l0,:],"-",color=cols[1])
 axis([(ks[1]-δk/2)/T,(ks[end]+δk/2)/T,-.1,1.1])
 xlabel("freq")
-ylabel("normalized log-likelihood")
+ylabel("rescaled log-likelihood")
 
 subplot2grid((20,3),(0,1),rowspan=10,colspan=1)
 
@@ -76,7 +80,7 @@ PyPlot.plot([ff,ff],[-.1,1.1],"--",color="C7")
 PyPlot.plot(ks./T,-nL1,"-",color=cols[1])
 axis([(ks[1]-δk/2)/T,(ks[end]+δk/2)/T,-.1,1.1])
 xlabel("freq")
-ylabel("normalized \n log-likelihood")
+ylabel("rescaled \n log-likelihood")
 
 subplot2grid((20,3),(13,1),rowspan=7,colspan=1)
 

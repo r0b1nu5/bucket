@@ -131,7 +131,7 @@ for i in 1:3
 	PyPlot.plot((0:50)/(N*τ),nFX[i+3,1:51],"--",color=cols[i])
 end
 xlabel("freq")
-ylabel("normalized FT")
+ylabel("rescaled FT")
 axis([0.,50/(50001*τ),-.1,1.1])
 
 #subplot2grid((2,3),(1,0),colspan=2,rowspan=1)
@@ -164,7 +164,7 @@ for i in 1:3
 	PyPlot.plot(ks/T,-nL0[i,:],color=cols[i])
 end
 xlabel("freq")
-ylabel("normalized log-likelihood")
+ylabel("rescaled log-likelihood")
 axis([0.,50/(50001*τ),-.1,1.1])
 
 #=
