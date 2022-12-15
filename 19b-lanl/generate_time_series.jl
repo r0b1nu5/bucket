@@ -73,7 +73,7 @@ function generate_forced_time_series(ntw::String, L::Array{Float64,2}, m::Array{
 		surcount += 1
 		subcount = 0
 		while subcount < 1000 && t < T
-			t += 1
+ 		t += 1
 			subcount += 1
 			
 			xi = rand(Normal(0,1),n)

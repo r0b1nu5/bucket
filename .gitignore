@@ -28,7 +28,10 @@
 19c-machine-learning/data1/
 19c-machine-learning/data_cluster/
 19c-machine-learning/figs/
+19d-opinion-dyn/GMG/*.pdf
+19d-opinion-dyn/GMG/add_data/
 19d-opinion-dyn/GMG/data_gmg/*
+19d-opinion-dyn/GMG/PAPER_DATA/
 19e-grhyp/cases/
 19e-grhyp/data/
 19e-grhyp/MATPOWER-manual-7.1.pdf
