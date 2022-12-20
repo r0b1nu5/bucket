@@ -870,11 +870,11 @@ for b_val in range(len(BIAS_VAL)):
                 wp=int(WParg[party])
                 N_VOTES_3[b_val,num,eps,j+1]=Num_votes[wp]
                 party=party-1
-    E_EXT_3[b_val]=np.nan_to_num(E_EXT_3[b_val]/NE_EXT_3[b_val],nan=0)
-    E_CENT_3[b_val]=np.nan_to_num(E_CENT_3[b_val]/NE_CENT_3[b_val],nan=0)
+    E_EXT_3[b_val]=np.nan_to_num(E_EXT_3[b_val]/NE_EXT_3[b_val])
+    E_CENT_3[b_val]=np.nan_to_num(E_CENT_3[b_val]/NE_CENT_3[b_val])
     
-    N_AG_EXT_3[b_val]=(np.nan_to_num(N_AG_EXT_3[b_val]/NE_EXT_3[b_val],nan=0)/Total_agents)*100
-    N_AG_CENT_3[b_val]=(np.nan_to_num(N_AG_CENT_3[b_val]/NE_CENT_3[b_val],nan=0)/Total_agents)*100
+    N_AG_EXT_3[b_val]=(np.nan_to_num(N_AG_EXT_3[b_val]/NE_EXT_3[b_val])/Total_agents)*100
+    N_AG_CENT_3[b_val]=(np.nan_to_num(N_AG_CENT_3[b_val]/NE_CENT_3[b_val])/Total_agents)*100
     
     
 for eps in range(len(e_range)):
@@ -942,11 +942,11 @@ for b_val in range(len(BIAS_VAL)):
                 N_VOTES_4[b_val,num,eps,j+1]=Num_votes[wp]
                 party=party-1
     
-    E_EXT_4[b_val]=np.nan_to_num(E_EXT_4[b_val]/NE_EXT_4[b_val],nan=0)
-    E_CENT_4[b_val]=np.nan_to_num(E_CENT_4[b_val]/NE_CENT_4[b_val],nan=0)
+    E_EXT_4[b_val]=np.nan_to_num(E_EXT_4[b_val]/NE_EXT_4[b_val])
+    E_CENT_4[b_val]=np.nan_to_num(E_CENT_4[b_val]/NE_CENT_4[b_val])
     
-    N_AG_EXT_4[b_val]=(np.nan_to_num(N_AG_EXT_4[b_val]/NE_EXT_4[b_val],nan=0)/Total_agents)*100
-    N_AG_CENT_4[b_val]=(np.nan_to_num(N_AG_CENT_4[b_val]/NE_CENT_4[b_val],nan=0)/Total_agents)*100
+    N_AG_EXT_4[b_val]=(np.nan_to_num(N_AG_EXT_4[b_val]/NE_EXT_4[b_val])/Total_agents)*100
+    N_AG_CENT_4[b_val]=(np.nan_to_num(N_AG_CENT_4[b_val]/NE_CENT_4[b_val])/Total_agents)*100
               
 for eps in range(len(e_range)-1,0,-1):
     if NPP4_2[b_val,eps,0]+NPP4_2[b_val,eps,Num_party-1]!=0:
@@ -1020,13 +1020,13 @@ for b_val in range(len(BIAS_VAL)):
                 N_VOTES_5[b_val,num,eps,j+1]=Num_votes[wp]
                 party=party-1
                 
-    E_EXT_5[b_val]=np.nan_to_num(E_EXT_5[b_val]/NE_EXT_5[b_val],nan=0)
-    E_CENT_5[b_val]=np.nan_to_num(E_CENT_5[b_val]/NE_CENT_5[b_val],nan=0)
-    E_MID_5[b_val]=np.nan_to_num(E_MID_5[b_val]/NE_MID_5[b_val],nan=0)
+    E_EXT_5[b_val]=np.nan_to_num(E_EXT_5[b_val]/NE_EXT_5[b_val])
+    E_CENT_5[b_val]=np.nan_to_num(E_CENT_5[b_val]/NE_CENT_5[b_val])
+    E_MID_5[b_val]=np.nan_to_num(E_MID_5[b_val]/NE_MID_5[b_val])
     
-    N_AG_EXT_5[b_val]=(np.nan_to_num(N_AG_EXT_5[b_val]/NE_EXT_5[b_val],nan=0)/Total_agents)*100
-    N_AG_CENT_5[b_val]=(np.nan_to_num(N_AG_CENT_5[b_val]/NE_CENT_5[b_val],nan=0)/Total_agents)*100
-    N_AG_MID_5[b_val]=(np.nan_to_num(N_AG_MID_5[b_val]/NE_MID_5[b_val],nan=0)/Total_agents)*100
+    N_AG_EXT_5[b_val]=(np.nan_to_num(N_AG_EXT_5[b_val]/NE_EXT_5[b_val])/Total_agents)*100
+    N_AG_CENT_5[b_val]=(np.nan_to_num(N_AG_CENT_5[b_val]/NE_CENT_5[b_val])/Total_agents)*100
+    N_AG_MID_5[b_val]=(np.nan_to_num(N_AG_MID_5[b_val]/NE_MID_5[b_val])/Total_agents)*100
     
     
 for eps in range(len(e_range)-1,0,-1):
@@ -1101,13 +1101,13 @@ for b_val in range(len(BIAS_VAL)):
                 wp=int(WParg[party])
                 N_VOTES_6[b_val,num,eps,j+1]=Num_votes[wp]
                 party=party-1
-    E_EXT_6[b_val]=np.nan_to_num(E_EXT_6[b_val]/NE_EXT_6[b_val],nan=0)
-    E_CENT_6[b_val]=np.nan_to_num(E_CENT_6[b_val]/NE_CENT_6[b_val],nan=0)
-    E_MID_6[b_val]=np.nan_to_num(E_MID_6[b_val]/NE_MID_6[b_val],nan=0)
+    E_EXT_6[b_val]=np.nan_to_num(E_EXT_6[b_val]/NE_EXT_6[b_val])
+    E_CENT_6[b_val]=np.nan_to_num(E_CENT_6[b_val]/NE_CENT_6[b_val])
+    E_MID_6[b_val]=np.nan_to_num(E_MID_6[b_val]/NE_MID_6[b_val])
     
-    N_AG_EXT_6[b_val]=(np.nan_to_num(N_AG_EXT_6[b_val]/NE_EXT_6[b_val],nan=0)/Total_agents)*100
-    N_AG_CENT_6[b_val]=(np.nan_to_num(N_AG_CENT_6[b_val]/NE_CENT_6[b_val],nan=0)/Total_agents)*100
-    N_AG_MID_6[b_val]=(np.nan_to_num(N_AG_MID_6[b_val]/NE_MID_6[b_val],nan=0)/Total_agents)*100
+    N_AG_EXT_6[b_val]=(np.nan_to_num(N_AG_EXT_6[b_val]/NE_EXT_6[b_val])/Total_agents)*100
+    N_AG_CENT_6[b_val]=(np.nan_to_num(N_AG_CENT_6[b_val]/NE_CENT_6[b_val])/Total_agents)*100
+    N_AG_MID_6[b_val]=(np.nan_to_num(N_AG_MID_6[b_val]/NE_MID_6[b_val])/Total_agents)*100
            
 for eps in range(len(e_range)-1,0,-1):
     if NPP6_2[b_val,eps,0]+NPP6_2[b_val,eps,Num_party-1]!=0:
@@ -1186,15 +1186,15 @@ for b_val in range(len(BIAS_VAL)):
                 wp=int(WParg[party])
                 N_VOTES_7[b_val,num,eps,j+1]=Num_votes[wp]
                 party=party-1
-    E_EXT_7[b_val]=np.nan_to_num(E_EXT_7[b_val]/NE_EXT_7[b_val],nan=0)
-    E_CENT_7[b_val]=np.nan_to_num(E_CENT_7[b_val]/NE_CENT_7[b_val],nan=0)
-    E_MID_EXT_7[b_val]=np.nan_to_num(E_MID_EXT_7[b_val]/NE_MID_EXT_7[b_val],nan=0)
-    E_MID_CENT_7[b_val]=np.nan_to_num(E_MID_CENT_7[b_val]/NE_MID_CENT_7[b_val],nan=0)
+    E_EXT_7[b_val]=np.nan_to_num(E_EXT_7[b_val]/NE_EXT_7[b_val])
+    E_CENT_7[b_val]=np.nan_to_num(E_CENT_7[b_val]/NE_CENT_7[b_val])
+    E_MID_EXT_7[b_val]=np.nan_to_num(E_MID_EXT_7[b_val]/NE_MID_EXT_7[b_val])
+    E_MID_CENT_7[b_val]=np.nan_to_num(E_MID_CENT_7[b_val]/NE_MID_CENT_7[b_val])
 
-    N_AG_EXT_7[b_val]=(np.nan_to_num(N_AG_EXT_7[b_val]/NE_EXT_7[b_val],nan=0)/Total_agents)*100
-    N_AG_CENT_7[b_val]=(np.nan_to_num(N_AG_CENT_7[b_val]/NE_CENT_7[b_val],nan=0)/Total_agents)*100
-    N_AG_MID_EXT_7[b_val]=(np.nan_to_num(N_AG_MID_EXT_7[b_val]/NE_MID_EXT_7[b_val],nan=0)/Total_agents)*100
-    N_AG_MID_CENT_7[b_val]=(np.nan_to_num(N_AG_MID_CENT_7[b_val]/NE_MID_CENT_7[b_val],nan=0)/Total_agents)*100
+    N_AG_EXT_7[b_val]=(np.nan_to_num(N_AG_EXT_7[b_val]/NE_EXT_7[b_val])/Total_agents)*100
+    N_AG_CENT_7[b_val]=(np.nan_to_num(N_AG_CENT_7[b_val]/NE_CENT_7[b_val])/Total_agents)*100
+    N_AG_MID_EXT_7[b_val]=(np.nan_to_num(N_AG_MID_EXT_7[b_val]/NE_MID_EXT_7[b_val])/Total_agents)*100
+    N_AG_MID_CENT_7[b_val]=(np.nan_to_num(N_AG_MID_CENT_7[b_val]/NE_MID_CENT_7[b_val])/Total_agents)*100
 
 for eps in range(len(e_range)-1,0,-1):
     if NPP7_2[b_val,eps,0]+NPP7_2[b_val,eps,Num_party-1]!=0:
@@ -1208,7 +1208,7 @@ for eps in range(len(e_range)-1,0,-1):
 
 fig,axes=plt.subplots(2,3,figsize=(20,10))
 width_stack_plot=0.006
-ABC=['(a)','(b)','(c)','(d)','(e)','(f)']
+ABC=['(a)','(b)','(c)','(d)','(e)','(ff)']
 
 i,j=0,0
 axes[i,j].plot(e_range,N_AG_EXT_3[b_val]*(NE_EXT_3[b_val]/Num_simulation),linestyle='--',label='${\%}_{P_1} + {\%}_{P_3}$')
@@ -1323,7 +1323,7 @@ axes[i,j].set_xlim([0,1.25])
 
 
 fig,axes=plt.subplots(1,5, figsize=(35,6))
-ABC=['(a)','(b)','(c)','(d)','(e)','(f)']
+ABC=['(a)','(ba)','(c)','(d)','(e)','(f)']
 fig.text(0.5, 0.04,'$\epsilon$',fontsize='15', ha='center')
 i=0
 Num_party=3
@@ -1599,7 +1599,7 @@ for b_val in range(len(BIAS_VAL)):
 
 
 fig,axes=plt.subplots(2,3,figsize=(20,10))
-ABC=['(a)','(b)','(c)','(d)','(e)','(f)']
+ABC=['(ab)','(b)','(c)','(d)','(e)','(f)']
 
 i,j=0,0
 axes[i,j].plot(e_range,np.mean(np.mean(PE_SR_3,axis=2),axis=1)[b_val,:,0],color='r', label='SR')
@@ -1785,8 +1785,56 @@ plt.ylabel('Minimum People')
 
 
 
+fig,axes=plt.subplots(1,3,figsize=(20,5))
 
+i,j = 0,0
+axes[j].plot(e_range,N_AG_EXT_6[b_val]*(NE_EXT_6[b_val]/Num_simulation),linestyle='--',label='${\%}_{P_1} +{\%}_{P_6}$')
+axes[j].plot(e_range,N_AG_MID_6[b_val]*(NE_MID_6[b_val]/Num_simulation),linestyle='--',label='${\%}_{P_2} +{\%}_{P_5}$')
+axes[j].plot(e_range,N_AG_CENT_6[b_val]*(NE_CENT_6[b_val]/Num_simulation),linestyle='--',label='${\%}_{P_3} +{\%}_{P_4}$')
+#axes[j].plot(e_range,100*(np.mean(NUM_AGENTS_INFLUENCED_6[b_val],axis=0)/Total_agents)[:,0],color='k',linewidth=2,label='$N^{\%}_{P_1} +N^{\%}_{P_2} + N^{\%}_{P_3} +N^{\%}_{P_4} + N^{\%}_{P_5} +\\xi_{P_6}$')
+axes[j].plot(e_range,100*(np.mean(NUM_AGENTS_INFLUENCED_6[b_val],axis=0)/Total_agents)[:,0],color='k',linewidth=2,label='$ \sum_{i=1}^p {\%}_{P_i}$')
+axes[j].axvline(e_range[np.argmax(100*(np.mean(NUM_AGENTS_INFLUENCED_6[b_val],axis=0)/Total_agents)[:,0])],color='k')
+axes[j].axvline(eps_critical_6[b_val],color='b')
+axes[j].axvline(e_range[np.argmax(N_AG_EXT_6[b_val]*(NE_EXT_6[b_val]/Num_simulation))],color='r',linewidth=2,linestyle='--')
+axes[j].text(e_range[np.argmax(100*(np.mean(NUM_AGENTS_INFLUENCED_6[b_val],axis=0)/Total_agents)[:,0])], np.max(100*(np.mean(NUM_AGENTS_INFLUENCED_6[b_val],axis=0)/Total_agents)[:,0]),'$\epsilon_m$',color='k',fontsize=15)
+axes[j].text(e_range[np.argmax(N_AG_EXT_6[b_val]*(NE_EXT_6[b_val]/Num_simulation))],0.5*np.max(N_AG_EXT_6[b_val]*(NE_EXT_6[b_val]/Num_simulation)),'$\epsilon_{ext}$', color='r', fontsize=15)
+axes[j].text(eps_critical_6[b_val], 0.75*np.max(100*(np.mean(NUM_AGENTS_INFLUENCED_6[b_val],axis=0)/Total_agents)[:,0]), '$\epsilon_c$', color='b',fontsize=15)
+axes[j].text(0.1+min(axes[j].get_xlim()),0.9*max(axes[j].get_ylim()), ABC[3],fontsize=20)
+#axes[j].axvline(e_range[np.argmax(E_EXT_6[b_val]*(NE_EXT_6[b_val]/Num_simulation))],color='g',linestyle='--', label='$\epsilon_{ext}(extr.)$')
+axes[j].set_xlabel('$\epsilon$',fontsize='15')    
+axes[j].set_ylabel('${\%}_{P_i}$',fontsize='15')
+axes[j].legend()
+axes[j].set_xlim([0.01,1.25])
 
+i,j = 0,1
+i = j
+Num_party=6
+bottom=0
+axes[i].bar(e_range,PP6[b_val,:,0],width=.01,label='P '+str(1),color=color(0))
+for num in range(Num_party-1):
+    bottom=bottom+PP6[b_val,:,num]
+    axes[i].bar(e_range,PP6[b_val,:,num+1],width=.01,bottom=bottom,label='P '+str(num+2),color=color(num+1))
+axes[i].text(0.1+min(axes[i].get_xlim()),0.9*max(axes[i].get_ylim()), ABC[3],fontsize=20)    
+#axes[i].set_xlabel('$\epsilon$',fontsize='15')
+#axes[i].set_ylabel('% of win')
+axes[i].legend(bbox_to_anchor =(0.97, 0.98))
+axes[i].set_xlim([0,1.25])
+#axes[i].set_title('p = 6')
+
+i,j = 0,2
+i = j
+Num_party=6
+bottom=0
+axes[i].bar(e_range,PP6_2[b_val,:,0],width=.01,label='P '+str(1),color=color(0))
+for num in range(Num_party-1):
+    bottom=bottom+PP6_2[b_val,:,num]
+    axes[i].bar(e_range,PP6_2[b_val,:,num+1],width=.01,bottom=bottom,label='P '+str(num+2),color=color(num+1))
+axes[i].text(0.1+min(axes[i].get_xlim()),0.9*max(axes[i].get_ylim()), ABC[3],fontsize=20)    
+#axes[i].set_xlabel('$\epsilon$',fontsize='15')
+#axes[i].set_ylabel('% of win')
+axes[i].legend(bbox_to_anchor =(0.97, 0.98))
+axes[i].set_xlim([0,1.25])
+#axes[i].set_title('p = 6')
 
 
 
