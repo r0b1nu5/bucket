@@ -4,7 +4,7 @@ using PyPlot, DelimitedFiles, Statistics
 
 cmap = get_cmap("YlOrRd")
 
-figure("fig3")
+figure("fig3",(20,4.5))
 
 ###################################################
 
@@ -31,6 +31,7 @@ subplot(1,3,1)
 PyPlot.plot(ϵs,vec(mean(p_pr,dims=1)),color=cmap(.9))
 PyPlot.plot(ϵs,vec(mean(p_wta,dims=1)),color=cmap(.6))
 PyPlot.plot(ϵs,vec(mean(p_sr,dims=1)),color=cmap(.3))
+axis([0.,maximum(ϵs),0.025,0.145])
 xlabel("ϵ")
 ylabel("effort (percentage of agents)")
 
@@ -67,6 +68,7 @@ subplot(1,3,2)
 PyPlot.plot(ϵs,vec(mean(p_pr,dims=1)),color=cmap(.9),label="prop. rep.")
 PyPlot.plot(ϵs,vec(mean(p_wta,dims=1)),color=cmap(.6),label="w-t-a")
 PyPlot.plot(ϵs,vec(mean(p_sr,dims=1)),color=cmap(.3),label="single rep.")
+axis([0.,maximum(ϵs),0.025,0.145])
 xlabel("ϵ")
 ylabel("effort (percentage of agents)")
 legend()
@@ -104,6 +106,7 @@ subplot(1,3,3)
 PyPlot.plot(ϵs,vec(mean(p_pr,dims=1)),color=cmap(.9))
 PyPlot.plot(ϵs,vec(mean(p_wta,dims=1)),color=cmap(.6))
 PyPlot.plot(ϵs,vec(mean(p_sr,dims=1)),color=cmap(.3))
+axis([0.,maximum(ϵs),0.025,0.145])
 xlabel("ϵ")
 ylabel("effort (percentage of agents)")
 

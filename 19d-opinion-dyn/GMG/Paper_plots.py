@@ -197,7 +197,7 @@ fig.update_layout(
     title='', title_x=0.5, width=1500, height=600)
 fig.show()   
 
-#pio.write_image(fig,'fig1.pdf')
+pio.write_image(fig,'fig1.pdf')
 
 # In[7]:
 ###################################################################
@@ -1785,7 +1785,9 @@ plt.ylabel('Minimum People')
 
 
 
-fig,axes=plt.subplots(1,3,figsize=(20,5))
+fig,axes=plt.subplots(1,4,figsize=(20,5))
+Num_simulation = 500
+Total_agents = 2001
 
 i,j = 0,0
 axes[j].plot(e_range,N_AG_EXT_6[b_val]*(NE_EXT_6[b_val]/Num_simulation),linestyle='--',label='${\%}_{P_1} +{\%}_{P_6}$')
@@ -1835,6 +1837,21 @@ axes[i].text(0.1+min(axes[i].get_xlim()),0.9*max(axes[i].get_ylim()), ABC[3],fon
 axes[i].legend(bbox_to_anchor =(0.97, 0.98))
 axes[i].set_xlim([0,1.25])
 #axes[i].set_title('p = 6')
+
+i,j=0,3
+axes[j].plot(e_range,np.mean(np.mean(PE_SR_6,axis=2),axis=1)[b_val,:,0],color='r', label='SR')
+axes[j].plot(e_range,np.mean(np.mean(PE_PR_6,axis=2),axis=1)[b_val,:,0],color='b', label='PR')
+axes[j].plot(e_range,np.mean(np.mean(PE_WTAR_6,axis=2),axis=1)[b_val,:,0],color='g', label='WTAR')
+axes[j].set_xlabel('$\epsilon$',fontsize='15')
+#axes[i,j].set_ylabel('Per. of agents inf.')
+axes[j].set_ylabel('${\%}$',fontsize='15')
+axes[j].text(0.03+min(axes[j].get_xlim()),0.9*max(axes[j].get_ylim()), ABC[3],fontsize=20)
+axes[j].legend()
+axes[j].set_xlim(right=1.25)
+
+
+fig.show()
+
 
 
 
