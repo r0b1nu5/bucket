@@ -131,6 +131,7 @@ for type in range(Num_type):
         Data.insert(len(Data.columns),name,S)        
 
 
+'''
 # In[6]:
 ###################################################################
 ####################### fig1ab ######################################
@@ -197,7 +198,7 @@ fig.update_layout(
     title='', title_x=0.5, width=1500, height=600)
 fig.show()   
 
-pio.write_image(fig,'fig1.pdf')
+#pio.write_image(fig,'fig1.pdf')
 
 # In[7]:
 ###################################################################
@@ -278,6 +279,8 @@ fig.update_layout(
 fig.show()   
 
 #pio.write_image(fig,'fig1sup.pdf')
+
+'''
 
 # In[8]:
 ###################################################################
