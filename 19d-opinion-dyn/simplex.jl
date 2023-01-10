@@ -144,7 +144,24 @@ function slide_summit(p::Int64, qs::Vector{Int64}, αs::Vector{Float64})
 	return S
 end
 
+# Selects a simplex in Ss at random with probablilities ps.
+# ps is assumed to sum to one.
 
+function rand_simplex(Ss::Vector{Matrix{Float64}}, ps::Vector{Float64})
+	P = [0;cumsum(ps)]
+
+	m,i = findmax((P.<rand()).*(1:length(P)))
+
+	return Ss[i]
+end
+
+# Selects a simplex in Ss uniformly.
+
+function rand_simplex(Ss::Vector{Matrix{Float64}})
+	n = length(Ss)
+
+	return rand_simplex(Ss,ones(n)./n)
+end
 
 
 
