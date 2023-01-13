@@ -62,6 +62,19 @@ function kuramoto(L::Array{Float64,2}, P::Array{Float64,1}, θ0::Array{Float64,1
 	return Θs
 end
 
+function f_kuramoto(θ::Vector{Float64}, B::Matrix{Float64}, w::Vector{Float64}, P::Vector{Float64})
+	return P - B*diagm(0 => w)*sin.(transpose(B)*θ)
+end
+
+function f_kuramoto(Θ::Matrix{Float64}, B::Matrix{Float64}, w::Vector{Float64}, P::Vector{Float64})
+	n,T = size(Θ)
+	fΘ = zeros(n,0)
+	for t in 1:T
+		fΘ = [fΘ f_kuramoto(Θ[:,t],B,w,P)]
+	end
+	return fΘ
+end
+
 function kuramoto_corr_noise(L::Array{Float64,2}, P::Array{Float64,1}, th0::Array{Float64,1}, dP0::Float64, tau0::Float64, store::Bool=false, max_iter::Int64=100000, eps::Float64=1e-8, h::Float64=.1)
 	B,w = L2B(L)
 	W = diagm(0 => w)
