@@ -24,14 +24,14 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
         inf_o[o] = Vector{Int64}[]
         for id in idx_o[o]
             a = coeff[:,id]
-            if maximum(abs.(a)) > thr_glob
+	    if sum(abs.(a) .> thr_glob) >= o
                 as = sort(abs.(a),rev=true)
                 da = as[1:end-1]-as[2:end]
                 thr = (as[o] + as[o+1])/2
                 δ = as[o] - as[o+1]
                 inf = Int64.(setdiff((abs.(a) .> thr).*(1:n),[0.,]))
                 push!(inf_o[o],inf)
-                @info "The nodes that are inferred to be connected through the $o-hyperedge $(basis[id]) are $inf (with margin δ = $δ)."
+                @info "The $o nodes most involved with $(basis[id]) are $inf (with margin δ = $δ)."
             end
         end
         if length(inf_o[o]) == 0
