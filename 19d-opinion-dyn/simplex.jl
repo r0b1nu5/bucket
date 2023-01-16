@@ -62,7 +62,7 @@ function unif_simplex_arb(S::Matrix{Float64})
 		V = [V (1-λs[i+1])*pλs[i]*S[:,i]]
 	end
 
-	x = sum(V,dims=2)
+	x = vec(sum(V,dims=2))
 
 	return x
 end
@@ -167,7 +167,7 @@ end
 # Defines the summits of the admissible opinion space.
 # p: number of parties
 
-function admissible_smmits(p::Int64)
+function admissible_summits(p::Int64)
 	# Generate the dictionnary of the vertices of the unitary simplex.
 	V = vertices(p)
 
@@ -187,7 +187,7 @@ function admissible_smmits(p::Int64)
 end
 
 # Generates a dictionnary of the admissible simplices names, labelled by the winning party. 
-
+#=
 function admissible_simplices(p::Int64)
 	s = Dict{Int64,Vector{String}}()
 	for k in 1:p
@@ -196,18 +196,61 @@ function admissible_simplices(p::Int64)
 
 
 end
-
+=#
+	
 # Draws one opinion uniformly in the admissible space.
-# The list of summits is already given in V.
+# The list of summits is already given in 'V'. One can get 'V' by using the function 'admissible_summits'.
 
 function rand_opinion(p::Int64, V::Dict{String,Vector{Float64}})
 	k = rand(1:p) # Selects one of the parties
-	s = rand(1:binomial(p-1,k-1)) # Selects one of the orthoschemes in the party.
+	perm = gen_rand_perm([zeros(k-1);ones(p-k)]) # Take one of the permutations of k-1 zeros and p-k ones.
+	
+	idx = zeros(Int64,p)
+	left = Vector{Int64}(setdiff((1 .- perm).*(2:p),[0.,])) # Indices of the parties at the left of party k in the order of the opinion.
+	right = Vector{Int64}(setdiff(perm.*(2:p),[0.,])) # Indices of the parties at the right of party k in the order of the opinions.
+	idx[1] = k
+	idx[left] = k-1:-1:1
+	idx[right] = k+1:p
 
+	# Get the summits of the orthoscheme as summits of the simplex where the opinion is to be drawn.
+	S = zeros(p,0)
+	str = ""
+	for j in 1:p
+		str *= "$(idx[j])"
+		str = prod(sort([str[i] for i in 1:length(str)]))
+		S = [S V[str]]
+	end
 
+	# Generate the opinion.
+	x = unif_simplex_arb(S)
 
+	return x
 end
 
+# Generates a random permutation of 1:n elements
+
+function gen_rand_perm(n::Int64)
+	p = Vector(1:n)
+	for i in 1:n-1
+		j = i+rand(1:n-i)
+		p = [p[1:i-1];p[j];p[i+1:j-1];p[i];p[j+1:n]]
+	end
+	return p
+end
+
+# Generates a random permutation of x.
+
+function gen_rand_perm(x::Vector{Float64})
+	n = length(x)
+	p = copy(x)
+	for i in 1:n-1
+		j = i+rand(0:n-i)
+		if j != i
+			p = [p[1:i-1];p[j];p[i+1:j-1];p[i];p[j+1:n]]
+		end
+	end
+	return p
+end
 
 
 
