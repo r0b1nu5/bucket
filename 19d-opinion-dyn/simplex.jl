@@ -68,7 +68,7 @@ function unif_simplex_arb(S::Matrix{Float64})
 end
 
 # Slides the point x (typically in the simplex) towards the centroid of the unitary p-simplex. 
-# For α = 0, the summit does not move, and for α = 1, the summit reaches the centroid.
+# For α = 1, the summit does not move, and for α = 0, the summit reaches the centroid.
 
 function slide_summit(x::Vector{Float64}, α::Float64)
 	if α < 0.
@@ -80,7 +80,7 @@ function slide_summit(x::Vector{Float64}, α::Float64)
 	p = length(x)
 	c = 1/p*ones(p)
 
-	return (1-α)*x + α*p
+	return (1-α)*c + α*x
 end
 
 # Slides each column of xs towards the centroid of the unitary p-simplex by a factor α. 
@@ -162,6 +162,57 @@ function rand_simplex(Ss::Vector{Matrix{Float64}})
 
 	return rand_simplex(Ss,ones(n)./n)
 end
+
+
+# Defines the summits of the admissible opinion space.
+# p: number of parties
+
+function admissible_smmits(p::Int64)
+	# Generate the dictionnary of the vertices of the unitary simplex.
+	V = vertices(p)
+
+	c = "" # Name of the centroid
+	for k in 1:p
+		c *= "$k"
+	end
+
+	# Slide each of the summits to the appropriate position to equalize the volume of each party.
+	for k in 1:p
+		# Party 'k' has exactly 'binomial(p-1,k-1)' admissible orthoschemes. Therefore, extremists have only one. The ratio between the admissible volumes is the given by 'r', which is the reduction factor for each volume.
+		r = 1/binomial(p-1,k-1) 
+		V["$k"] = slide_summit(V["$k"],r)
+	end
+
+	return V
+end
+
+# Generates a dictionnary of the admissible simplices names, labelled by the winning party. 
+
+function admissible_simplices(p::Int64)
+	s = Dict{Int64,Vector{String}}()
+	for k in 1:p
+		s[k] = "$k"
+		# TODO
+
+
+end
+
+# Draws one opinion uniformly in the admissible space.
+# The list of summits is already given in V.
+
+function rand_opinion(p::Int64, V::Dict{String,Vector{Float64}})
+	k = rand(1:p) # Selects one of the parties
+	s = rand(1:binomial(p-1,k-1)) # Selects one of the orthoschemes in the party.
+
+
+
+end
+
+
+
+
+
+
 
 
 
