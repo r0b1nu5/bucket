@@ -1,4 +1,4 @@
-
+# Generates the list of summits of interest in the unitary simplex with 'p' summits.
 
 function vertices(p::Int64)
 	vertex = Dict{String,Vector{Float64}}()
@@ -252,6 +252,25 @@ function gen_rand_perm(x::Vector{Float64})
 	return p
 end
 
+# Checks whether an opinion is monotone.
+
+function ismonotone(x::Vector{Float64})
+	if abs(sum(x) - 1) > 1e-2
+		@info "Warning: the components do not sum to 1."
+	end
+
+	m,k = findmax(x)
+	test = true
+
+	for i in k-1:-1:1
+		test = (test && (x[i] < x[i+1]))
+	end
+	for i in k+1:length(x)
+		test = (test && (x[i] < x[i-1]))
+	end
+
+	return test
+end
 
 
 
