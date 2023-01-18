@@ -203,6 +203,13 @@ end
 
 function rand_opinion(p::Int64, V::Dict{String,Vector{Float64}})
 	k = rand(1:p) # Selects one of the parties
+	return rand_opinion_within_party(k,p,V)
+end
+
+# Draws one opinion uniformly in the admissible space of party 'k' among 'p' parties.
+# The list of summits is already given in 'V'. One can get 'V' by using the function 'admissible_summits'.
+
+function rand_opinion_within_party(k::Int64, p::Int64, V::Dict{String,Vector{Float64}})
 	perm = gen_rand_perm([zeros(k-1);ones(p-k)]) # Take one of the permutations of k-1 zeros and p-k ones.
 	
 	idx = zeros(Int64,p)
