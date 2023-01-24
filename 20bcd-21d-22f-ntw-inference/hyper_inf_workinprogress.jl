@@ -5,42 +5,57 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 # ooi: orders of interest, i.e., orders of interaction that we want to identify.
 
 function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=1.)
-    n,T = size(X)
+	n,T = size(X)
 
-    @variables x[1:n]
+	@variables x[1:n]
 
-    problem = DirectDataDrivenProblem(X,Y,name = :HyperInference)
+	problem = DirectDataDrivenProblem(X,Y,name = :HyperInference)
 
-    prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
-    basis = Basis(prebasis,[x[i] for i in 1:n])
+	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
+	basis = Basis(prebasis,[x[i] for i in 1:n])
 
-    res = solve(problem,basis,STLSQ())
-    coeff = res.out[1].coefficients
+	res = solve(problem,basis,STLSQ())
+	coeff = res.out[1].coefficients
 
-    idx_o = Dict{Int64,Vector{Int64}}()
-    inf_o = Dict{Int64,Vector{Vector{Int64}}}()
-    for o in ooi
-        idx_o[o] = get_idx_o(o,x,prebasis)
-        inf_o[o] = Vector{Int64}[]
-        for id in idx_o[o]
-            a = coeff[:,id]
-	    if sum(abs.(a) .> thr_glob) >= o
-                as = sort(abs.(a),rev=true)
-                da = as[1:end-1]-as[2:end]
-                thr = (as[o] + as[o+1])/2
-                δ = as[o] - as[o+1]
-                inf = Int64.(setdiff((abs.(a) .> thr).*(1:n),[0.,]))
-                push!(inf_o[o],inf)
-                @info "The $o nodes most involved with $(basis[id]) are $inf (with margin δ = $δ)."
-            end
-        end
-        if length(inf_o[o]) == 0
-            @info "No $o-hyperedge has been inferred."
-        end
-    end
+	idx_o = Dict{Int64,Vector{Int64}}()
+	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
+	inf_o = Dict{Int64,Vector{Vector{Int64}}}()
+	Ainf = Dict{Int64,Any}()
+	for o in ooi
+		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}()
+		idx_o[o],agents_o[o] = get_idx_o(o,x,prebasis)
+		inf_o[o] = Vector{Int64}[]
+		for i in 1:length(idx_o[o])
+			id = idx_o[o][i]
+			agents = agents_o[o][i]
+			for a in agents
+				Ainf[o][(a,agents)] = coeff[a,id]
+			end
+		end
+	end
 
-    return inf_o, coeff, idx_o
+	return Ainf, coeff, idx_o, agents_o
 end
+#=
+			a = coeff[agents,id]
+			if sum(abs.(a) .> thr_glob) >= o
+				as = sort(abs.(a),rev=true)
+				da = as[1:end-1]-as[2:end]
+				thr = (as[o] + as[o+1])/2
+				δ = as[o] - as[o+1]
+				inf = Int64.(setdiff((abs.(a) .> thr).*(1:n),[0.,]))
+				push!(inf_o[o],inf)
+				@info "The $o nodes most involved with $(basis[id]) are $inf (with margin δ = $δ)."
+			end
+		end
+		if length(inf_o[o]) == 0
+			@info "No $o-hyperedge has been inferred."
+		end
+	end
+	
+	return inf_o, coeff, idx_o
+end
+=#
 
 # In case we want to infer only one order of hyperedge.
 
@@ -51,28 +66,35 @@ end
 
 
 function get_idx_o(o::Int64, x::Symbolics.Arr{Num,1}, prebasis::Vector{Num})
-    mons = get_monomial(x::Symbolics.Arr{Num,1},o)
-    idx = Int64[]
-    for mon in mons
-        m,i = findmax(isequal.(prebasis,mon))
-        if m > .1
-            push!(idx,i)
-        end
-    end
-    return idx
-end 
+	comb = combinations(1:length(x))
+	idx = Int64[]
+	agents = Vector{Int64}[]
+	for c in comb
+		mon = get_monomial(x,c)
+		m,i = findmax(isequal.(prebasis,mon))
+		if m > .1
+			push!(idx,i)
+			push!(agents,c)
+		end
+	end
+	return idx,agents
+end
+
+function get_monomial(x::Symbolics.Arr{Num,1},c::Vector{Int64})
+	mon = 1
+	for i in c
+		m *= x[i]
+	end
+	return mon
+end
 
 function get_monomial(x::Symbolics.Arr{Num,1},o::Int64)
     n = length(x)
     mon = Num[]
-    combi = collect(combinations(1:n,o))
+    comb = collect(combinations(1:n,o))
 
     for c in combi
-        m = 1
-        for i in 1:o
-            m *= x[c[i]]
-        end
-        push!(mon,m)
+	    push!(mon,get_monomial(x,c))
     end
 
     return mon
@@ -160,3 +182,7 @@ function check_inference(A2::Matrix{Float64}, A3::Array{Float64,3}, inf_o::Dict{
 
     return (sen2,spe2,tp2,fp2,tn2,fn2), (sen3,spe3,tp3,fp3,tn3,fn3)
 end
+
+
+
+

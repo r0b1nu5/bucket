@@ -64,7 +64,7 @@ xlabel("Number of time steps of length 1")
 legend()
 # =#
 
-# #=
+ #=
 idx = sort([1:100:20000;2:100:20000])
 Xt = X[:,idx]
 Yt = Y[:,idx]
@@ -84,6 +84,32 @@ PyPlot.plot(iters./2,spes,"-o",label="specificity")
 xlabel("Number of time steps of length 2")
 legend()
 # =#
+
+# #=
+idx = sort([1:100:20000;2:100:20000;3:100:20000;4:100:20000;5:100:20000])
+Xt = X[:,idx]
+Yt = Y[:,idx]
+sens = Float64[]
+spes = Float64[]
+iters = 10:50:1000
+for iter in iters
+	xxx = hyper_inf(Xt[:,1:iter],Yt[:,1:iter],[3,],4)
+	yyy = check_inference(A2,A3,xxx[1])
+	push!(sens,yyy[2][1])
+	push!(spes,yyy[2][2])
+end
+
+figure("Actual variation (RK4 measurement)")
+PyPlot.plot(iters./5,sens,"-o",label="sensitivity")
+PyPlot.plot(iters./5,spes,"-o",label="specificity")
+xlabel("Number of time steps of length 5")
+legend()
+# =#
+
+
+# Inferred increment: 1) generate a time series with 10x higher resolution and keep 1 out of 10 time steps. 2) infer derivative from time series. 3) run inference.
+
+
 
 
 
