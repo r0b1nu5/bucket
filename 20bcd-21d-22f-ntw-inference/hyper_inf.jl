@@ -148,7 +148,7 @@ function check_inference(A2::Matrix{Float64}, A3::Array{Float64,3}, inf_o::Dict{
 	        end
 	    end
 	    tp3 = p3 - fp3
-	    tn3 = p3 - fn3
+	    tn3 = n3 - fn3
 	
 	    sen3 = tp3/(tp3 + fn3)
 	    spe3 = tn3/(tn3 + fp3)

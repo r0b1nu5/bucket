@@ -1,4 +1,4 @@
-include("hyper_inf.jl")
+include("hyper_inf_workinprogress.jl")
 include("hyper_kuramoto.jl")
 include("gen_rand_hyperg.jl")
 
@@ -7,9 +7,9 @@ p1 = .5
 p2 = .2 
 p3 = .2
 
-A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3)
+A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
 
- #=
+# #=
 # Testing the efficiency of the inference using the result of the vector field directly.
 
 X = .2*rand(n,100) .- .1
@@ -20,7 +20,7 @@ spes = Float64[]
 iters = 10:5:100
 for iter in iters
 	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],[3,],4)
-	yyy = check_inference(A2,A3,xxx[1])
+	yyy = check_inference_bool(A2,A3,xxx[1])
 	push!(sens,yyy[2][1])
 	push!(spes,yyy[2][2])
 end
@@ -32,7 +32,7 @@ xlabel("Number of measurements")
 legend()
 # =#
 
-# #=
+ #=
 # Testing the efficiency of the inference using the actual time step (extracted from RK4 integration).
 
 X = zeros(n,0)
