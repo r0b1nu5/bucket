@@ -42,6 +42,34 @@ PyPlot.plot([-.5,24.5],[2.5,2.5],"k")
 PyPlot.plot([-.5,24.5],[5.5,5.5],"k")
 yticks([0,1,2,3,4,5,6,7,8],["PR","WTA","SR","PR","WTA","SR","PR","WTA","SR"])
 xlabel("ϵ")
+
+div = sum(p1[:,1])
+
+figure("fig3b")
+subplot(3,1,1)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:];zeros(length(ϵs))]./div,color=cmap(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:]+p1[2,:];p1[3,end:-1:1]]./div,color=cmap(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:]+p1[2,:]+p1[1,:];p1[3,end:-1:1]+p1[2,end:-1:1]]./div,color=cmap(.9))
+ylabel("Percentage of 1st position")
+axis([ϵs[1],ϵs[end],0.,1.])
+xticks(xticks()[1][1:end-1],[])
+
+subplot(3,1,2)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:];zeros(length(ϵs))]./div,color=get_cmap("Blues")(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:]+p2[2,:];p2[3,end:-1:1]]./div,color=get_cmap("Blues")(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:]+p2[2,:]+p2[1,:];p2[3,end:-1:1]+p2[2,end:-1:1]]./div,color=get_cmap("Blues")(.9))
+ylabel("Percentage of 2nd position")
+axis([ϵs[1],ϵs[end],0.,1.])
+xticks(xticks()[1][1:end-1],[])
+
+subplot(3,1,3)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:];zeros(length(ϵs))]./div,color=get_cmap("Greens")(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:]+p3[2,:];p3[3,end:-1:1]]./div,color=get_cmap("Greens")(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:]+p3[2,:]+p3[1,:];p3[3,end:-1:1]+p3[2,end:-1:1]]./div,color=get_cmap("Greens")(.9))
+xlabel("ϵ")
+ylabel("Percentage of 3rd position")
+axis([ϵs[1],ϵs[end],0.,1.])
+
 ###################################################
 
 p_pr = readdlm("add_data/fig3b-pr.csv",',')
@@ -80,6 +108,32 @@ PyPlot.plot([-.5,24.5],[2.5,2.5],"k")
 PyPlot.plot([-.5,24.5],[5.5,5.5],"k")
 yticks([0,1,2,3,4,5,6,7,8],["PR","WTA","SR","PR","WTA","SR","PR","WTA","SR"])
 xlabel("ϵ")
+
+figure("fig3c")
+subplot(3,1,1)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:];zeros(length(ϵs))]./div,color=cmap(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:]+p1[2,:];p1[3,end:-1:1]]./div,color=cmap(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:]+p1[2,:]+p1[1,:];p1[3,end:-1:1]+p1[2,end:-1:1]]./div,color=cmap(.9))
+ylabel("Percentage of 1st position")
+axis([ϵs[1],ϵs[end],0.,1.])
+xticks(xticks()[1][1:end-1],[])
+
+subplot(3,1,2)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:];zeros(length(ϵs))]./div,color=get_cmap("Blues")(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:]+p2[2,:];p2[3,end:-1:1]]./div,color=get_cmap("Blues")(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:]+p2[2,:]+p2[1,:];p2[3,end:-1:1]+p2[2,end:-1:1]]./div,color=get_cmap("Blues")(.9))
+ylabel("Percentage of 2nd position")
+axis([ϵs[1],ϵs[end],0.,1.])
+xticks(xticks()[1][1:end-1],[])
+
+subplot(3,1,3)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:];zeros(length(ϵs))]./div,color=get_cmap("Greens")(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:]+p3[2,:];p3[3,end:-1:1]]./div,color=get_cmap("Greens")(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:]+p3[2,:]+p3[1,:];p3[3,end:-1:1]+p3[2,end:-1:1]]./div,color=get_cmap("Greens")(.9))
+xlabel("ϵ")
+ylabel("Percentage of 3rd position")
+axis([ϵs[1],ϵs[end],0.,1.])
+
 ###################################################
 
 p_pr = readdlm("add_data/fig3c-pr.csv",',')
@@ -117,6 +171,33 @@ PyPlot.plot([-.5,24.5],[2.5,2.5],"k")
 PyPlot.plot([-.5,24.5],[5.5,5.5],"k")
 yticks([0,1,2,3,4,5,6,7,8],["PR","WTA","SR","PR","WTA","SR","PR","WTA","SR"])
 xlabel("ϵ")
+
+figure("fig3d")
+subplot(3,1,1)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:];zeros(length(ϵs))]./div,color=cmap(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:]+p1[2,:];p1[3,end:-1:1]]./div,color=cmap(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p1[3,:]+p1[2,:]+p1[1,:];p1[3,end:-1:1]+p1[2,end:-1:1]]./div,color=cmap(.9))
+ylabel("Percentage of 1st position")
+axis([ϵs[1],ϵs[end],0.,1.])
+xticks(xticks()[1][1:end-1],[])
+
+subplot(3,1,2)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:];zeros(length(ϵs))]./div,color=get_cmap("Blues")(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:]+p2[2,:];p2[3,end:-1:1]]./div,color=get_cmap("Blues")(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p2[3,:]+p2[2,:]+p2[1,:];p2[3,end:-1:1]+p2[2,end:-1:1]]./div,color=get_cmap("Blues")(.9))
+ylabel("Percentage of 2nd position")
+axis([ϵs[1],ϵs[end],0.,1.])
+xticks(xticks()[1][1:end-1],[])
+
+subplot(3,1,3)
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:];zeros(length(ϵs))]./div,color=get_cmap("Greens")(.3))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:]+p3[2,:];p3[3,end:-1:1]]./div,color=get_cmap("Greens")(.6))
+PyPlot.fill([ϵs;ϵs[end:-1:1]],[p3[3,:]+p3[2,:]+p3[1,:];p3[3,end:-1:1]+p3[2,end:-1:1]]./div,color=get_cmap("Greens")(.9))
+xlabel("ϵ")
+ylabel("Percentage of 3rd position")
+axis([ϵs[1],ϵs[end],0.,1.])
+
+
 ###################################################
 
 
