@@ -12,11 +12,14 @@ A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
 # #=
 # Testing the efficiency of the inference using the result of the vector field directly.
 
+# Generate the data
 X = .2*rand(n,100) .- .1
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
 
 sens = Float64[]
 spes = Float64[]
+
+# Compute the sensitivity and specificity of the inference for various lengths of time series.
 iters = 10:5:100
 for iter in iters
 	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],[3,],4)
@@ -25,6 +28,7 @@ for iter in iters
 	push!(spes,yyy[2][2])
 end
 
+# Plot the sensitivity and specificity as a function of the length of the time series.
 figure("Perfect measurement")
 PyPlot.plot(iters,sens,"-o",label="sensitivity")
 PyPlot.plot(iters,spes,"-o",label="specificity")
@@ -35,9 +39,9 @@ legend()
  #=
 # Testing the efficiency of the inference using the actual time step (extracted from RK4 integration).
 
+# Generate the data (200 time series of length 100 time steps).
 X = zeros(n,0)
 Y = zeros(n,0)
-
 for i in 1:200
 	x,dx = hyper_k(A2,A3,zeros(n),.2*rand(n) .- .1,.1,.0,.001,100)
 	global X = [X x]
@@ -45,10 +49,13 @@ for i in 1:200
 end
 
  #=
+# Keep one time step for each of the time series.
 Xt = X[:,1:100:20000]
 Yt = Y[:,1:100:20000]
 sens = Float64[]
 spes = Float64[]
+
+# Compute the sensitivity and specificity of the inference for various number of time series.
 iters = 10:20:200
 for iter in iters
 	xxx = hyper_inf(Xt[:,1:iter],Yt[:,1:iter],[3,],4)
@@ -65,11 +72,14 @@ legend()
 # =#
 
  #=
+# Keep two time steps for each of the time series.
 idx = sort([1:100:20000;2:100:20000])
 Xt = X[:,idx]
 Yt = Y[:,idx]
 sens = Float64[]
 spes = Float64[]
+
+# Compute the sensitivity and specificity of the inference for various number of time series.
 iters = 10:20:400
 for iter in iters
 	xxx = hyper_inf(Xt[:,1:iter],Yt[:,1:iter],[3,],4)
@@ -86,11 +96,14 @@ legend()
 # =#
 
 # #=
+# Keep five time steps for each of the time series.
 idx = sort([1:100:20000;2:100:20000;3:100:20000;4:100:20000;5:100:20000])
 Xt = X[:,idx]
 Yt = Y[:,idx]
 sens = Float64[]
 spes = Float64[]
+
+# Compute the sensitivity and specificity of the inference for various number of time series.
 iters = 10:50:1000
 for iter in iters
 	xxx = hyper_inf(Xt[:,1:iter],Yt[:,1:iter],[3,],4)
