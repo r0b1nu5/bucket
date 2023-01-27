@@ -1,8 +1,15 @@
 using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics
 
-# This version infers an hypergraph with knowledge of the states 'X' and of the derivatives 'Y'.
-# The maximal order of interaction we are looking at is 'd'. 
-# ooi: orders of interest, i.e., orders of interaction that we want to identify.
+# Infers an hypergraph with knowledge of the states 'X' and of the derivatives 'Y'.
+# INPUTS:
+# 'X': time series of the system's state. Each row is the time series of the state of one agent. 
+# 'Y': time series of the system's velocity. Each row is the time series of the velocity of on agent. 
+# 'ooi': orders of interest. Vector of integers listing the orders of interactions that we analyze. 
+# 'dmax': maximal degree to be considered in the Taylor expansion. Typically, dmax=maximum(ooi).
+# 'thr_global': Threshold value to decide whether an edge exists or not.
+# OUTPUTS:
+# 'Ainf': dictionary associating the inferred coefficient of the Taylor expansion to a pair (node,hyperedge). Namely, 'Ainf[(i,h)]' is the coefficient corresponding to the hyperedge 'h' in the Taylor expansion of the dynamics of node 'i'. 
+# ....TODO...
 
 function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1)
 	n,T = size(X)
