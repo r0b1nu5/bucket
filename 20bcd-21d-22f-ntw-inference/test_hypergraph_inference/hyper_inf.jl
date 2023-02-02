@@ -28,7 +28,11 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 
 	# Solving the problem using SINDy.
 	res = solve(problem,basis,STLSQ())
-	coeff = res.out[1].coefficients
+	if res.out isa Array{<:Any,1}
+		coeff = res.out[1].coefficients
+	else
+		coeff = res.out.coefficients
+	end
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
