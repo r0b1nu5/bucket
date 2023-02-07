@@ -4,11 +4,12 @@ include("gen_rand_hyperg.jl")
 
 # Generating the hyper graph.
 n = 7
-p1 = .5
-p2 = .2 
-p3 = .2
+p1 = .3
+p2 = .3 
+p3 = .3
 
 A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
+A4 = zeros(n,n,n,n)
 
 # #=
 # Testing the efficiency of the inference using the result of the vector field directly.
@@ -17,22 +18,45 @@ A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
 X = .2*rand(n,100) .- .1
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
 
-sens = Float64[]
-spes = Float64[]
+sen2 = Float64[]
+spe2 = Float64[]
+sen3 = Float64[]
+spe3 = Float64[]
+sen4 = Float64[]
+spe4 = Float64[]
 
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
 iters = 10:5:100
+ooi = [3,4]
+c = 0
 for iter in iters
-	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],[3,],4)
-	yyy = check_inference_bool(A2,A3,xxx[1])
-	push!(sens,yyy[2][1])
-	push!(spes,yyy[2][2])
+	global c += 1
+	@info "Run $c/$(length(iters))"
+
+	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,1e-6)
+	yyy = check_inference_bool(A2,A3,A4,xxx[1])
+	push!(sen2,yyy[1][1])
+	push!(spe2,yyy[1][2])
+	push!(sen3,yyy[2][1])
+	push!(spe3,yyy[2][2])
+	push!(sen4,yyy[3][1])
+	push!(spe4,yyy[3][2])
 end
 
 # Plot the sensitivity and specificity as a function of the length of the time series.
-figure("Perfect measurement")
-PyPlot.plot(iters,sens,"-o",label="sensitivity")
-PyPlot.plot(iters,spes,"-o",label="specificity")
+figure("Perfect measurement",(7.5,5))
+ #=
+PyPlot.plot(iters,sen2,"-o",color="C0",label="2nd-order sen.")
+PyPlot.plot(iters,spe2,"--s",color="C0",label="2nd-order spe.")
+# =#
+# #=
+PyPlot.plot(iters,sen3,"-o",color="C1",label="3rd-order sen.")
+PyPlot.plot(iters,spe3,"--s",color="C1",label="3rd-order spe.")
+# =#
+# #=
+PyPlot.plot(iters,sen4,"-o",color="C2",label="4th-order sen.")
+PyPlot.plot(iters,spe4,"--s",color="C2",label="4th-order spe.")
+# =#
 xlabel("Number of measurements")
 legend()
 # =#

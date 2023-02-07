@@ -138,15 +138,35 @@ function inferred_adj_3rd(Ainf3::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::In
 	return A3t_bool, A3t_float
 end
 
+# Returns the inferred 4th-order adjacency tensor
+# Components of 'A4t_bool' are 1. iff the inferred coefficient is larger than 'thr'.
+# Components of 'A4t_float' are are equal to the coefficient, irrespective of their magnitude.
+function inferred_adj_4th(Ainf4::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::Int64, thr::Float64=0.)
+	A4t_bool = zeros(n,n,n,n)
+	A4t_float = zeros(n,n,n,n)
+
+	for k in keys(Ainf4)
+		i = k[1]
+		ic = setdiff(k[2],[i,])
+		for p in permutations(ic)
+			A4t_bool[i,p[1],p[2],p[3]] = (abs.(Ainf4[k]) > thr)
+			A4t_float[i,p[1],p[2],p[3]] = Ainf4[k]
+		end
+	end
+
+	return A4t_bool, A4t_float
+end
+
 # Checks the sensitivity and specificity of our inference.
 # Considers unweighted interactions, i.e., summarizes the inference in a boolean array.
-function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, Ainf::Dict{Int64,Any},thr::Float64=0.)
+function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Array{Float64,4}, Ainf::Dict{Int64,Any},thr::Float64=0.)
     n = size(A2)[2]
     A2t = zeros(n,n)
     A3t = zeros(n,n,n)
 
     # Compute sensitivity and specificity for the inference of the 2nd order edges (if any).
     if 2 in keys(Ainf)
+	    @info "2nd-order satistics"
 	    A2t = inferred_adj_2nd(Ainf[2],n,thr)[1]
 	
 	    p2 = 0 # positives
@@ -181,6 +201,7 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, Ainf::D
 
     # Compute sensitivity and specificity for the inference of the 3rd order edges (if any).
     if 3 in keys(Ainf)
+	    @info "3rd-order statistics"
 	    A3t = inferred_adj_3rd(Ainf[3],n,thr)[1]
 	    
 	    p3 = 0 # positives
@@ -215,7 +236,46 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, Ainf::D
 	    (sen3,spe3,tp3,fp3,tn3,fn3) = (NaN,NaN,NaN,NaN,NaN,NaN)
     end
 
-    return (sen2,spe2,tp2,fp2,tn2,fn2), (sen3,spe3,tp3,fp3,tn3,fn3)
+    # Compute sensitivity and specificity for the inference of the 4th order edges (if any).
+    if 4 in keys(Ainf)
+	    @info "4th-order statistics"
+	    A4t = inferred_adj_4th(Ainf[4],n,thr)[1]
+	    
+	    p4 = 0 # positives
+	    fp4 = 0 # false positives
+	    n4 = 0 # negatives
+	    fn4 = 0 # false negatives
+	    for i in 1:n
+		    for j in 1:n
+			    for k in 1:n
+				    for l in 1:n
+					    if A4t[i,j,k,l] > .1
+						    p4 += 1
+						    if A4[i,j,k,l] < .1
+							    fp4 += 1
+						    end
+					    else
+						    n4 += 1
+						    if A4[i,j,k,l] > .1
+							    fn4 += 1
+						    end
+					    end
+				    end
+			    end
+		    end
+	    end
+
+	    tp4 = p4 - fp4 # true positives
+	    tn4 = n4 - fn4 # true negatives
+	
+	    sen4 = tp4/(tp4 + fn4) # sensitivity
+	    spe4 = tn4/(tn4 + fp4) # specificity
+	
+	    @info "Detection of 4-edges: sensitivity = $sen4, specificity = $spe4."
+    else
+	    (sen4,spe4,tp4,fp4,tn4,fn) = (NaN,NaN,NaN,NaN,NaN,NaN)
+    end
+    return (sen2,spe2,tp2,fp2,tn2,fn2), (sen3,spe3,tp3,fp3,tn3,fn3), (sen4,spe4,tp4,fp4,tn4,fn4)
 end
 
 

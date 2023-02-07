@@ -31,36 +31,39 @@ function gen_rand_hyperwheel(n::Int64, p1::Float64, p2::Float64=0., p3::Float64=
     return A2, A3
 end
 
-function plot_hyperwheel(A2,A3)
-    n = size(A2)[1]
-    x = [0.; cos.((0:n-2)*2π/(n-1))]
-    y = [0.; sin.((0:n-2)*2π/(n-1))]
-
-    if A3[1,2,n] > .1
-        PyPlot.fill(x[[1,2,n]], y[[1,2,n]], color="C0", alpha=.5)
-    end
-    for i in 3:n
-        if A3[1,i-1,i] > .1
-            PyPlot.fill(x[[1,i-1,i]],y[[1,i-1,i]], color="C0", alpha=.5)
-        end
-    end
-
-    if A2[1,2] > .1
-        PyPlot.plot(x[[1,2]], y[[1,2]], color="C0")
-    end
-    if A2[2,n] > .1
-        PyPlot.plot(x[[2,n]], y[[2,n]], color="C0")
-    end
-    for i in 3:n
-        if A2[1,i] > .1
-            PyPlot.plot(x[[1,i]], y[[1,i]], color="C0")
-        end
-        if A2[i-1,i] > .1
-            PyPlot.plot(x[[i-1,i]], y[[i-1,i]], color="C0")
-        end
-    end
-
-    PyPlot.plot(x,y,color="C0","o")
+function plot_hyperwheel(A2,A3,figname::String="Hypergraph")
+	figure(figname,(5,5))
+	n = size(A2)[1]
+	x = [0.; cos.((0:n-2)*2π/(n-1))]
+	y = [0.; sin.((0:n-2)*2π/(n-1))]
+	
+	if A3[1,2,n] > .1
+		PyPlot.fill(x[[1,2,n]], y[[1,2,n]], color="C0", alpha=.5)
+	end
+	for i in 3:n
+		if A3[1,i-1,i] > .1
+			PyPlot.fill(x[[1,i-1,i]],y[[1,i-1,i]], color="C0", alpha=.5)
+		end
+	end
+	
+	if A2[1,2] > .1
+		PyPlot.plot(x[[1,2]], y[[1,2]], color="C0")
+	end
+	if A2[2,n] > .1
+		PyPlot.plot(x[[2,n]], y[[2,n]], color="C0")
+	end
+	for i in 3:n
+		if A2[1,i] > .1
+			PyPlot.plot(x[[1,i]], y[[1,i]], color="C0")
+		end
+		if A2[i-1,i] > .1
+			PyPlot.plot(x[[i-1,i]], y[[i-1,i]], color="C0")
+		end
+	end
+	
+	PyPlot.plot(x,y,color="C0","o")
+	xticks([])
+	yticks([])
 end
 
 
