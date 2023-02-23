@@ -11,7 +11,7 @@ p3 = .3
 A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
 A4 = zeros(n,n,n,n)
 
-# #=
+ #=
 # Testing the efficiency of the inference using the result of the vector field directly.
 
 # Generate the data
@@ -150,5 +150,57 @@ legend()
 =#
 
 
+# #=
+# Testing the efficiency of the inference using the result of the vector field directly, with fixed time series length and increasing radius of the neighborhood of the fixed point.
+
+sen2 = Float64[]
+spe2 = Float64[]
+sen3 = Float64[]
+spe3 = Float64[]
+sen4 = Float64[]
+spe4 = Float64[]
+
+# Compute the sensitivity and specificity of the inference for various lengths of time series.
+iter = 200
+ooi = [3,4]
+c = 0
+
+magnitudes = [2e-5,5e-5,1e-4,2e-4,5e-4,1e-3,2e-3,5e-3,1e-2,2e-2,2e-5,.1,.2,.5,.7,.9,1.1,1.3,1.5]
+
+for mag in magnitudes
+	global c += 1
+	@info "Run $c/$(length(magnitudes))"
+
+	# Generate the data
+	X = mag*(rand(n,400) .- .5)
+	Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
+
+	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,1e-6)
+	yyy = check_inference_bool(A2,A3,A4,xxx[1])
+	push!(sen2,yyy[1][1])
+	push!(spe2,yyy[1][2])
+	push!(sen3,yyy[2][1])
+	push!(spe3,yyy[2][2])
+	push!(sen4,yyy[3][1])
+	push!(spe4,yyy[3][2])
+end
+
+# Plot the sensitivity and specificity as a function of the length of the time series.
+figure("Perfect measurement",(7.5,5))
+ #=
+PyPlot.plot(iters,sen2,"-o",color="C0",label="2nd-order sen.")
+PyPlot.plot(iters,spe2,"--s",color="C0",label="2nd-order spe.")
+# =#
+# #=
+PyPlot.semilogx(magnitudes,sen3,"-o",color="C1",label="3rd-order sen.")
+PyPlot.plot(magnitudes,spe3,"--s",color="C1",label="3rd-order spe.")
+# =#
+# #=
+PyPlot.plot(magnitudes,sen4,"-o",color="C2",label="4th-order sen.")
+PyPlot.plot(magnitudes,spe4,"--s",color="C2",label="4th-order spe.")
+# =#
+xlabel("Magnitude of the neighborhood")
+legend()
+# =#
 
 
