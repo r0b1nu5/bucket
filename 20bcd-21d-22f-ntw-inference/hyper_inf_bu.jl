@@ -35,24 +35,17 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
 	inf_o = Dict{Int64,Vector{Vector{Int64}}}()
 	Ainf = Dict{Int64,Any}()
-	Uinf = Dict{Int64,Any}(maximum(ooi) => Vector{Vector{Int64}}())
-	for o in sort(ooi,rev=true)
-		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
-		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
+	for o in ooi
+		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}()
 		idx_o[o],agents_o[o] = get_idx_o(o,x,prebasis)
-		inf_o[o] = Vector{Int64}()
+		inf_o[o] = Vector{Int64}[]
 		for i in 1:length(idx_o[o])
 			id = idx_o[o][i]
 			agents = agents_o[o][i]
-			if !(agents in Uinf[o])
-				y = coeff[agents,id]
-				if mean(abs.(y)) > thr_glob
-					for a in agents
-						Ainf[o][(a,agents)] = coeff[a,id]
-						for b in setdiff(agents,[a,])
-							push!(Uinf[o-1],setdiff(agents,[b,]))
-						end
-					end
+			y = coeff[agents,id]
+			if mean(abs.(y)) > thr_glob
+				for a in agents
+					Ainf[o][(a,agents)] = coeff[a,id]
 				end
 			end
 		end
@@ -123,7 +116,7 @@ function inferred_adj_2nd(Ainf2::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::In
 		end
 	end
 
-	return A2t_bool, A2t_float
+	return A2t_bool, A2t_float64
 end
 
 # Returns the inferred 3rd-order adjacency tensor
@@ -166,7 +159,6 @@ end
 
 # Checks the sensitivity and specificity of our inference.
 # Considers unweighted interactions, i.e., summarizes the inference in a boolean array.
-# TODO: Also, only checks the inferrable interactions according to our approach, i.e., if the edge (i,j,k) exists, does not consider the edges (i,j), (i,k), and (j,k).
 function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Array{Float64,4}, Ainf::Dict{Int64,Any},thr::Float64=0.)
     n = size(A2)[2]
     A2t = zeros(n,n)

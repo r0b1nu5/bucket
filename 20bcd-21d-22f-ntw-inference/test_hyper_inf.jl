@@ -11,7 +11,9 @@ p3 = .3
 A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
 A4 = zeros(n,n,n,n)
 
- #=
+# ========================================================================
+
+# #=
 # Testing the efficiency of the inference using the result of the vector field directly.
 
 # Generate the data
@@ -27,7 +29,7 @@ spe4 = Float64[]
 
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
 iters = 10:5:400
-ooi = [3,4]
+ooi = [2,3,4]
 c = 0
 for iter in iters
 	global c += 1
@@ -45,7 +47,7 @@ end
 
 # Plot the sensitivity and specificity as a function of the length of the time series.
 figure("Perfect measurement",(7.5,5))
- #=
+# #=
 PyPlot.plot(iters,sen2,"-o",color="C0",label="2nd-order sen.")
 PyPlot.plot(iters,spe2,"--s",color="C0",label="2nd-order spe.")
 # =#
@@ -60,6 +62,8 @@ PyPlot.plot(iters,spe4,"--s",color="C2",label="4th-order spe.")
 xlabel("Number of measurements")
 legend()
 # =#
+
+# ========================================================================
 
  #=
 # Testing the efficiency of the inference using the actual time step (extracted from RK4 integration).
@@ -150,7 +154,9 @@ legend()
 =#
 
 
-# #=
+# ========================================================================
+
+ #=
 # Testing the efficiency of the inference using the result of the vector field directly, with fixed time series length and increasing radius of the neighborhood of the fixed point.
 
 sen2 = Float64[]
