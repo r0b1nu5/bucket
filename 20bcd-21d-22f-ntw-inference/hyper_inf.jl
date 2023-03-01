@@ -171,6 +171,11 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
     n = size(A2)[2]
     A2t = zeros(n,n)
     A3t = zeros(n,n,n)
+    A4t = zeros(n,n,n,n)
+
+    # Remove edges belonging to higher-order edges
+    A2s34 = A2.*(1 .- ((sum(A3,dims=3)[:,:,1] + sum(A4,dims=[3,4])[:,:,1,1]) .> .1))
+    A3s4 = A3.*(1 .- ((sum(A4,dims=4)[:,:,:,1]) .> .1))
 
     # Compute sensitivity and specificity for the inference of the 2nd order edges (if any).
     if 2 in keys(Ainf)
@@ -185,12 +190,14 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 	        for j in 1:n
 	            if A2t[i,j] > .1
 	                p2 += 1
-	                if A2[i,j] < .1
+#	                if A2[i,j] < .1
+			if A2s34[i,j] < .1
 	                    fp2 += 1
 	                end
 	            else
 	                n2 += 1
-	                if A2[i,j] > .1
+#	                if A2[i,j] > .1
+	                if A2s34[i,j] > .1
 	                    fn2 += 1
 	                end
 	            end
@@ -221,12 +228,14 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 	            for k in 1:n
 	                if A3t[i,j,k] > .1
 	                    p3 += 1
-	                    if A3[i,j,k] < .1
+#	                    if A3[i,j,k] < .1
+	                    if A3s4[i,j,k] < .1
 	                        fp3 += 1
 	                    end
 	                else
 	                    n3 += 1
-	                    if A3[i,j,k] > .1
+#	                    if A3[i,j,k] > .1
+	                    if A3s4[i,j,k] > .1
 	                        fn3 += 1
 	                    end
 	                end

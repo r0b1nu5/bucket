@@ -1,4 +1,5 @@
-include("hyper_inf.jl")
+#include("hyper_inf.jl")
+include("hyper_inf_bu.jl")
 include("hyper_kuramoto.jl")
 include("gen_rand_hyperg.jl")
 
@@ -17,7 +18,7 @@ A4 = zeros(n,n,n,n)
 # Testing the efficiency of the inference using the result of the vector field directly.
 
 # Generate the data
-X = .2*rand(n,400) .- .1
+X = (.2*rand(n,400) .- .1)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
 
 sen2 = Float64[]
@@ -28,7 +29,7 @@ sen4 = Float64[]
 spe4 = Float64[]
 
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
-iters = 10:5:400
+iters = 10:5:200
 ooi = [2,3,4]
 c = 0
 for iter in iters

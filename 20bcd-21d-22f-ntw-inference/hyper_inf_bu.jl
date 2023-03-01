@@ -116,7 +116,7 @@ function inferred_adj_2nd(Ainf2::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::In
 		end
 	end
 
-	return A2t_bool, A2t_float64
+	return A2t_bool, A2t_float
 end
 
 # Returns the inferred 3rd-order adjacency tensor
