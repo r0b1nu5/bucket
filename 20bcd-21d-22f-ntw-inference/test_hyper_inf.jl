@@ -1,12 +1,15 @@
 #include("hyper_inf.jl")
-include("hyper_inf_bu.jl")
+include("hyper_inf_new.jl")
 include("hyper_kuramoto.jl")
 include("gen_rand_hyperg.jl")
 
 # Generating the hypergraph.
 n = 7
-p1 = .3
-p2 = .3 
+#p1 = .3
+#p2 = .3 
+#p3 = .3
+p1 = 0.
+p2 = 0.
 p3 = .3
 
 A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
@@ -18,7 +21,7 @@ A4 = zeros(n,n,n,n)
 # Testing the efficiency of the inference using the result of the vector field directly.
 
 # Generate the data
-X = (.2*rand(n,400) .- .1)
+X = .1*(rand(n,400) .- .5)  
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
 
 sen2 = Float64[]
@@ -30,7 +33,7 @@ spe4 = Float64[]
 
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
 iters = 10:5:200
-ooi = [2,3,4]
+ooi = [2,3]
 c = 0
 for iter in iters
 	global c += 1

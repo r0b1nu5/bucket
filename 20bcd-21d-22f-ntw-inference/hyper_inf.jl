@@ -35,24 +35,17 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
 	inf_o = Dict{Int64,Vector{Vector{Int64}}}()
 	Ainf = Dict{Int64,Any}()
-	Uinf = Dict{Int64,Any}(maximum(ooi) => Vector{Vector{Int64}}())
-	for o in sort(ooi,rev=true)
-		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
-		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
+	for o in ooi
+		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}()
 		idx_o[o],agents_o[o] = get_idx_o(o,x,prebasis)
-		inf_o[o] = Vector{Int64}()
+		inf_o[o] = Vector{Int64}[]
 		for i in 1:length(idx_o[o])
 			id = idx_o[o][i]
 			agents = agents_o[o][i]
-			if !(agents in Uinf[o])
-				y = coeff[agents,id]
-				if mean(abs.(y)) > thr_glob
-					for a in agents
-						Ainf[o][(a,agents)] = coeff[a,id]
-						for b in setdiff(agents,[a,])
-							push!(Uinf[o-1],setdiff(agents,[b,]))
-						end
-					end
+			y = coeff[agents,id]
+			if mean(abs.(y)) > thr_glob
+				for a in agents
+					Ainf[o][(a,agents)] = coeff[a,id]
 				end
 			end
 		end
@@ -166,16 +159,10 @@ end
 
 # Checks the sensitivity and specificity of our inference.
 # Considers unweighted interactions, i.e., summarizes the inference in a boolean array.
-# TODO: Also, only checks the inferrable interactions according to our approach, i.e., if the edge (i,j,k) exists, does not consider the edges (i,j), (i,k), and (j,k).
 function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Array{Float64,4}, Ainf::Dict{Int64,Any},thr::Float64=0.)
     n = size(A2)[2]
     A2t = zeros(n,n)
     A3t = zeros(n,n,n)
-    A4t = zeros(n,n,n,n)
-
-    # Remove edges belonging to higher-order edges
-    A2s34 = A2.*(1 .- ((sum(A3,dims=3)[:,:,1] + sum(A4,dims=[3,4])[:,:,1,1]) .> .1))
-    A3s4 = A3.*(1 .- ((sum(A4,dims=4)[:,:,:,1]) .> .1))
 
     # Compute sensitivity and specificity for the inference of the 2nd order edges (if any).
     if 2 in keys(Ainf)
@@ -190,14 +177,12 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 	        for j in 1:n
 	            if A2t[i,j] > .1
 	                p2 += 1
-#	                if A2[i,j] < .1
-			if A2s34[i,j] < .1
+	                if A2[i,j] < .1
 	                    fp2 += 1
 	                end
 	            else
 	                n2 += 1
-#	                if A2[i,j] > .1
-	                if A2s34[i,j] > .1
+	                if A2[i,j] > .1
 	                    fn2 += 1
 	                end
 	            end
@@ -228,14 +213,12 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 	            for k in 1:n
 	                if A3t[i,j,k] > .1
 	                    p3 += 1
-#	                    if A3[i,j,k] < .1
-	                    if A3s4[i,j,k] < .1
+	                    if A3[i,j,k] < .1
 	                        fp3 += 1
 	                    end
 	                else
 	                    n3 += 1
-#	                    if A3[i,j,k] > .1
-	                    if A3s4[i,j,k] > .1
+	                    if A3[i,j,k] > .1
 	                        fn3 += 1
 	                    end
 	                end
