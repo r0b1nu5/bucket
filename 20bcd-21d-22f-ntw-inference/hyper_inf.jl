@@ -25,9 +25,21 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	# Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
 	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
 	basis = Basis(prebasis,[x[i] for i in 1:n])
+	l = length(basis.eqs)
 
 	# Solving the problem using SINDy.
-	res = solve(problem,basis,STLSQ())
+	res = try 
+		solve(problem,basis,STLSQ())
+	catch e
+		@info "$(typeof(e))"
+		if isa(e,DimensionMismatch)
+			zeros(n,l)
+			@error "No interaction was inferred for some of the variables. 
+			Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), 
+			or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."
+		end
+	end
+
 	coeff = res.out[1].coefficients
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.

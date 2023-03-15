@@ -5,12 +5,16 @@ include("gen_rand_hyperg.jl")
 
 # Generating the hypergraph.
 n = 7
-#p1 = .3
-#p2 = .3 
-#p3 = .3
+# #=
+p1 = .3
+p2 = .3 
+p3 = .3
+# =#
+ #=
 p1 = 0.
 p2 = 0.
 p3 = .3
+# =# 
 
 A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
 A4 = zeros(n,n,n,n)
@@ -21,7 +25,7 @@ A4 = zeros(n,n,n,n)
 # Testing the efficiency of the inference using the result of the vector field directly.
 
 # Generate the data
-X = .1*(rand(n,400) .- .5)  
+X = π*(rand(n,400) .- .5)  
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
 
 sen2 = Float64[]

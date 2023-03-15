@@ -25,10 +25,19 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	# Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
 	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
 	basis = Basis(prebasis,[x[i] for i in 1:n])
+	l = length(basis.eqs)
 
 	# Solving the problem using SINDy.
-	res = solve(problem,basis,STLSQ())
-	coeff = res.out[1].coefficients
+	coeff = try 
+		res = solve(problem,basis,STLSQ())
+		res.out[1].coefficients
+	catch e
+		if isa(e,DimensionMismatch)
+			@error "No interaction was inferred for some of the variables. Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."
+			zeros(n,l)
+		end
+	end
+
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
@@ -179,6 +188,7 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 
     # Compute sensitivity and specificity for the inference of the 2nd order edges (if any).
     if 2 in keys(Ainf)
+	    @info "================================================================"
 	    @info "2nd-order satistics"
 	    A2t = inferred_adj_2nd(Ainf[2],n,thr)[1]
 	
@@ -209,13 +219,14 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 	    sen2 = tp2/(tp2 + fn2) # sensitivity
 	    spe2 = tn2/(tn2 + fp2) # specificity
 	
-	    @info "Detection of 2-edges: sensitivity = $sen2, specificity = $spe2."
+	    @info "Detection of 2-edges: sensitivity = $(round(sen2,digits=2)), specificity = $(round(spe2,digits=2))."
     else
 	    (sen2,spe2,tp2,fp2,tn2,fn2) = (NaN,NaN,NaN,NaN,NaN,NaN)
     end
 
     # Compute sensitivity and specificity for the inference of the 3rd order edges (if any).
     if 3 in keys(Ainf)
+	    @info "================================================================"
 	    @info "3rd-order statistics"
 	    A3t = inferred_adj_3rd(Ainf[3],n,thr)[1]
 	    
@@ -248,13 +259,14 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 	    sen3 = tp3/(tp3 + fn3) # sensitivity
 	    spe3 = tn3/(tn3 + fp3) # specificity
 	
-	    @info "Detection of 3-edges: sensitivity = $sen3, specificity = $spe3."
+	    @info "Detection of 3-edges: sensitivity = $(round(sen3,digits=2)), specificity = $(round(spe3,digits=2))."
     else
 	    (sen3,spe3,tp3,fp3,tn3,fn3) = (NaN,NaN,NaN,NaN,NaN,NaN)
     end
 
     # Compute sensitivity and specificity for the inference of the 4th order edges (if any).
     if 4 in keys(Ainf)
+	    @info "================================================================"
 	    @info "4th-order statistics"
 	    A4t = inferred_adj_4th(Ainf[4],n,thr)[1]
 	    
@@ -288,7 +300,7 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 	    sen4 = tp4/(tp4 + fn4) # sensitivity
 	    spe4 = tn4/(tn4 + fp4) # specificity
 	
-	    @info "Detection of 4-edges: sensitivity = $sen4, specificity = $spe4."
+	    @info "Detection of 4-edges: sensitivity = $(round(sen4,digits=2)), specificity = $(round(spe4,digits=2))."
     else
 	    (sen4,spe4,tp4,fp4,tn4,fn4) = (NaN,NaN,NaN,NaN,NaN,NaN)
     end
