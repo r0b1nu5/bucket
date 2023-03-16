@@ -28,19 +28,16 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	l = length(basis.eqs)
 
 	# Solving the problem using SINDy.
-	res = try 
-		solve(problem,basis,STLSQ())
+	coeff = try 
+		res = solve(problem,basis,STLSQ())
+		res.out[1].coefficients
 	catch e
 		@info "$(typeof(e))"
 		if isa(e,DimensionMismatch)
+			@error "No interaction was inferred for some of the variables. Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."
 			zeros(n,l)
-			@error "No interaction was inferred for some of the variables. 
-			Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), 
-			or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."
 		end
 	end
-
-	coeff = res.out[1].coefficients
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
@@ -285,7 +282,7 @@ function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Arr
 	
 	    @info "Detection of 4-edges: sensitivity = $sen4, specificity = $spe4."
     else
-	    (sen4,spe4,tp4,fp4,tn4,fn) = (NaN,NaN,NaN,NaN,NaN,NaN)
+	    (sen4,spe4,tp4,fp4,tn4,fn4) = (NaN,NaN,NaN,NaN,NaN,NaN)
     end
     return (sen2,spe2,tp2,fp2,tn2,fn2), (sen3,spe3,tp3,fp3,tn3,fn3), (sen4,spe4,tp4,fp4,tn4,fn4)
 end
