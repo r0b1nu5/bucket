@@ -6,20 +6,27 @@ include("gen_rand_hyperg.jl")
 
 # Generating the hypergraph.
 n = 7
- #=
+# #=
 p1 = .3
 p2 = .3 
 p3 = .3
 # =#
-# #=
+ #=
 p1 = 0.
 p2 = 0.
 p3 = .3
 # =# 
 amplitude = .2
 
+ #=
 A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
 A4 = zeros(n,n,n,n)
+# =#
+# #=
+A2 = diagm(0 => n*ones(n)) - ones(n,n)
+A3 = zeros(n,n,n)
+A4 = zeros(n,n,n,n)
+# =#
 
 # ========================================================================
 
@@ -31,16 +38,23 @@ A4 = zeros(n,n,n,n)
 X = amplitude*(rand(n,400) .- .5)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
 # =#
- #=
+# #=
 ω = 2*rand(n)
 ω .-= mean(ω)
 xxx = hyper_k(A2,A3,ω,zeros(n),1.)
 X = .2*(rand(n,400) .- .5) + repeat(xxx[1][:,end],1,400)
 Y = f_kuramoto_3rd(X,A2,A3,ω)
 # =#
-# #=
+ #=
 X = amplitude*(rand(n,400) .- .5)
 Y = f_ktanh_3rd(X,A2,A3,zeros(n))
+# =#
+ #=
+ω = 2*rand(n)
+ω .-= mean(ω)
+xxx = hyper_ktanh(A2,A3,ω,zeros(n),1.)
+X = .2*(rand(n,400) .- .5) + repeat(xxx[1][:,end],1,400)
+Y = f_ktanh_3rd(X,A2,A3,ω)
 # =#
 
 sen2 = Float64[]
