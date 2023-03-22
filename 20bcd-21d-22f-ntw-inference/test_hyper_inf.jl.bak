@@ -29,18 +29,15 @@ A4 = zeros(n,n,n,n)
 # Generate the data
  #=
 X = amplitude*(rand(n,400) .- .5)
-Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
+#Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
+Y = f_ktanh_3rd(X,A2,A3,zeros(n))
 # =#
- #=
+# #=
 ω = 2*rand(n)
 ω .-= mean(ω)
 xxx = hyper_k(A2,A3,ω,zeros(n),1.)
 X = .2*(rand(n,400) .- .5) + repeat(xxx[1][:,end],1,400)
 Y = f_kuramoto_3rd(X,A2,A3,ω)
-# =#
-# #=
-X = amplitude*(rand(n,400) .- .5)
-Y = f_ktanh_3rd(X,A2,A3,zeros(n))
 # =#
 
 sen2 = Float64[]
