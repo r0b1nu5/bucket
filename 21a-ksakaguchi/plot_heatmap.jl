@@ -29,19 +29,19 @@ end
 
 figure("ϕ = $ϕ")
 
-ks = 0:1
-ls = 0:1
+ks = [0,]
+ls = [0,]
 for k in ks
 	for l in ls
 		PyPlot.contourf(X .+ 2π*k,Y .+ 2π*l,μ',50,cmap=cm)
-		PyPlot.plot([-π,0,-π,-π] .+ 2π*k,[0,π,π,0] .+ 2π*l,"k")
-		PyPlot.plot([0,π,π,0] .+ 2π*k,[-π,-π,0,-π] .+ 2π*l,"k")
+		#PyPlot.plot([-π,0,-π,-π] .+ 2π*k,[0,π,π,0] .+ 2π*l,"k")
+		#PyPlot.plot([0,π,π,0] .+ 2π*k,[-π,-π,0,-π] .+ 2π*l,"k")
 		#PyPlot.plot([minimum(xs),maximum(xs)] .+ 2π*k,[π,π] .+ 2π*l,"k")
 		#PyPlot.plot([minimum(xs),maximum(xs)] .+ 2π*k,[-π,-π] .+ 2π*l,"k")
 		#PyPlot.plot([π,π] .+ 2π*k,[minimum(xs),maximum(xs)] .+ 2π*l,"k")
 		#PyPlot.plot([-π,-π] .+ 2π*k,[minimum(xs),maximum(xs)] .+ 2π*l,"k")
-		PyPlot.plot([-π,0,π,π,0,-π,-π] .+ 2π*k,[-π,-π,0,π,π,0,-π] .+ 2π*l,"k")
-		PyPlot.plot(γbar/π*[-π,0,π,π,0,-π,-π] .+ 2π*k,γbar/π*[-π,-π,0,π,π,0,-π] .+ 2π*l,"--k")
+		#PyPlot.plot([-π,0,π,π,0,-π,-π] .+ 2π*k,[-π,-π,0,π,π,0,-π] .+ 2π*l,"k")
+		#PyPlot.plot(γbar/π*[-π,0,π,π,0,-π,-π] .+ 2π*k,γbar/π*[-π,-π,0,π,π,0,-π] .+ 2π*l,"--k")
 	end
 end
 
