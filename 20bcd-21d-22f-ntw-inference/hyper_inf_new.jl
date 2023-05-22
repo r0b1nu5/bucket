@@ -175,8 +175,7 @@ end
 
 # Checks the sensitivity and specificity of our inference.
 # Considers unweighted interactions, i.e., summarizes the inference in a boolean array.
-# TODO: Also, only checks the inferrable interactions according to our approach, i.e., if the edge (i,j,k) exists, does not consider the edges (i,j), (i,k), and (j,k).
-function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Array{Float64,4}, Ainf::Dict{Int64,Any},thr::Float64=0.)
+function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Array{Float64,4}, Ainf::Dict{Int64,Any}, thr::Float64=0.)
     n = size(A2)[2]
     A2t = zeros(n,n)
     A3t = zeros(n,n,n)
