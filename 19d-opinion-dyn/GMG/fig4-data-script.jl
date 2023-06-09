@@ -1,6 +1,6 @@
 using DelimitedFiles, NPZ
 
-p = 3
+p = 6
 
 xxx = npzread("MULTI-PARTY(RM)/EPS_CRITICAL/Ord_all_with_eq_area_0_$p.npz")
 
