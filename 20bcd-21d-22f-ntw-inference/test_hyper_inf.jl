@@ -3,6 +3,7 @@ include("hyper_inf_new.jl")
 include("hyper_kuramoto.jl")
 include("hyper_ktanh.jl")
 include("gen_rand_hyperg.jl")
+include("tools_hyper.jl")
 
 include("../../ARNI/reconstruct.jl")
 
@@ -68,6 +69,7 @@ A3 = zeros(n,n,n)
 A4 = zeros(n,n,n,n)
 # =#
 
+adj = get_adj_3rd(A2,A3)
 # ========================================================================
 
 # #=
@@ -158,6 +160,7 @@ for iter in iters
 		for i in 1:n
 # bases = ["polynomial", "polynomial_diff", "fourier", "fourier_diff", "power_series", "RBF"]
 			w = reconstruct(X[:,1:iter],Y[:,1:iter],i,A2,"polynomial")
+			#w = reconstruct(X[:,1:iter],Y[:,1:iter],i,A2,"power_series")
 			adjarni1[i,:] = w[1]
 			w = reconstruct(X[:,1:iter],Y[:,1:iter],i,A2,"polynomial_diff")
 			adjarni2[i,:] = w[1]
