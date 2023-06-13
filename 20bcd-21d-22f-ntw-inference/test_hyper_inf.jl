@@ -141,7 +141,7 @@ for iter in iters
 	global c += 1
 	@info "Run $c/$(length(iters))"
 
-	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,3,1e-4)
+	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,3,-1e-4)
 	if test_arni
 		 #=
 		adjme = zeros(n,n)
@@ -170,35 +170,36 @@ for iter in iters
 			adjarni4[i,:] = w[1]
 		end
 		
-		rocme = roc(adjme + 1e-10*rand(n,n),A2)
+		ξ = 1e-10
+		rocme = roc(adjme .+ ξ*rand(n,n),A2) # Adding rand(n,n) makes sure that FPR and TPR have the same dim as fprme and tprme.
 		x0 = rocme.FPR
 		y0 = rocme.TPR
 		global fprme = [fprme rocme.FPR]
 		global tprme = [tprme rocme.TPR]
 		push!(aucme,AUC(rocme))
 		
-		rocarni = roc(adjarni1 + 1e-10*rand(n,n),A2)
+		rocarni = roc(adjarni1 .+ ξ*rand(n,n),A2)
 		x1 = rocarni.FPR
 		y1 = rocarni.TPR
 		global fprarni1 = [fprarni1 rocarni.FPR]
 		global tprarni1 = [tprarni1 rocarni.TPR]
 		push!(aucarni1,AUC(rocarni))
 		
-		rocarni = roc(adjarni2 + 1e-10*rand(n,n),A2)
+		rocarni = roc(adjarni2 .+ ξ*rand(n,n),A2)
 		x2 = rocarni.FPR
 		y2 = rocarni.TPR
 		global fprarni2 = [fprarni2 rocarni.FPR]
 		global tprarni2 = [tprarni2 rocarni.TPR]
 		push!(aucarni2,AUC(rocarni))
 		
-		rocarni = roc(adjarni3 + 1e-10*rand(n,n),A2)
+		rocarni = roc(adjarni3 .+ ξ*rand(n,n),A2)
 		x3 = rocarni.FPR
 		y3 = rocarni.TPR
 		global fprarni3 = [fprarni3 rocarni.FPR]
 		global tprarni3 = [tprarni3 rocarni.TPR]
 		push!(aucarni3,AUC(rocarni))
 		
-		rocarni = roc(adjarni4 + 1e-10*rand(n,n),A2)
+		rocarni = roc(adjarni4 .+ ξ*rand(n,n),A2)
 		x4 = rocarni.FPR
 		y4 = rocarni.TPR
 		global fprarni4 = [fprarni4 rocarni.FPR]
