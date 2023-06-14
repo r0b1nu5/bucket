@@ -18,6 +18,11 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1)
 	n,T = size(X)
 
+	if size(X) != size(Y)
+		@info "Dimensions of states and derivatives do not match."
+		return nothing
+	end
+
 	# Setting up the problem
 	@variables x[1:n]
 	problem = DirectDataDrivenProblem(X,Y,name = :HyperInference)
@@ -37,6 +42,8 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 			zeros(n,l)
 		end
 	end
+
+	@info "coeff = $coeff"
 
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.

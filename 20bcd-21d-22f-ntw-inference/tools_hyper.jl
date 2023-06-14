@@ -24,7 +24,7 @@ function get_adj_3rd(A2,A3)
 	return adj,table
 end
 
-function adj2As(adj::Matrix{Float64})
+function adj2As(adj::Union{BitMatrix,Matrix{Float64}})
 	n = size(adj)[1]
 
 	A2 = zeros(n,n)
