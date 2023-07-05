@@ -25,7 +25,7 @@ Y1 = f_kuramoto_3rd(X,A21,A31,zeros(n),π/4,π/4)
 Y2 = f_kuramoto_3rd(X,A22,A32,zeros(n),π/4,π/4)
 Y3 = f_kuramoto_3rd(X,A23,A33,zeros(n),π/4,π/4)
 
- #=
+# #=
 ########################## TESTING ARNI WITH 3RD ORDER ####################
 
 adjarni1 = zeros(n,Int64(n*(n-1)/2))

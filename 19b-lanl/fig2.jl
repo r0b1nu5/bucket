@@ -165,9 +165,56 @@ if show_graph
 	yticks([])
 end
 
+# #=
 
+figure("Physics World")
+xy = readdlm("data_melvyn/uk/uk_xy.csv",',')
+x = xy[:,1]
+y = xy[:,2]
+L = readdlm("data_melvyn/uk/uk_lap_mat.csv",',')
+coord = readdlm("data_melvyn/uk/uk_bord.csv",',')
 
+subplot(1,3,1)
+PyPlot.fill(coord[:,1],coord[:,2],color=(.9,.9,.9))
+PyPlot.plot(coord[:,1],coord[:,2],"k",lw=.5)
+subplot(1,3,2)
+PyPlot.fill(coord[:,1],coord[:,2],color=(.9,.9,.9))
+PyPlot.plot(coord[:,1],coord[:,2],"k",lw=.5)
+subplot(1,3,3)
+PyPlot.fill(coord[:,1],coord[:,2],color=(.9,.9,.9))
+PyPlot.plot(coord[:,1],coord[:,2],"k",lw=.5)
 
+for i in 1:119
+	for j in i+1:120
+		if L[i,j] < -.1
+			subplot(1,3,1)
+			PyPlot.plot(x[[i,j]],y[[i,j]],"k")
+			subplot(1,3,2)
+			PyPlot.plot(x[[i,j]],y[[i,j]],"k")
+			subplot(1,3,3)
+			PyPlot.plot(x[[i,j]],y[[i,j]],"k")
+		end
+	end
+end
+for i in 1:120
+	@info "i=$i"
+	subplot(1,3,1)
+	PyPlot.plot(x[i],y[i],"o",color=1 .+ (1 .- cols[2])./(0 - 1).*maximum(nFX[i,:]),mec="k")
+	subplot(1,3,2)
+	PyPlot.plot(x[i],y[i],"o",color=1 .+ (1 .- cols[3])./(0 - 1).*maximum(nFX[n+i,:]),mec="k")
+	subplot(1,3,3)
+#	PyPlot.plot(x[i],y[i],"o",color=1 . (1 .- cols[1])./(0 - 1).*maximum(-nL0[i,:]),mec="k")
+PyPlot.plot(x[i],y[i],"o",color=1 .+ (1 .- cols[1])./(0 - 1).*(.2 + .8*maximum(-nL0[i,:])),mec="k")
+end
 
+subplot(1,3,1)
+xticks([])
+yticks([])
+subplot(1,3,2)
+xticks([])
+yticks([])
+subplot(1,3,3)
+xticks([])
+yticks([])
 
-
+# =#

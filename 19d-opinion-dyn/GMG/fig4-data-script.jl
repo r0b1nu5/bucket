@@ -10,6 +10,8 @@ nagents = 2001
 eff = zeros(p,neps)
 n_1st = zeros(p,neps)
 n_2nd = zeros(p,neps)
+nep = 30 
+n_1st2nd = zeros(p,p)
 
 for sim in 1:nsim
 	for eps in 1:neps
@@ -21,19 +23,30 @@ for sim in 1:nsim
 		e = xxx["NUM_AGENTS_INFLUENCED"][sim,eps,1]
 		eff[i2,eps] += e
 	end
+	votes = xxx["NUM_VOTES"][sim,nep,:]
+	m1,i1 = findmax(votes)
+	m2,i2 = findmax([votes[1:i1-1];-1000.;votes[i1+1:p]])
+	n_1st2nd[i1,i2] += 1
 end
 
+
+ #=
 for i in 1:p
 	writedlm("add_data/fig4a-$i-$p-rm.csv",eff[i,:]'/nsim/nagents,',')
 end
-
+# =#
+ #=
 writedlm("add_data/n-1st-$p-rm.csv",n_1st',',')
 writedlm("add_data/n-2nd-$p-rm.csv",n_2nd',',')
 writedlm("add_data/tot-n-agents-influenced-over-$nsim-$p-rm.csv",eff',',')
-
+# =#
+ #=
 writedlm("add_data/fig4b-1st-$p-rm.csv",n_1st'./nsim,',')
 writedlm("add_data/fig4b-2nd-$p-rm.csv",n_2nd'./nsim,',')
-
+# =#
+# #=
+writedlm("add_data/n1n2-$p-$nep.csv",n_1st2nd,',')
+# # =#
 
 
 

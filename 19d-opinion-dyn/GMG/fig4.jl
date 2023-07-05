@@ -47,6 +47,16 @@ xlabel("ϵ")
 ylabel("percentage of 2nd")
 axis([0.,maximum(ϵs),0,100])
 
+
+# #=
+nep = 30
+n1n2 = readdlm("add_data/n1n2-$p-$nep.csv",',')
+n1n2n = n1n2./repeat(sum(n1n2,dims=1),p,1)
+matshow(n1n2,cmap=cmap)
+colorbar()
+matshow(n1n2n,cmap=cmap)
+colorbar()
+# =#
  #=
 subplot2grid((2,3),(0,2),colspan=1,rowspan=2)
 eff_sr = vec(readdlm("add_data/fig4c-sr.csv",','))
