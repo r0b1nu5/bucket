@@ -35,7 +35,7 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	# Solving the problem using SINDy.
 	coeff = try 
 		res = solve(problem,basis,STLSQ())
-		res.out[1].coefficients
+		res.out.Ξ[1,:,:]
 	catch e
 		if isa(e,DimensionMismatch)
 			@error "No interaction was inferred for some of the variables. Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."
@@ -43,7 +43,7 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 		end
 	end
 
-	@info "coeff = $coeff"
+#	@info "coeff = $coeff"
 
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
@@ -55,20 +55,19 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	for o in sort(ooi,rev=true)
 		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
 		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
-		idx_o[o],agents_o[o] = get_idx_o(o,x,prebasis)
+		idx_o[o],agents_o[o] = get_idx_o(o-1,x,prebasis)
 		inf_o[o] = Vector{Int64}()
-		for i in 1:length(idx_o[o])
-			id = idx_o[o][i]
-			agents = agents_o[o][i]
-			if !(agents in Uinf[o])
-				y = coeff[agents,id]
-				if mean(abs.(y)) > thr_glob
-					for a in agents
-						Ainf[o][(a,agents)] = coeff[a,id]
-						for b in setdiff(agents,[a,])
-							push!(Uinf[o-1],setdiff(agents,[b,]))
-						end
-					end
+		for k in 1:length(idx_o[o])
+			id = idx_o[o][k]
+			agents = agents_o[o][k]
+			cagents = setdiff(1:n,agents)
+			y = coeff[id,cagents]
+			ynz = y[Int64.(setdiff((1:length(y)).*(abs.(y) .> thr_glob),[0.,]))]
+			yds = Int64.(setdiff(cagents.*(abs.(y) .> thr_glob),[0,]))
+			for j in 1:length(yds)
+				Ainf[o][(yds[j],sort([yds[j];agents]))] = ynz[j]
+				for a in agents
+					push!(Uinf[o-1],sort([yds[j];setdiff(agents,[a,])]))
 				end
 			end
 		end

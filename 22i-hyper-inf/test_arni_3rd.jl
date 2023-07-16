@@ -3,7 +3,7 @@ using DelimitedFiles, ROC
 include("../../ARNI/reconstruct_3rd.jl")
 include("hyper_kuramoto.jl")
 include("tools_hyper.jl")
-include("hyper_inf_new.jl")
+include("hyper_inf.jl")
 
 BASIS = "power_series"
 

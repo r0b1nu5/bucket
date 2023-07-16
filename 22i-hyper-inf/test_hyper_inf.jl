@@ -1,5 +1,4 @@
-#include("hyper_inf.jl")
-include("hyper_inf_new.jl")
+include("hyper_inf.jl")
 include("hyper_kuramoto.jl")
 include("hyper_ktanh.jl")
 include("gen_rand_hyperg.jl")
@@ -141,7 +140,7 @@ for iter in iters
 	global c += 1
 	@info "Run $c/$(length(iters))"
 
-	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,3,-1e-4)
+	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,-1e-4)
 	if test_arni
 		 #=
 		adjme = zeros(n,n)

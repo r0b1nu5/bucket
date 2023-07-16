@@ -45,21 +45,25 @@ function satellite(u0,p,dt=.01,T=1.)
 	return u
 end
 
-function err_u(u,ξu)
-	uh = [ξu[1][1]*u[1]+ξu[1][2],
-	      ξu[2][1]*u[2]+ξu[2][2],
-	      ξu[3][1]*u[3]+ξu[3][2],
-	      ξu[4][1]*u[4]+ξu[4][2]]
-
-	return uh
+function errx(x::Float64,ξx::Tuple{Float64,Float64})
+	return ξx[1]*x + ξx[2]
 end
+
+function errx(x::Vector{Float64},ξx::Vector{Tuple{Float64,Float64}})
+	return [errx(x[i],ξx[i]) for i in 1:length(x)]
+end
+
+function errx(x::Vector{Float64},ξx::Tuple{Float64,Float64})
+	return [errx(x[i],ξx) for i in 1:length(x)]
+end
+
 
 # Tries to determine the optimal thrust to reach ut from uh.
 function thrust_mpc(uh,rt,ωt,Gh,dt_mpc,dt,thrmax=1.)
 	rh,θh,drh,dθh = radial_coord(uh)
 	
-	thr = [0.,θh] # amplitude and angle of the thrust initialized at 0 and angle of the position vector. 
-	u = satellite(uh,(thr[1],thr[2],Gh,1.),dt,10*dt_mpc)
+	th = [0.,θh] # amplitude and angle of the thrust initialized at 0 and angle of the position vector. 
+	u = satellite(uh,(th[1],th[2],Gh,1.),dt,10*dt_mpc)
 	r,θ,dr,dθ = radial_coord(u)
 	
 	δr0 = rt - rh
@@ -69,30 +73,30 @@ function thrust_mpc(uh,rt,ωt,Gh,dt_mpc,dt,thrmax=1.)
 
 	counter = 0
 	incr = .01*thrmax
-	tr = Inf
-	tθ = Inf
-	trnew = 0.
-	tθnew = θh
+	thr = Inf
+	thθ = Inf
+	thrnew = 0.
+	thθnew = θh
 
-	while (δr0*δr1 > 0 || δω0*δω1 > 0) && (abs(tr-trnew) > incr/2 || abs(tθ-tθnew) > incr/2) && (counter < 1e5)
+	while (δr0*δr1 > 0 || δω0*δω1 > 0) && (abs(thr-thrnew) > incr/2 || abs(thθ-thθnew) > incr/2) && (counter < 1e5)
 		counter += 1
 #		if counter%100 == 0
-#			@info "counter = $counter, tr = $tr, tθ = $tθ"
-#			@info "$(δr0*δr1 > 0), $(δω0*δω1 > 0), $(abs(tr-trnew) > incr/2), $(abs(tθ-tθnew) > incr/2)"
-#			@info "$((δr0*δr1 > 0 || δω0*δω1 > 0) && (abs(tr-trnew) > incr/2 || abs(tθ-tθnew) > incr/2) && counter < 1e5)"
+#			@info "counter = $counter, thr = $thr, thθ = $thθ"
+#			@info "$(δr0*δr1 > 0), $(δω0*δω1 > 0), $(abs(thr-thrnew) > incr/2), $(abs(thθ-thθnew) > incr/2)"
+#			@info "$((δr0*δr1 > 0 || δω0*δω1 > 0) && (abs(thr-thrnew) > incr/2 || abs(thθ-thθnew) > incr/2) && counter < 1e5)"
 #		end
 
-		tr = trnew
-		tθ = tθnew
+		thr = thrnew
+		thθ = thθnew
 		
 		if δr0*δr1 > 0
-			trnew = clamp(tr + incr*sign(δr0),-thrmax,thrmax)
+			thrnew = clamp(thr + incr*sign(δr0),-thrmax,thrmax)
 		end
 		if δω0*δω1 > 0
-			tθnew = clamp(tθ + incr*sign(δω0)*sign(δr0),θh-π/2,θh+π/2)
+			thθnew = clamp(thθ + incr*sign(δω0)*sign(δr0),θh-π/2,θh+π/2)
 		end
 
-		u = satellite(uh,[trnew;tθnew;Gh;1.],dt,10*dt_mpc)
+		u = satellite(uh,[thrnew;thθnew;Gh;1.],dt,10*dt_mpc)
 		r,θ,dr,dθ = radial_coord(u)
 		
 		δr0 = rt - rh
@@ -101,14 +105,14 @@ function thrust_mpc(uh,rt,ωt,Gh,dt_mpc,dt,thrmax=1.)
 		δω1 = ωt - dθ
 	end
 
-	tr = trnew
-	tθ = tθnew
+	thr = thrnew
+	thθ = thθnew
 
 	if counter >= 1e5
 		@warn "Max. counter reached"
 	end
 
-	return tr,tθ
+	return thr,thθ
 end
 
 

@@ -2,26 +2,20 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jul  6 11:00:05 2023
-
-@author: glory
 """
 
 import Nat_opn_generator as OPN_GEN
 
 import numpy as np
 
-def type_natural_opinion(Num_ppl,Num_party,NAT_TYPE):
-    if NAT_TYPE=='Bigaussian':
-        x0=OPN_GEN.Nat_opn_2(mean,Delta,sd,Num_ppl,R=50)
-    else:
-        x0=OPN_GEN.Random_generation(Num_ppl, Num_party)
-    return x0
-
-#Function to compute the outcome of the election
-#INPUT:
-# x0: natural opinion (Num_ppl,Num_party)
-# epsilon: confidence bound parameter (float)
-# W:external influence (Num_ppl,Num_party)
+##############################################################################
+# Computes the final opinions from the natural opinion x0, the communication distance epsilon, and the influence W. 
+# INPUT:
+#        x0 (vector, matrix): natural opinions
+#        epsilon (float): communication distance
+#        W (vector, matrix): influence vector/matrix
+# OUTPUT:
+#        y (vector, matrix): final opinions
 
 def outcome(x0, epsilon, W):
     Num_ppl = len(x0)
@@ -36,7 +30,27 @@ def outcome(x0, epsilon, W):
     y=np.matmul(Mat_inv,x0+W) 
     
     return y
- 
+
+############################################################################
+# Generates the natural opinions by calling the appropriate function. In the opinion is "Bigaussian", the mean, Delta, ds parameters have to be specified beforehand in the local environment.
+# If Num_party is 2, NAT_TYPE can be 'Bigaussian' or 'Uniform', otherwise it can only be 'Uniform'. 'Uniform' draws the opinions from the appropriate simplex described in the manuscript's SI.
+# INPUT:
+#        Num_ppl (int): number of agents
+#        Num_party (int): number of parties
+#        NAT_TYPE (string): type of distribution from which the opinions will be drawn 
+# OUTPUT:
+#        x0 (vector, matrix): natural opinions
+
+def type_natural_opinion(Num_ppl,Num_party,NAT_TYPE):
+    if NAT_TYPE=='Bigaussian':
+        x0=OPN_GEN.Nat_opn_2(mean,Delta,sd,Num_ppl,R=50)
+    else:
+        x0=OPN_GEN.Random_generation(Num_ppl, Num_party)
+    return x0
+
+###########################################################################
+# Runs an example of the simulation with choice of parameter.
+
 if __name__ == "__main__": 
     
     construction_norm=1

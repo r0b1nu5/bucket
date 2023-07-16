@@ -2,7 +2,7 @@
 
 julia_version = "1.9.0"
 manifest_format = "2.0"
-project_hash = "2606a2fbf792584bd4a5e199967e148283c61251"
+project_hash = "6d158c8e07573d8968ffbd20fa199cae066be9f7"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "dcfdf328328f2645531c4ddebf841228aef74130"
@@ -247,6 +247,12 @@ deps = ["CommonSolve", "DataInterpolations", "DiffEqBase", "DocStringExtensions"
 git-tree-sha1 = "b91afb2a66627f7c24c6f972295292161f09768b"
 uuid = "2445eb08-9709-466a-b3fc-47e12bd697a2"
 version = "1.2.0"
+
+[[deps.DataDrivenSparse]]
+deps = ["DataDrivenDiffEq", "LinearAlgebra", "Printf", "Reexport"]
+git-tree-sha1 = "62c1877475c7fbad13a3df008e919960bcecb842"
+uuid = "5b588203-7d8b-4fab-a537-c31a7f73f46b"
+version = "0.1.2"
 
 [[deps.DataInterpolations]]
 deps = ["LinearAlgebra", "RecipesBase", "RecursiveArrayTools", "Reexport", "Requires"]
