@@ -1,3 +1,5 @@
+using Random
+
 include("hyper_inf.jl")
 include("hyper_kuramoto.jl")
 include("hyper_ktanh.jl")
@@ -9,16 +11,33 @@ include("../../ARNI/reconstruct.jl")
 # Generating the hypergraph.
 n = 7
  #=
+ntw = "wheel"
 p1 = .3
 p2 = .3 
 p3 = .3
 # =#
-# #=
+ #=
+ntw = "wheel"
 p1 = 0.
 p2 = 0.05
 p3 = .3
 # =# 
+# #=
+ntw = "er"
+p1 = 0.
+p2 = .99
+# =#
+
 amplitude = .2
+
+
+if ntw == "wheel"
+	A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
+	A4 = zeros(n,n,n,n)
+elseif ntw == "er"
+	A2,A3 = gen_hyper_er(n,p1,p2)
+	A4 = zeros(n,n,n,n)
+end
 
 test_arni = true
 if test_arni
@@ -58,10 +77,6 @@ cmaparni = get_cmap("viridis")
 c0 = 0.
 c1 = 1.
 
-# #=
-A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
-A4 = zeros(n,n,n,n)
-# =#
  #=
 A2 = diagm(0 => n*ones(n)) - ones(n,n)
 A3 = zeros(n,n,n)

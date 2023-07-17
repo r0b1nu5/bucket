@@ -1,4 +1,4 @@
-using PyPlot
+using PyPlot, Random
 
 # Generates a wheel graph with 'n' nodes (including the center which is node 1) where the spokes are removed with proba p2, the tires are removed with proba p3 and triangles are added between spokes with proba p1)
 
@@ -65,6 +65,46 @@ function plot_hyperwheel(A2,A3,figname::String="Hypergraph")
 	xticks([])
 	yticks([])
 end
+
+
+function gen_hyper_er(n,p1,p2)
+	A2 = zeros(n,n)
+	n2 = round(Int64,p2*(n*(n-1)/2))
+	i2 = shuffle(1:binomial(n,2))[1:n2]
+	E2 = Vector{Vector{Int64}}()
+	count = 0
+	for c in combinations(1:n,2)
+		count += 1
+		if count in i2
+			push!(E2,c)
+			A2[c[1],c[2]] = 1.
+			A2[c[2],c[1]] = 1.
+		end
+	end
+
+	A3 = zeros(n,n,n)
+	n3 = round(Int64,p1*(n*(n-1)*(n-2)/6))
+	i3 = shuffle(1:binomial(n,3))[1:n3]
+	E3 = Vector{Vector{Int64}}()
+	count = 0
+	for c in combinations(1:n,3)
+		count += 1
+		if count in i3
+			push!(E3,c)
+			A3[c[1],c[2],c[3]] = 1.
+			A3[c[1],c[3],c[2]] = 1.
+			A3[c[2],c[1],c[3]] = 1.
+			A3[c[2],c[3],c[1]] = 1.
+			A3[c[3],c[1],c[2]] = 1.
+			A3[c[3],c[2],c[1]] = 1.
+		end
+	end
+
+	return A2,A3
+end
+
+
+
 
 
 
