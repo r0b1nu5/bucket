@@ -7,65 +7,41 @@ include("gen_rand_hyperg.jl")
 include("tools_hyper.jl")
 
 include("../../ARNI/reconstruct.jl")
+include("../../ARNI/reconstruct_3rd.jl")
 
 # Generating the hypergraph.
-n = 7
- #=
-ntw = "wheel"
+n = 10
+# #=
+ntw = "Hyper-wheel"
 p1 = .3
 p2 = .3 
 p3 = .3
 # =#
  #=
-ntw = "wheel"
+ntw = "Wheel"
 p1 = 0.
 p2 = 0.05
 p3 = .3
 # =# 
-# #=
-ntw = "er"
+ #=
+ntw = "ER"
 p1 = 0.
 p2 = .99
+# =#
+ #=
+ntw = "Hyper-ER"
+p1 = .05
+p2 = .4
 # =#
 
 amplitude = .2
 
-
-if ntw == "wheel"
+if ntw in ["Wheel", "Hyper-wheel"]
 	A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
 	A4 = zeros(n,n,n,n)
-elseif ntw == "er"
-	A2,A3 = gen_hyper_er(n,p1,p2)
+elseif ntw in ["ER", "Hyper-ER"]
+	A2,A3 = gen_hyper_er(n,p1,p2,true)
 	A4 = zeros(n,n,n,n)
-end
-
-test_arni = true
-if test_arni
-	figure("ROCs")
-	subplot(2,3,1)
-	title("us")
-	xlabel("FPR")
-	ylabel("TPR")
-	subplot(2,3,2)
-	title("ARNI (polynomial)")
-	xlabel("FPR")
-	ylabel("TPR")
-	subplot(2,3,3)
-	title("ARNI (polynomial diff)")
-	xlabel("FPR")
-	ylabel("TPR")
-	subplot(2,3,4)
-	title("ARNI (fourier)")
-	xlabel("FPR")
-	ylabel("TPR")
-	subplot(2,3,5)
-	title("ARNI (fourier diff)")
-	xlabel("FPR")
-	ylabel("TPR")
-	subplot(2,3,6)
-	title("ARNI (poly) - us")
-	xlabel("FPR")
-	ylabel("TPR (ARNI-us)")
 end
 
 cmapme = get_cmap("RdPu")
@@ -77,13 +53,7 @@ cmaparni = get_cmap("viridis")
 c0 = 0.
 c1 = 1.
 
- #=
-A2 = diagm(0 => n*ones(n)) - ones(n,n)
-A3 = zeros(n,n,n)
-A4 = zeros(n,n,n,n)
-# =#
-
-adj = get_adj_3rd(A2,A3)
+adj = get_adj_3rd(A2,A3)[1]
 # ========================================================================
 
 # #=
@@ -117,10 +87,12 @@ X = .2*(rand(n,400) .- .5) + repeat(xxx[1][:,end],1,400)
 Y = f_ktanh_3rd(X,A2,A3,ω)
 # =#
 
+test_arni = true
 if test_arni
 	writedlm("data/test-arni-Xs.csv",X,',')
 	writedlm("data/test-arni-Ys.csv",Y,',')
-	writedlm("data/test-arni-adj.csv",A2,',')
+	writedlm("data/test-arni-A2.csv",A2,',')
+	writedlm("data/test-arni-A3.csv",A3,',')
 end
 
 sen2 = Float64[]
@@ -130,139 +102,58 @@ spe3 = Float64[]
 sen4 = Float64[]
 spe4 = Float64[]
 
-fprarni1 = zeros(n^2+1,0)
-tprarni1 = zeros(n^2+1,0)
-aucarni1 = Float64[]
-fprarni2 = zeros(n^2+1,0)
-tprarni2 = zeros(n^2+1,0)
-aucarni2 = Float64[]
-fprarni3 = zeros(n^2+1,0)
-tprarni3 = zeros(n^2+1,0)
-aucarni3 = Float64[]
-fprarni4 = zeros(n^2+1,0)
-tprarni4 = zeros(n^2+1,0)
-aucarni4 = Float64[]
-fprme = zeros(n^2+1,0)
-tprme = zeros(n^2+1,0)
-aucme = Float64[]
 
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
 iters = 10:5:200
 iters = 10:5:80
-ooi = [2,]
+ooi = [2,3]
 c = 0
 for iter in iters
 	global c += 1
 	@info "Run $c/$(length(iters))"
 
 	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,-1e-4)
+	A2us = inferred_adj_2nd(xxx[1][2],n)[1]
+	A3us = inferred_adj_3rd(xxx[1][3],n)[1]
+	adjus = get_adj_3rd(A2us,A3us)[1]
+
 	if test_arni
-		 #=
-		adjme = zeros(n,n)
-		for k in keys(xxx[1][2])
-			adjme[k[2][1],k[2][2]] = xxx[1][2][k]
-		end
-		# =#
-		# #=
-	    	adjme = inferred_adj_2nd(xxx[1][2],n)[1]
-		# =#
-		
-		adjarni1 = zeros(n,n)
-		adjarni2 = zeros(n,n)
-		adjarni3 = zeros(n,n)
-		adjarni4 = zeros(n,n)
+		adjarni = zeros(n,Int64(n*(n-1)/2))
 		for i in 1:n
 # bases = ["polynomial", "polynomial_diff", "fourier", "fourier_diff", "power_series", "RBF"]
-			w = reconstruct(X[:,1:iter],Y[:,1:iter],i,A2,"polynomial")
-			#w = reconstruct(X[:,1:iter],Y[:,1:iter],i,A2,"power_series")
-			adjarni1[i,:] = w[1]
-			w = reconstruct(X[:,1:iter],Y[:,1:iter],i,A2,"polynomial_diff")
-			adjarni2[i,:] = w[1]
-			w = reconstruct(X[:,1:iter],Y[:,1:iter],i,A2,"fourier")
-			adjarni3[i,:] = w[1]
-			w = reconstruct(X[:,1:iter],Y[:,1:iter],i,A2,"fourier_diff")
-			adjarni4[i,:] = w[1]
+			w = reconstruct_3rd(X[:,1:iter],Y[:,1:iter],i,adj,1e-6,"power_series")
+			adjarni[i,:] = w[1]
 		end
+		A2arni,A3arni = adj2As(adjarni)
 		
 		ξ = 1e-10
-		rocme = roc(adjme .+ ξ*rand(n,n),A2) # Adding rand(n,n) makes sure that FPR and TPR have the same dim as fprme and tprme.
-		x0 = rocme.FPR
-		y0 = rocme.TPR
-		global fprme = [fprme rocme.FPR]
-		global tprme = [tprme rocme.TPR]
-		push!(aucme,AUC(rocme))
 		
-		rocarni = roc(adjarni1 .+ ξ*rand(n,n),A2)
-		x1 = rocarni.FPR
-		y1 = rocarni.TPR
-		global fprarni1 = [fprarni1 rocarni.FPR]
-		global tprarni1 = [tprarni1 rocarni.TPR]
-		push!(aucarni1,AUC(rocarni))
-		
-		rocarni = roc(adjarni2 .+ ξ*rand(n,n),A2)
-		x2 = rocarni.FPR
-		y2 = rocarni.TPR
-		global fprarni2 = [fprarni2 rocarni.FPR]
-		global tprarni2 = [tprarni2 rocarni.TPR]
-		push!(aucarni2,AUC(rocarni))
-		
-		rocarni = roc(adjarni3 .+ ξ*rand(n,n),A2)
-		x3 = rocarni.FPR
-		y3 = rocarni.TPR
-		global fprarni3 = [fprarni3 rocarni.FPR]
-		global tprarni3 = [tprarni3 rocarni.TPR]
-		push!(aucarni3,AUC(rocarni))
-		
-		rocarni = roc(adjarni4 .+ ξ*rand(n,n),A2)
-		x4 = rocarni.FPR
-		y4 = rocarni.TPR
-		global fprarni4 = [fprarni4 rocarni.FPR]
-		global tprarni4 = [tprarni4 rocarni.TPR]
-		push!(aucarni4,AUC(rocarni))
-		
+		rocadjus = roc(adjus + ξ*rand(Float64,size(adj)),adj)
+		rocA2us = roc(A2us + ξ*rand(n,n),A2)
+		rocA3us = roc(A3us + ξ*rand(n,n,n),A3)
 
-		Z = sortslices([x1 y1 -ones(length(y1));x0 -ones(length(y0)) y0],dims=1)
-		x = Z[:,1]
-		z1 = Z[:,2]
-		temp = Int64[]
-		for i in 1:length(z1)
-			if z1[i] < 0
-				push!(temp,i)
-			else
-				z1[temp] .= z1[i]
-				temp = Int64[]
-			end
-		end
-		z1[temp] .= 1.
-		z0 = Z[:,3]
-		temp = Int64[]
-		for i in 1:length(z0)
-			if z0[i] < 0
-				push!(temp,i)
-			else
-				z0[temp] .= z0[i]
-				temp = Int64[]
-			end
-		end
-		z0[temp] .= 1.
+		rocadjarni = roc(adjarni + ξ*rand(Float64,size(adj)),adj)
+		rocA2arni = roc(A2arni + ξ*rand(n,n),A2)
+		rocA3arni = roc(A3arni + ξ*rand(n,n,n),A3)
 
-		figure("ROCs")
+		figure("ROCs-"*ntw*"-$n")
 		subplot(2,3,1)
-		PyPlot.plot(rocme.FPR,rocme.TPR,color=cmapme(c0 + c1*iter/maximum(iters)))
+		PyPlot.plot(rocadjus.FPR,rocadjus.TPR,color=cmapme(c0+c1*iter/maximum(iters)))
 		subplot(2,3,2)
-		PyPlot.plot(fprarni1[:,end],tprarni1[:,end],color=cmaparni(c0 + c1*iter/maximum(iters)))
+		PyPlot.plot(rocA2us.FPR,rocA2us.TPR,color=cmapme(c0+c1*iter/maximum(iters)))
 		subplot(2,3,3)
-		PyPlot.plot(fprarni2[:,end],tprarni2[:,end],color=cmaparni(c0 + c1*iter/maximum(iters)))
+		PyPlot.plot(rocA3us.FPR,rocA3us.TPR,color=cmapme(c0+c1*iter/maximum(iters)))
+
 		subplot(2,3,4)
-		PyPlot.plot(fprarni3[:,end],tprarni3[:,end],color=cmaparni(c0 + c1*iter/maximum(iters)))
+		PyPlot.plot(rocadjarni.FPR,rocadjarni.TPR,color=cmaparni(c0+c1*iter/maximum(iters)))
 		subplot(2,3,5)
-		PyPlot.plot(fprarni4[:,end],tprarni4[:,end],color=cmaparni(c0 + c1*iter/maximum(iters)))
+		PyPlot.plot(rocA2arni.FPR,rocA2arni.TPR,color=cmaparni(c0+c1*iter/maximum(iters)))
 		subplot(2,3,6)
-		PyPlot.plot(x,z0-z1,color=cmapdiff(1-.9*(c0 + c1*iter/maximum(iters))))
+		PyPlot.plot(rocA3arni.FPR,rocA3arni.TPR,color=cmaparni(c0+c1*iter/maximum(iters)))
+
+
+
 	end
-
-
-
 
 	yyy = check_inference_bool(A2,A3,A4,xxx[1])
 	push!(sen2,yyy[1][1])
@@ -273,20 +164,40 @@ for iter in iters
 	push!(spe4,yyy[3][2])
 end
 
+figure("ROCs-"*ntw*"-$n")
+subplot(2,3,1)
+ylabel("TPR")
+title("ROC adj, us")
+subplot(2,3,2)
+title("ROC A2, us")
+subplot(2,3,3)
+title("ROC A3, us")
+subplot(2,3,4)
+xlabel("FPR")
+ylabel("TPR")
+title("ROC adj, ARNI")
+subplot(2,3,5)
+xlabel("FPR")
+title("ROC A2, ARNI")
+subplot(2,3,6)
+xlabel("FPR")
+title("ROC A3, ARNI")
+
 # Plot the sensitivity and specificity as a function of the length of the time series.
-figure("Perfect measurement",(7.5,5))
-# #=
+#figure("Perfect measurement",(7.5,5))
+ #=
 PyPlot.plot(iters,sen2,"-o",color="C0",label="2nd-order sen.")
 PyPlot.plot(iters,spe2,"--s",color="C0",label="2nd-order spe.")
 # =#
-# #=
+ #=
 PyPlot.plot(iters,sen3,"-o",color="C1",label="3rd-order sen.")
 PyPlot.plot(iters,spe3,"--s",color="C1",label="3rd-order spe.")
 # =#
-# #=
+ #=
 PyPlot.plot(iters,sen4,"-o",color="C2",label="4th-order sen.")
 PyPlot.plot(iters,spe4,"--s",color="C2",label="4th-order spe.")
 # =#
+ #=
 xlabel("Number of measurements")
 legend()
 # =#

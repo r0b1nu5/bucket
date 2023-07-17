@@ -67,7 +67,7 @@ function plot_hyperwheel(A2,A3,figname::String="Hypergraph")
 end
 
 
-function gen_hyper_er(n,p1,p2)
+function gen_hyper_er(n,p1,p2,plot=false)
 	A2 = zeros(n,n)
 	n2 = round(Int64,p2*(n*(n-1)/2))
 	i2 = shuffle(1:binomial(n,2))[1:n2]
@@ -98,6 +98,28 @@ function gen_hyper_er(n,p1,p2)
 			A3[c[3],c[1],c[2]] = 1.
 			A3[c[3],c[2],c[1]] = 1.
 		end
+	end
+
+	if plot
+		x = cos.((1:n)*2π./n)
+		y = sin.((1:n)*2π./n)
+		for i in 1:n-2
+			for j in i+1:n-1
+				for k in j+1:n
+					if A3[i,j,k] > .1
+						PyPlot.fill(x[[i,j,k]],y[[i,j,k]],color="C0",alpha=.5)
+					end
+				end
+			end
+		end
+		for i in 1:n-1
+			for j in i+1:n
+				if A2[i,j] > .1
+					PyPlot.plot(x[[i,j]],y[[i,j]],color="C0")
+				end
+			end
+		end
+		PyPlot.plot(x,y,"o",color="C0")
 	end
 
 	return A2,A3
