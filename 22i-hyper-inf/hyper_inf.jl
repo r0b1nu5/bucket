@@ -35,7 +35,8 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	# Solving the problem using SINDy.
 	coeff = try 
 		res = solve(problem,basis,STLSQ())
-		res.out.Ξ[1,:,:]
+#		res.out.Ξ[1,:,:]
+		Matrix(res.out[1].coefficients')
 	catch e
 		if isa(e,DimensionMismatch)
 			@error "No interaction was inferred for some of the variables. Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."

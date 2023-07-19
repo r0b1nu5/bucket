@@ -10,8 +10,8 @@ include("../../ARNI/reconstruct.jl")
 include("../../ARNI/reconstruct_3rd.jl")
 
 # Generating the hypergraph.
-n = 10
-# #=
+n = 7
+ #=
 ntw = "Hyper-wheel"
 p1 = .3
 p2 = .3 
@@ -28,13 +28,11 @@ ntw = "ER"
 p1 = 0.
 p2 = .99
 # =#
- #=
+# #=
 ntw = "Hyper-ER"
 p1 = .05
 p2 = .4
 # =#
-
-amplitude = .2
 
 if ntw in ["Wheel", "Hyper-wheel"]
 	A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3,true)
@@ -56,17 +54,33 @@ c1 = 1.
 adj = get_adj_3rd(A2,A3)[1]
 # ========================================================================
 
+T = 400
+ΔT = 5
+NT = 80
 # #=
 # Testing the efficiency of the inference using the result of the vector field directly.
 
 # Generate the data
- #=
-X = amplitude*(rand(n,400) .- .5)
-Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
-# =#
 # #=
+amplitude = .1
 X = amplitude*(rand(n,400) .- .5)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4)
+# =#
+ #=
+amplitude = .1
+ξ0 = 0.0005
+X = amplitude*(rand(n,400) .- .5)
+Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + ξ0*randn(size(Y))
+ #=
+X = zeros(n,0)
+Y = zeros(n,0)
+for t in 1:NT
+	xxx = hyper_k(A2,A3,zeros(n),amplitude*(rand(n) .- .5),0.,0.,π/4,π/4,.01,ΔT)
+	global X = [X xxx[1]]
+	global Y = [Y (xxx[2] + ξ0*randn(n,ΔT))]
+end
+# =#
+
 # =#
  #=
 ω = 2*rand(n)
@@ -106,6 +120,7 @@ spe4 = Float64[]
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
 iters = 10:5:200
 iters = 10:5:80
+#iters = 200:5:200
 ooi = [2,3]
 c = 0
 for iter in iters
