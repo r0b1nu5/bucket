@@ -8,6 +8,7 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 # 'ooi': orders of interest. Vector of integers listing the orders of interactions that we analyze. 
 # 'dmax': maximal degree to be considered in the Taylor expansion. Typically, dmax=maximum(ooi).
 # 'thr_global': Threshold value to decide whether an edge exists or not.
+# 'd': Internal dimension of the agents. It is assmued that the components of an agents are consecutive in the state vector.
 #
 # OUTPUTS:
 # 'Ainf': dictionary associating the inferred coefficient of the Taylor expansion to a pair (node,hyperedge). Namely, 'Ainf[(i,h)]' is the coefficient corresponding to the hyperedge 'h' in the Taylor expansion of the dynamics of node 'i'. 
@@ -17,6 +18,11 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 
 function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1)
 	n,T = size(X)
+
+	if size(X) != size(Y)
+		@info "Dimensions of states and derivatives do not match."
+		return nothing
+	end
 
 	# Setting up the problem
 	@variables x[1:n]
@@ -28,15 +34,22 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	l = length(basis.eqs)
 
 	# Solving the problem using SINDy.
+#=
 	coeff = try 
 		res = solve(problem,basis,STLSQ())
-		res.out[1].coefficients
+#		res.out.Ξ[1,:,:]
+		Matrix(res.out[1].coefficients')
 	catch e
 		if isa(e,DimensionMismatch)
 			@error "No interaction was inferred for some of the variables. Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."
 			zeros(n,l)
 		end
 	end
+=#
+	res = solve(problem,basis,STLSQ())
+	coeff = res.out.Ξ[1,:,:]
+
+#	@info "coeff = $coeff"
 
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
@@ -48,20 +61,19 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	for o in sort(ooi,rev=true)
 		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
 		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
-		idx_o[o],agents_o[o] = get_idx_o(o,x,prebasis)
+		idx_o[o],agents_o[o] = get_idx_o(o-1,x,prebasis)
 		inf_o[o] = Vector{Int64}()
-		for i in 1:length(idx_o[o])
-			id = idx_o[o][i]
-			agents = agents_o[o][i]
-			if !(agents in Uinf[o])
-				y = coeff[agents,id]
-				if mean(abs.(y)) > thr_glob
-					for a in agents
-						Ainf[o][(a,agents)] = coeff[a,id]
-						for b in setdiff(agents,[a,])
-							push!(Uinf[o-1],setdiff(agents,[b,]))
-						end
-					end
+		for k in 1:length(idx_o[o])
+			id = idx_o[o][k]
+			agents = agents_o[o][k]
+			cagents = setdiff(1:n,agents)
+			y = coeff[id,cagents]
+			ynz = y[Int64.(setdiff((1:length(y)).*(abs.(y) .> thr_glob),[0.,]))]
+			yds = Int64.(setdiff(cagents.*(abs.(y) .> thr_glob),[0,]))
+			for j in 1:length(yds)
+				Ainf[o][(yds[j],sort([yds[j];agents]))] = ynz[j]
+				for a in agents
+					push!(Uinf[o-1],sort([yds[j];setdiff(agents,[a,])]))
 				end
 			end
 		end
@@ -76,6 +88,38 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Int64, dmax::Int
     return hyper_inf(X,Y,[ooi,],dmax,thr_glob)
 end
 
+# When the agents have a internal dimension d higher than 1.
+function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Union{Int64,Vector{Int64}}, dmax::Int64, d::Int64=1, thr_glob::Float64=.1)
+	Ainf, coeff, idx_o, agents_o = hyper_inf(X,Y,ooi,dmax,thr_glob)
+
+	Ainf, AAinf = one2dim(Ainf,d)
+
+
+end
+
+# Transforms Ainf to agents with d-dimensional internal dynamics.
+function one2dim(Ainf::Dict{Int64,Any}, d::Int64=1)
+	ooi = keys(Ainf)
+	A = Dict{Int64,Any}()
+	AA = Dict{Int64,Any}()
+	for o in ooi
+		A[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}()
+		AA[o] = Dict{Tuple{Int64,Vector{Int64},Vector{Int64}},Float64}() # Description of the keys: 1. index of the source node of the interaction, 2. list of the interacting agents, 3. list of the components interacting.
+		for k in keys(Ainf[o])
+			i,v = k
+			j = ceil(Int64,i/d)
+			u = ceil.(Int64,v./d)
+			w = (v .- 1).%d .+ 1
+			
+			if length(union(u)) == length(u)
+				A[o][(j,u)] = 1.
+				AA[o][(j,u,w)] = Ainf[o][k]
+			end
+		end
+	end
+
+	return A,AA
+end
 
 # Retrieves the indices (in 'prebasis') of the monomials of order 'o' in the variables 'x', involving distincts agents.
 function get_idx_o(o::Int64, x::Symbolics.Arr{Num,1}, prebasis::Vector{Num})

@@ -8,6 +8,7 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 # 'ooi': orders of interest. Vector of integers listing the orders of interactions that we analyze. 
 # 'dmax': maximal degree to be considered in the Taylor expansion. Typically, dmax=maximum(ooi).
 # 'thr_global': Threshold value to decide whether an edge exists or not.
+# 'd': Internal dimension of the agents. It is assmued that the components of an agents are consecutive in the state vector.
 #
 # OUTPUTS:
 # 'Ainf': dictionary associating the inferred coefficient of the Taylor expansion to a pair (node,hyperedge). Namely, 'Ainf[(i,h)]' is the coefficient corresponding to the hyperedge 'h' in the Taylor expansion of the dynamics of node 'i'. 
@@ -33,6 +34,7 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	l = length(basis.eqs)
 
 	# Solving the problem using SINDy.
+#=
 	coeff = try 
 		res = solve(problem,basis,STLSQ())
 #		res.out.Ξ[1,:,:]
@@ -43,6 +45,9 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 			zeros(n,l)
 		end
 	end
+=#
+	res = solve(problem,basis,STLSQ())
+	coeff = res.out.Ξ[1,:,:]
 
 #	@info "coeff = $coeff"
 
@@ -83,6 +88,38 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Int64, dmax::Int
     return hyper_inf(X,Y,[ooi,],dmax,thr_glob)
 end
 
+# When the agents have a internal dimension d higher than 1.
+function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Union{Int64,Vector{Int64}}, dmax::Int64, d::Int64=1, thr_glob::Float64=.1)
+	Ainf, coeff, idx_o, agents_o = hyper_inf(X,Y,ooi,dmax,thr_glob)
+
+	Ainf, AAinf = one2dim(Ainf,d)
+
+
+end
+
+# Transforms Ainf to agents with d-dimensional internal dynamics.
+function one2dim(Ainf::Dict{Int64,Any}, d::Int64=1)
+	ooi = keys(Ainf)
+	A = Dict{Int64,Any}()
+	AA = Dict{Int64,Any}()
+	for o in ooi
+		A[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}()
+		AA[o] = Dict{Tuple{Int64,Vector{Int64},Vector{Int64}},Float64}() # Description of the keys: 1. index of the source node of the interaction, 2. list of the interacting agents, 3. list of the components interacting.
+		for k in keys(Ainf[o])
+			i,v = k
+			j = ceil(Int64,i/d)
+			u = ceil.(Int64,v./d)
+			w = (v .- 1).%d .+ 1
+			
+			if length(union(u)) == length(u)
+				A[o][(j,u)] = 1.
+				AA[o][(j,u,w)] = Ainf[o][k]
+			end
+		end
+	end
+
+	return A,AA
+end
 
 # Retrieves the indices (in 'prebasis') of the monomials of order 'o' in the variables 'x', involving distincts agents.
 function get_idx_o(o::Int64, x::Symbolics.Arr{Num,1}, prebasis::Vector{Num})
