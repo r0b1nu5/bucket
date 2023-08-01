@@ -6,28 +6,37 @@ include("hyper_ktanh.jl")
 include("gen_rand_hyperg.jl")
 include("tools_hyper.jl")
 
-include("../../ARNI/reconstruct.jl")
-include("../../ARNI/reconstruct_3rd.jl")
+# ARNI
+include("reconstruct.jl")
+include("reconstruct_3rd.jl")
 
 # Generating the hypergraph.
 n = 7
+
+# Wheel graph with n vertices with randomly added 3-body interactions (p1), and randomly removed 2-edges (p2,p3).
  #=
 ntw = "Hyper-wheel"
 p1 = .3
 p2 = .3 
 p3 = .3
 # =#
+
+# Wheel graph with randomly removed edges (p2,p3). No 3rd-order edges.
  #=
 ntw = "Wheel"
 p1 = 0.
 p2 = 0.05
 p3 = .3
 # =# 
+
+# ER random graph with parameter p2. No 3rd-order edges.
  #=
 ntw = "ER"
 p1 = 0.
 p2 = .99
 # =#
+
+# ER random graph with parameter p2. Additional 3rd-order edges (proportion p1 of all the possible 3-edges).
 # #=
 ntw = "Hyper-ER"
 p1 = .05

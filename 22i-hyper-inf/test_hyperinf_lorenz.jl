@@ -1,6 +1,6 @@
 using PyPlot, DelimitedFiles
 
-include("hyper_inf_new.jl")
+include("hyper_inf.jl")
 
 t = .01
 
@@ -9,7 +9,7 @@ Ys = (Xs[:,2:end] - Xs[:,1:end-1])./t
 
 n,T = size(Ys)
 
-ooi = [2,]
+ooi = [2,3]
 
 xxx = hyper_inf(Xs[:,1:end-1],Ys,ooi,3,-.1)
 
