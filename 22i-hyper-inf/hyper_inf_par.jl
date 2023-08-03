@@ -1,4 +1,21 @@
-using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics
+###### NOT WORKING, BECAUSE STLSQ() DOES NOT PARALLELIZE #######################
+@info "Warning: does not parallelize..."
+
+using Distributed 
+
+# Define the number of threads
+n_thr = 3
+
+if nworkers() < n_thr
+	addprocs(n_thr-nworkers())
+end
+
+# If file "parallel" does not exist, then create it
+if !isdir("parallel/")
+	mkdir("parallel/")
+end
+
+@everywhere using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics
 
 # Infers an hypergraph with knowledge of the states 'X' and of the derivatives 'Y'.
 #
@@ -16,7 +33,7 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 # 'idx_o': dictionary of each monomial index in the matrix coeff. To each order 'o' is associated the list of the indices of monomial of order 'o' involving distinct agents.
 # 'agents_o': dictionary of the agents involved in each monomial of 'idx_o'. Each element of 'idx_o[o]' is the index of a monomial, and each element of 'agents_o[o]' is the list of agents (their indices) involved in this monomial.
 
-function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1)
+@everywhere function hyper_inf_par(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1)
 	n,T = size(X)
 
 	if size(X) != size(Y)
@@ -24,34 +41,18 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 		return nothing
 	end
 
-	# Setting up the problem
-	@variables x[1:n]
-	problem = DirectDataDrivenProblem(X,Y,name = :HyperInference)
-
-	# Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
-	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
-	basis = Basis(prebasis,[x[i] for i in 1:n])
-	l = length(basis.eqs)
-
-	# Solving the problem using SINDy.
-#=
-	coeff = try 
-		res = solve(problem,basis,STLSQ())
-#		res.out.Ξ[1,:,:]
-		Matrix(res.out[1].coefficients')
-	catch e
-		if isa(e,DimensionMismatch)
-			@error "No interaction was inferred for some of the variables. Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."
-			zeros(n,l)
-		end
+	args = Vector{Tuple{Matrix{Float64},Int64,Matrix{Float64},Int64}}()
+	for i in 1:n
+		push!(args,(X[[i,],:],i,Y,dmax))
 	end
-=#
-	res = solve(problem,basis,STLSQ())
-#	coeff = res.out.Ξ[1,:,:]
-	coeff = Matrix(res.out[1].coefficients')
 
-#	@info "coeff = $coeff"
+	pmap(infer_par,args)
 
+	coeff = readdlm("parallel/coeff_1.csv",',')
+	for i in 2:n
+		coeff = [coeff readdlm("parallel/coeff_$i.csv")]
+	end
+	coeff = Matrix(transpose(coeff))
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
@@ -83,23 +84,41 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	return Ainf, coeff, idx_o, agents_o
 end
 
+@everywhere function infer_par(args::Tuple{Matrix{Float64},Int64,Matrix{Float64},Int64})
+	Xi,i,Y,dmax = args
+	n,T = size(Y)
+
+	# Setting up the problem
+	@variables x[1:n]
+	problem = DirectDataDrivenProblem(Xi,Y,name = :HyperInference)
+
+	# Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
+	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
+	basis = Basis(prebasis,[x[i] for i in 1:n])
+
+	res = solve(problem,basis,STLSQ())
+#	coeff = res.out.Ξ[1,:,:]
+	coeff = Vector(res.out[1].coefficients)
+
+	writedlm("parallel/coeff_$i.csv")
+end
+
 
 # In case we want to infer only one order of hyperedge.
-function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Int64, dmax::Int64, thr_glob::Float64=1.)
-    return hyper_inf(X,Y,[ooi,],dmax,thr_glob)
+@everywhere function hyper_inf_par(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Int64, dmax::Int64, thr_glob::Float64=1.)
+    return hyper_inf_par(X,Y,[ooi,],dmax,thr_glob)
 end
 
 # When the agents have a internal dimension d higher than 1.
-function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Union{Int64,Vector{Int64}}, dmax::Int64, d::Int64=1, thr_glob::Float64=.1)
-	Ainf, coeff, idx_o, agents_o = hyper_inf(X,Y,ooi,dmax,thr_glob)
+@everywhere function hyper_inf_par(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Union{Int64,Vector{Int64}}, dmax::Int64, d::Int64=1, thr_glob::Float64=.1)
+	Ainf, coeff, idx_o, agents_o = hyper_inf_par(X,Y,ooi,dmax,thr_glob)
 
 	Ainf, AAinf = one2dim(Ainf,d)
-
-
 end
 
+
 # Transforms Ainf to agents with d-dimensional internal dynamics.
-function one2dim(Ainf::Dict{Int64,Any}, d::Int64=1)
+@everywhere function one2dim(Ainf::Dict{Int64,Any}, d::Int64=1)
 	ooi = keys(Ainf)
 	A = Dict{Int64,Any}()
 	AA = Dict{Int64,Any}()
@@ -123,7 +142,7 @@ function one2dim(Ainf::Dict{Int64,Any}, d::Int64=1)
 end
 
 # Retrieves the indices (in 'prebasis') of the monomials of order 'o' in the variables 'x', involving distincts agents.
-function get_idx_o(o::Int64, x::Symbolics.Arr{Num,1}, prebasis::Vector{Num})
+@everywhere function get_idx_o(o::Int64, x::Symbolics.Arr{Num,1}, prebasis::Vector{Num})
 	comb = combinations(1:length(x),o)
 	idx = Int64[]
 	agents = Vector{Int64}[]
@@ -140,7 +159,7 @@ end
 
 
 # Constructing the monomial of variables in 'x' with indices of 'c'.
-function get_monomial(x::Symbolics.Arr{Num,1}, c::Vector{Int64})
+@everywhere function get_monomial(x::Symbolics.Arr{Num,1}, c::Vector{Int64})
 	mon = 1
 	for i in c
 		mon *= x[i]
@@ -149,7 +168,7 @@ function get_monomial(x::Symbolics.Arr{Num,1}, c::Vector{Int64})
 end
 
 # Constructing all monomials of order 'o' in the variables 'x'. 
-function get_monomial(x::Symbolics.Arr{Num,1}, o::Int64)
+@everywhere function get_monomial(x::Symbolics.Arr{Num,1}, o::Int64)
     n = length(x)
     mon = Num[]
     comb = collect(combinations(1:n,o))
@@ -164,7 +183,7 @@ end
 # Returns the inferred 2nd-order adjacency matrix
 # Components of 'A2t_bool' are 1. iff the inferred coefficient is larger than 'thr'.
 # Components of 'A2t_float' are are equal to the coefficient, irrespective of their magnitude.
-function inferred_adj_2nd(Ainf2::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::Int64, thr::Float64=0.)
+@everywhere function inferred_adj_2nd(Ainf2::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::Int64, thr::Float64=0.)
 	A2t_bool = zeros(n,n)
 	A2t_float = zeros(n,n)
 
@@ -183,7 +202,7 @@ end
 # Returns the inferred 3rd-order adjacency tensor
 # Components of 'A3t_bool' are 1. iff the inferred coefficient is larger than 'thr'.
 # Components of 'A3t_float' are are equal to the coefficient, irrespective of their magnitude.
-function inferred_adj_3rd(Ainf3::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::Int64, thr::Float64=0.)
+@everywhere function inferred_adj_3rd(Ainf3::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::Int64, thr::Float64=0.)
 	A3t_bool = zeros(n,n,n)
 	A3t_float = zeros(n,n,n)
 
@@ -202,7 +221,7 @@ end
 # Returns the inferred 4th-order adjacency tensor
 # Components of 'A4t_bool' are 1. iff the inferred coefficient is larger than 'thr'.
 # Components of 'A4t_float' are are equal to the coefficient, irrespective of their magnitude.
-function inferred_adj_4th(Ainf4::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::Int64, thr::Float64=0.)
+@everywhere function inferred_adj_4th(Ainf4::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::Int64, thr::Float64=0.)
 	A4t_bool = zeros(n,n,n,n)
 	A4t_float = zeros(n,n,n,n)
 
@@ -220,7 +239,7 @@ end
 
 # Checks the sensitivity and specificity of our inference.
 # Considers unweighted interactions, i.e., summarizes the inference in a boolean array.
-function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Array{Float64,4}, Ainf::Dict{Int64,Any}, thr::Float64=0.)
+@everywhere function check_inference_bool(A2::Matrix{Float64}, A3::Array{Float64,3}, A4::Array{Float64,4}, Ainf::Dict{Int64,Any}, thr::Float64=0.)
     n = size(A2)[2]
     A2t = zeros(n,n)
     A3t = zeros(n,n,n)
@@ -354,7 +373,7 @@ end
 
 # Checks the correlation between the non-zero elements of the inferred and actual adjacency tensors. 
 # Each component is considered in the correlation if it is nonzero in at least one of the two tensors (actual or inferred). 
-function check_inference_float(A2::Matrix{Float64}, A3::Array{Float64,3}, Ainf::Dict{Int64,Any},thr::Float64=1e-6)
+@everywhere function check_inference_float(A2::Matrix{Float64}, A3::Array{Float64,3}, Ainf::Dict{Int64,Any},thr::Float64=1e-6)
 	n = size(A2)[2]
 
 	if 2 in keys(iAinf)
