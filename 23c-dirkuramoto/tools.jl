@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra, Statistics, SpecialFunctions, Distributions
 
 function L2B(L::Matrix{Float64})
 	n = size(L)[1]
@@ -32,6 +32,52 @@ end
 function gen_cycle_dir(n::Int64)
 	return diagm(0 => ones(n)) - diagm(1 => ones(n-1)) - diagm(1-n => ones(1))
 end
+
+function gof_normal(x::Vector{<:Any}, qmax::Int64, iter::Int64=5000)
+	μ0 = mean(x)
+	σ0 = std(x)
+	n = length(x)
+
+	d0 = ks_discr_normal(x,qmax,μ0,σ0)
+
+	c = 0 
+
+	for i in 1:iter
+		y = round.(rand(Normal(μ0,σ0),n))
+		μ1 = mean(y)
+		σ1 = std(y)
+
+		d1 = ks_discr_normal(y,qmax,μ1,σ1)
+		
+		if d1 > d0
+			c +=1
+#			@info "($d0,$d1) <-------------"
+		else
+#			@info "($d0,$d1)"
+		end
+	end
+
+	return c/iter
+end
+
+function ks_discr_normal(x::Vector{<:Any}, qmax::Int64, μ::Float64=0., σ::Float64=1.)
+	cdft = [(.5+.5*erf((q+.5-μ)/(sqrt(2)*σ))) for q in -qmax:qmax]
+	cdfe = [sum(x .<= q)/length(x) for q in -qmax:qmax]
+
+	return norm(cdft-cdfe,Inf)
+end
+
+function qqplot(x::Vector{<:Any}, qmax::Int64, μ::Float64=0., σ::Float64=1.; color::String)
+	cdft = [(.5+.5*erf((q+.5-μ)/(sqrt(2)*σ))) for q in -qmax:qmax]
+	cdfe = [sum(x .<= q)/length(x) for q in -qmax:qmax]
+	
+	figure("Q-Q plot")
+	PyPlot.plot(sort(cdft),sort(cdfe),".",color=color)
+	xlabel("Theoretical")	
+	ylabel("Empirical")
+	
+end
+
 
 
 
