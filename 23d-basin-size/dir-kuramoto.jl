@@ -2,13 +2,14 @@ using PyPlot
 
 include("tools.jl")
 
-function dir_kuramoto(L::Matrix{Float64}, θ0::Vector{Float64}, ω::Vector{Float64}, h = .01, max_iter::Int64=1000)
+function dir_kuramoto(L::Matrix{Float64}, θ0::Vector{Float64}, ω::Vector{Float64}, h = .01, max_iter::Int64=1000, thr::Float64=1e-6)
 	Bout,Bin,w = L2B(L)
 
 	θ = θ0
 
 	t = 0
-	while t < max_iter
+	corr = 1000.
+	while t < max_iter && (corr > thr || t < 10)
 		t += 1
 #		if t%100 == 0
 #			@info "$t/$max_iter"
@@ -19,7 +20,9 @@ function dir_kuramoto(L::Matrix{Float64}, θ0::Vector{Float64}, ω::Vector{Float
 		k3 = f_dk(θ+k2*h/2,ω,Bout,Bin,w)
 		k4 = f_dk(θ+k3*h,ω,Bout,Bin,w)
 
-		θ += h*(k1+2*k2+2*k3+k4)./6
+		dθ = (k1+2*k2+2*k3+k4)./6
+		θ += h*dθ
+		corr = norm(dθ,Inf)
 	end
 
 	return θ
