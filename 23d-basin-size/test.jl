@@ -4,7 +4,7 @@ include("dir-kuramoto.jl")
 include("cycle-kuramoto.jl")
 include("tools.jl")
 
- #= 
+# #= 
 n = 83
 qmax = floor(Int64,n/4)
 qs = -qmax:qmax

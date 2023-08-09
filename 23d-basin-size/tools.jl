@@ -131,7 +131,7 @@ function rand_exp(yy::Vector{Float64}, β::Float64, μ::Float64, C::Float64, qma
 	pdft = [0.;C_exp(β,μ,qmax)*exp.(-β*abs.((-qmax:qmax) .- μ))]
 	cdft = cumsum(pdft)
 	
-	qs = [maximum((-qmax:qmax+1).*(y .>= cdft)) for y in yy]
+	qs = [maximum((1:2*qmax+2).*(y .>= cdft)) for y in yy] .- qmax .- 1
 
 	return qs
 end
