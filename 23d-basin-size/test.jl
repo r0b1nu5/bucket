@@ -1,6 +1,7 @@
 using Statistics
 
 include("dir-kuramoto.jl")
+include("cycle-kuramoto.jl")
 include("tools.jl")
 
  #= 
@@ -16,7 +17,7 @@ Qf = Dict{Int64,Vector{Int64}}(q => Int64[] for q in -qmax:qmax)
 L = gen_cycle_undir(n)
 σ = collect(1:n)
 
-n_iter = 100
+n_iter = 1000
 
 for iter in 1:n_iter
 	if iter%100 == 0
@@ -25,7 +26,7 @@ for iter in 1:n_iter
 
 	θi = 2π*rand(n)
 	qi = winding(θi,σ)
-	θf = dir_kuramoto(L,θi,zeros(n))
+	θf = cycle_kuramoto(θi,zeros(n),ones(n))
 	qf = winding(θf,σ)
 
 	Qs[qi+qmax+1,qf+qmax+1] += 1
@@ -53,8 +54,10 @@ Mi = Float64[]
 Mf = Float64[]
 Σi = Float64[]
 Σf = Float64[]
-Pi = Float64[]
-Pf = Float64[]
+Pni = Float64[]
+Pnf = Float64[]
+Pei = Float64[]
+Pef = Float64[]
 
 min_stat = 10
 
@@ -73,9 +76,11 @@ for i in 1:nq
 		subplot(2,2,2)
 		PyPlot.plot(-qmax-μi:qmax-μi,Qs[i,:]./si,"-o")
 	
-		push!(Pi,gof_normal(Qf[qi],qmax,50))
+		push!(Pni,gof_normal(Qf[qi],qmax,50))
+		push!(Pei,gof_exp(Qf[qi],qmax,50))
 	else
-		push!(Pi,NaN)
+		push!(Pni,NaN)
+		push!(Pei,NaN)
 	end
 
 	qf = i-1-qmax
@@ -91,9 +96,11 @@ for i in 1:nq
 		subplot(2,2,4)
 		PyPlot.plot(-qmax-μf:qmax-μf,Qs[:,i]./sf,"-o")
 	
-		push!(Pf,gof_normal(Qi[qf],qmax,50))
+		push!(Pnf,gof_normal(Qi[qf],qmax,50))
+		push!(Pef,gof_exp(Qi[qf],qmax,50))
 	else
-		push!(Pf,NaN)
+		push!(Pnf,NaN)
+		push!(Pef,NaN)
 	end
 end
 
@@ -121,11 +128,24 @@ PyPlot.plot(-qmax:qmax,Σf,"--",color="C1")
 xlabel("qi or qf")
 
 figure("GoFs Normal")
-PyPlot.bar(-qmax:qmax,Pi,color="C0",align="edge",width=-.4)
-PyPlot.bar(-qmax:qmax,Pf,color="C1",align="edge",width=.4)
+PyPlot.bar(-qmax:qmax,Pni,color="C0",align="edge",width=-.4)
+PyPlot.bar(-qmax:qmax,Pnf,color="C1",align="edge",width=.4)
 PyPlot.plot([-qmax,qmax],[.05,.05],"--k")
 axis([-qifmax-1,qifmax+1,0.,1.])
 xlabel("qi or qf")
 ylabel("p-value")
 xticks(-qifmax:qifmax)
+
+figure("GoFs Exponential")
+PyPlot.bar(-qmax:qmax,Pei,color="C0",align="edge",width=-.4)
+PyPlot.bar(-qmax:qmax,Pef,color="C1",align="edge",width=.4)
+PyPlot.plot([-qmax,qmax],[.05,.05],"--k")
+axis([-qifmax-1,qifmax+1,0.,1.])
+xlabel("qi or qf")
+ylabel("p-value")
+xticks(-qifmax:qifmax)
+
+
+
+
 

@@ -47,7 +47,9 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	end
 =#
 	res = solve(problem,basis,STLSQ())
-	coeff = res.out.Ξ[1,:,:]
+# Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
+#	coeff = res.out.Ξ[1,:,:]
+	coeff = Matrix(res.out[1].coefficients')
 
 #	@info "coeff = $coeff"
 

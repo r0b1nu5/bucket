@@ -3,6 +3,7 @@ using Statistics, DelimitedFiles
 include("tools.jl")
 
 ns = [83,]
+ns = [43,83,123]
 
 type = "undir" # "dir", "undir"
 n_intra = 1000
@@ -27,10 +28,11 @@ end
 
 if length(ns) > 1
 	figure("n-scaling")
-	PyPlot.plot(ns,Mf_slope,color="C0")
-	PyPlot.plot(ns,Σf,"--",color="C0")
-	PyPlot.plot(ns,Mi_slope,color="C1")
-	PyPlot.plot(ns,Σi,"--",color="C1")
+	PyPlot.plot(ns,Mf_slope,"-o",color="C0",label="μf slope")
+	PyPlot.plot(ns,Σf./sqrt.(ns),"--o",color="C0",label="σf/√n")
+	PyPlot.plot(ns,Mi_slope,"-o",color="C1",label="μi slope")
+	PyPlot.plot(ns,Σi./sqrt.(ns),"--o",color="C1",label="σi/√n")
+	legend()
 else
 	plot_Qs(Qs)
 	@info "μf_slope = $(Mf_slope[1])"

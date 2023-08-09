@@ -16,3 +16,8 @@ xxx = hyper_inf(Xs[:,1:end-1],Ys,ooi,3,-.1)
 A2,AA2 = inferred_adj_2nd(xxx[1][2],n)
 A3,AA3 = inferred_adj_3rd(xxx[1][3],n)
 
+d = 3
+
+
+
+

@@ -1,15 +1,16 @@
-using SparseArrays
+using SparseArrays, Dates
 
 include("dir-kuramoto.jl")
+include("cycle-kuramoto.jl")
 include("tools.jl")
 
-n_iter = 36000
+n_iter = 100000
 n_intra = 1000
 n_loop = Int64(n_iter/n_intra)
 
 n_perc = ceil(Int64,n_iter/100)
 
-n = 83
+n = 23
 
 L = gen_cycle_undir(n); type = "undir"
 #L = get_cycle_dir(n); type = "dir"
@@ -17,8 +18,8 @@ L = gen_cycle_undir(n); type = "undir"
 
 ω = zeros(n)
 
-qmax = floor(Int64,n/4)
-nq = floor(Int64,n/2+1)
+qmax = floor(Int64,n/2)
+nq = 2*qmax+1
 
 iter = 0
 ids = Int64[]
@@ -28,25 +29,31 @@ for str in readdir("data/")
 	end
 end
 
+t0 = now()
 for l in 1:n_loop
 	id = rand(1111:9999)
 	while id in ids
 		id = rand(1111:9999)
 	end
 
-	Qs = init_Qs(n)
+	global Qs = init_Qs(n)
 	for i in 1:n_intra
 		global iter += 1
 
 		θi = 2π*rand(n)
 		qi = winding(θi,σ)
-		θf = dir_kuramoto(L,θi,ω)
+#		θf = dir_kuramoto(L,θi,ω)
+		θf = cycle_kuramoto(θi,ω)
 		qf = winding(θf,σ)
 
 		Qs[qi][qf] += 1
 
 		if iter%n_perc == 0
-			@info "Achieved: $(iter/n_iter*100)%"
+			dt = Dates.value(now() - t0)
+			prop = iter/n_iter
+			dtfin = canonicalize(Millisecond(round(Int64,dt/prop*(1-prop))))
+			
+			@info "Achieved: $(iter/n_iter*100)%, remaining time: $dtfin"
 		end
 	end
 

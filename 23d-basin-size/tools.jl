@@ -51,9 +51,6 @@ function gof_normal(x::Vector{<:Any}, qmax::Int64, iter::Int64=5000)
 		
 		if d1 > d0
 			c +=1
-#			@info "($d0,$d1) <-------------"
-		else
-#			@info "($d0,$d1)"
 		end
 	end
 
@@ -65,6 +62,78 @@ function ks_discr_normal(x::Vector{<:Any}, qmax::Int64, μ::Float64=0., σ::Floa
 	cdfe = [sum(x .<= q)/length(x) for q in -qmax:qmax]
 
 	return norm(cdft-cdfe,Inf)
+end
+
+function gof_exp(x::Vector{<:Any}, qmax::Int64, iter::Int64=5000)
+	μ0 = mean(x)
+
+	ns = [sum(x .== q) for q in -qmax:qmax]
+
+	β0 = mle_exp(ns,μ0,qmax)
+	C0 = C_exp(β0,μ0,qmax)
+
+	d0 = ks_exp(x,β0,μ0,qmax)
+
+	c = 0 
+	for i in 1:iter
+		y = rand_exp(rand(length(x)),β0,μ0,C0,qmax)
+		μ1 = mean(y)
+		β1 = mle_exp([sum(y .== q) for q in -qmax:qmax],μ1,qmax)
+
+		d1 = ks_exp(y,β1,μ1,qmax)
+
+		if d1 > d0
+			c += 1
+		end
+	end
+
+	return c/iter
+
+end
+
+function mle_exp(ns::Vector{Int64}, μ::Float64, qmax::Int64)
+	return mle_exp(Float64.(ns),μ,qmax)
+end
+
+function mle_exp(ns::Vector{Float64}, μ::Float64, qmax::Int64)
+	l = sum(ns)
+	
+	side = 4.99
+	β = 5.
+
+	L = zeros(100)
+	while side > 1e-4
+		βs = LinRange(max(β-side,side/100),β+side,100)
+		for i in 1:100
+			L[i] = l*log(C_exp(βs[i],μ,qmax)) - βs[i]*sum(ns.*abs.((-qmax:qmax).-μ))
+		end
+
+		β = βs[findmax(L)[2]]
+		side /= 10
+	end
+
+	return β
+end
+
+function C_exp(β::Float64, μ::Float64, qmax::Int64)
+	return 1/sum(exp.(-β*abs.((-qmax:qmax) .- μ)))
+end
+
+function ks_exp(x::Vector{<:Any}, β::Float64, μ::Float64, qmax::Int64)
+	pdft = [0.;C_exp(β,μ,qmax)*exp.(-β*abs.((-qmax:qmax) .- μ))]
+	cdft = cumsum(pdft)
+	cdfe = [0.;[sum(x .<= q)/length(x) for q in -qmax:qmax]]
+	
+	return norm(cdft-cdfe,Inf)
+end
+
+function rand_exp(yy::Vector{Float64}, β::Float64, μ::Float64, C::Float64, qmax::Int64)
+	pdft = [0.;C_exp(β,μ,qmax)*exp.(-β*abs.((-qmax:qmax) .- μ))]
+	cdft = cumsum(pdft)
+	
+	qs = [maximum((-qmax:qmax+1).*(y .>= cdft)) for y in yy]
+
+	return qs
 end
 
 function qqplot(x::Vector{<:Any}, qmax::Int64, μ::Float64=0., σ::Float64=1.; color::String)
@@ -79,7 +148,7 @@ function qqplot(x::Vector{<:Any}, qmax::Int64, μ::Float64=0., σ::Float64=1.; c
 end
 
 function init_Qs(n::Int64)
-	qmax = floor(Int64,n/4)
+	qmax = floor(Int64,n/2)
 	
 	Qs = Dict{Int64,Dict{Int64,Int64}}()
 	for qi in -qmax:qmax
