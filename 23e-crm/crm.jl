@@ -106,21 +106,24 @@ end
 g = Graph(A0)
 
 figure("Graph")
+plot_ch()
 plot_A(A0,X,Y)
 
 figure("Graph, degree")
 v = d0
-vn = normalized(v)
-plot_vscale(A0,X,Y,vn)
-str = get_list(vn,namr,20)
+#vn = normalized(v)
+plot_ch()
+plot_vscale(A0,X,Y,v,"plasma",cb=true)
+str = get_list(v,namr,20)
 PyPlot.plot(maximum(X)+.1,minimum(y),"xk")
 PyPlot.text(maximum(X)+.1,minimum(Y),str)
 
 figure("Graph, betweenness c.")
 v = betweenness_centrality(g)
-vn = normalized(v)
-plot_vscale(A0,X,Y,vn)
-str = get_list(vn,namr,20)
+#vn = normalized(v)
+plot_ch()
+plot_vscale(A0,X,Y,v,"plasma",cb=true)
+str = get_list(v,namr,20)
 PyPlot.plot(maximum(X)+.1,minimum(y),"xk")
 PyPlot.text(maximum(X)+.1,minimum(Y),str)
 

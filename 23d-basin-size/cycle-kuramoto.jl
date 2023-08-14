@@ -37,8 +37,8 @@ function f_cycle_k(θ::Vector{Float64}, ω::Vector{Float64}, w::Vector{Float64})
 	return ω - w.*sin.(θ - [θ[2:end];θ[1]]) - [w[n];w[1:n-1]].*sin.(θ - [θ[n];θ[1:n-1]])
 end
 
-function f_cycle_k(θ::Vector{Float64}, ω::Vector{Float64})
-	return f_cycle_k(θ,ω,ones(length(θ)))
+function f_cycle_k(θ::Vector{Float64}, ω::Vector{Float64}, h::Float64=.01, max_iter::Int64=1000, thr::Float64=1e-6)
+	return f_cycle_k(θ,ω,ones(length(θ)),h,max_iter,thr)
 end
 
 

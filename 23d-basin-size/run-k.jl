@@ -10,7 +10,7 @@ n_loop = Int64(n_iter/n_intra)
 
 n_perc = ceil(Int64,n_iter/100)
 
-n = 23
+n = 163
 
 L = gen_cycle_undir(n); type = "undir"
 #L = get_cycle_dir(n); type = "dir"
