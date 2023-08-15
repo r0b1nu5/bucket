@@ -317,6 +317,73 @@ function get_normal_par(Qs::Dict{Int64,Dict{Int64,Int64}})
 	return Mf_slope,Mi_slope,σf,σi
 end
 
+
+
+########## NOT READY YET...
+
+function get_exp_par(Qs::Dict{Int64,Dict{Int64,Int64}}, qmax::Int64)
+	qis = sort(collect(keys(Qs)))
+
+	Mf = Float64[]
+	Λf = Float64[]
+	Nf = Int64[]
+	for qi in qis
+		qfs,Ns = get_qfs(qi,Qs)
+		c = 0
+		NNs = Int64[]
+		for q in -qmax:qmax
+			if q in qfs
+				c += 1
+				push!(NNs,Ns[c])
+			else
+				push!(NNs,0)
+			end
+		end
+
+		push!(Mf,mean(qfs,weights(Ns)))
+		push!(Λf,mle_exp(NNs,Mf[end],qmax))
+		push!(Nf,sum(Ns))
+	end
+	
+	Mf_slope = sum(Mf.*qis.*Nf)/sum(Nf.*qis.^2)
+	λf = mean(Λf[Nf.>1],weights(Nf[Nf.>1]))
+	
+
+	qt = Int64[]
+	for qi in keys(Qs)
+		qt = [qt;collect(keys(Qs[qi]))]
+	end
+	qfs = sort(union(qt))
+
+	Mi = Float64[]
+	Λi = Float64[]
+	Ni = Int64[]
+	for qf in qfs
+		qis,Ns = get_qis(qf,Qs)
+		c = 0
+		NNs = Int64[]
+		for q in -qmax:qmax
+			if q in qis
+				c += 1
+				push!(NNs,Ns[c])
+			else
+				push!(NNs,0)
+			end
+		end
+
+		push!(Mi,mean(qis,weights(Ns)))
+		push!(Λi,mle_exp(NNs,Mi[end],qmax))
+		push!(Ni,sum(Ns))
+	end
+
+	Mi_slope = sum(Mi.*qfs.*Ni)/sum(Ni.*qfs.^2)
+	λi = mean(Λi[Ni.>1],weights(Ni[Ni.>1]))
+
+	return Mf_slope,Mi_slope,λf,λi
+end
+
+
+
 function plot_Qs(Qs)
 	Mf,Σf,Nf,qis = get_stat_f(Qs)
 	Mi,Σi,Ni,qfs = get_stat_i(Qs)
