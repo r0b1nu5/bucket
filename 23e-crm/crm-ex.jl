@@ -132,7 +132,8 @@ while measure == "unknown"
 	end
 end
 
-yess = ["yes","Yes","YES","Y","y","oui","Oui","OUI","o","O"]
+yess = ["yes","Yes","YES","Y","y","oui","Oui","OUI","o","O",""]
+nos = ["no","No","NO","N","n","non","Non","NON"]
 add_edge = "yes"
 Add = zeros(n,n)
 while measure != "xxx" && add_edge in yess
@@ -151,8 +152,11 @@ while measure != "xxx" && add_edge in yess
 	end
 	@info "======================================"
 
-	print("Veux-tu ajouter une arête ? ('oui'/'non') ")
-	global add_edge = readline()
+	global add_edge = "???"
+	while !(add_edge in union(yess,nos))
+		print("Veux-tu ajouter une arête ? ([oui]/non) ")
+		global add_edge = readline()
+	end
 	while add_edge in yess
 		print("Numéro du premier sommet : ")
 		i = parse(Int64,readline())
@@ -181,8 +185,11 @@ while measure != "xxx" && add_edge in yess
 			end
 			@info "======================================"
 		end
-		print("Veux-tu ajouter une arête ? ('oui'/'non') ")
-		global add_edge = readline()
+		global add_edge = "???"
+		while !(add_edge in union(yess,nos))
+			print("Veux-tu ajouter une arête ? ([oui]/non) ")
+			global add_edge = readline()
+		end
 	end
 
 end

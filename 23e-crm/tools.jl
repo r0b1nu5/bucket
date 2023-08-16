@@ -76,7 +76,7 @@ function plot_escale(A::Matrix{Float64},x::Vector{Float64},y::Vector{Float64},cm
 	for i in 1:n
 		for j in i+1:n
 			if abs(A[i,j]) > 1e-10
-				PyPlot.plot(x[[i,j]],y[[i,j]],color=cmap((A[i,j] - minimum(A))/dA))
+				PyPlot.plot(x[[i,j]],y[[i,j]],color=cmap((A[i,j] - minimum(A))/dA),lw=2)
 			end
 		end
 		PyPlot.plot(x[i],y[i],"ok")
@@ -88,6 +88,57 @@ function plot_escale(A::Matrix{Float64},x::Vector{Float64},y::Vector{Float64},cm
 		colorbar(label=cbl)
 	end
 	
+	dx = maximum(x) - minimum(x)
+	xmin = minimum(x) - .1*dx
+	xmax = maximum(x) + .1*dx
+	dy = maximum(y) - minimum(y)
+	ymin = minimum(y) - .1*dy
+	ymax = maximum(y) + .1*dy
+
+	axis([xmin,xmax,ymin,ymax])
+	xticks([])
+	yticks([])
+end
+
+function plot_vescale(A::Matrix{Float64}, x::Vector{Float64}, y::Vector{Float64}, v::Vector{Float64}, cmv::String="plasma", cme::String="plasma"; cbv::Bool=false, cbe::Bool=false, cbvl::String="", cbel::String="")
+	n = length(x)
+
+	cmapv = get_cmap(cmv)
+	cmape = get_cmap(cme)
+
+	dA = maximum(A) - minimum(A)
+
+	for i in 1:n-1
+		for j in i+1:n
+			if abs(A[i,j]) > 1e-10
+				PyPlot.plot(x[[i,j]],y[[i,j]],color=cmape((A[i,j]-minimum(A))/dA),zorder=-1,lw=2)
+			end
+		end
+	end
+
+	if cbe
+		V = union(vec(A))
+		PyPlot.scatter(-1000*ones(length(V)),-1000*ones(length(V));c=V,cmap=cme)
+		colorbar(label=cbel)
+	end
+
+#	PyPlot.scatter(x,y;s=70*ones(length(x)),c=v,cmap=cmv,zorder=1,edgecolors="k")
+# #=
+	X = [x;1000;1000]
+	Y = [y;1000;1000]
+	V = [v;maximum(abs.(v))*[-1,1]]
+	PyPlot.scatter(X,Y;s=70*ones(length(X)),c=V,cmap=cmv,zorder=1,edgecolors="k")
+# =#
+ #=
+	X = [x;1000;1000]
+	Y = [y;1000;1000]
+	V = [sign.(v).*log.(abs.(v));log.(maximum(abs.(v)))*[-1,1]]
+	PyPlot.scatter(X,Y;s=70*ones(length(X)),c=V,cmap=cmv,zorder=1,edgecolors="k")
+# =#
+	if cbv
+		colorbar(label=cbvl)
+	end
+
 	dx = maximum(x) - minimum(x)
 	xmin = minimum(x) - .1*dx
 	xmax = maximum(x) + .1*dx
