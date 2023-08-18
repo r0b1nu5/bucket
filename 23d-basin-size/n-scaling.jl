@@ -1,9 +1,11 @@
 using Statistics, DelimitedFiles
 
 include("tools.jl")
+include("volumes.jl")
 
-ns = [83,]
-ns = [23,43,83,123,163]
+#ns = [83,]
+#ns = [23,43,83,123,163]
+ns = [43,83,123,163]
 
 type = "undir" # "dir", "undir"
 n_intra = 1000
@@ -41,6 +43,34 @@ if length(ns) > 1
 	PyPlot.plot(ns,Σi./sqrt.(ns),"--o",color="C1",label="σi/√n")
 	PyPlot.plot(ns,Λi.*sqrt.(ns),":o",color="C1",label="λi*√n")
 	legend()
+	xlabel("n")
+	ylabel("parameter")
+
+	mμf = mean(Mf_slope)
+	dμf = norm(Mf_slope .- mμf,Inf)
+	eμf = round(dμf/mμf*100,sigdigits=4)
+	mμi = mean(Mi_slope)
+	dμi = norm(Mi_slope .- mμi,Inf)
+	eμi = round(dμi/mμi*100,sigdigits=4)
+	mσf = mean(Σf./sqrt.(ns))
+	dσf = norm(Σf./sqrt.(ns) .- mσf,Inf)
+	eσf = round(dσf/mσf*100,sigdigits=4)
+	mσi = mean(Σi./sqrt.(ns))
+	dσi = norm(Σi./sqrt.(ns) .- mσi,Inf)
+	eσi = round(dσi/mσi*100,sigdigits=4)
+	mλf = mean(Λf.*sqrt.(ns))
+	dλf = norm(Λf.*sqrt.(ns) .- mλf,Inf)
+	eλf = round(dλf/mλf*100,sigdigits=4)
+	mλi = mean(Λi.*sqrt.(ns))
+	dλi = norm(Λi.*sqrt.(ns) .- mλi,Inf)
+	eλi = round(dλi/mλi*100,sigdigits=4)
+
+	@info "Av. μf_slope = $(round(mμf,digits=2)) [±$(eμf)%]"
+	@info "Av. μi_slope = $(round(mμi,digits=2)) [±$(eμi)%]"
+	@info "Av. σf/√n = $(round(mσf,digits=2)) [±$(eσf)%] (if normal dist.)"
+	@info "Av. σi/√n = $(round(mσi,digits=2)) [±$(eσi)%] (if normal dist.)"
+	@info "Av. λf*√n = $(round(mλf,digits=2)) [±$(eλf)%] (if expo dist.)"
+	@info "Av. λi*√n = $(round(mλi,digits=2)) [±$(eλi)%] (if expo dist.)"
 else
 	plot_Qs(Qs)
 	@info "μf_slope = $(Mf_slope[1])"

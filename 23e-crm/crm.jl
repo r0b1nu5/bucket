@@ -49,6 +49,9 @@ for i in 1:length(ids)
 	end
 end
 
+# Coordinates tweak
+X[86] = 8.85
+
 ls = zeros(0,4)
 for i in 2:length(lines[:,1])
 	if (lines[i,1] in ids) && (lines[i,2] in ids)
@@ -148,7 +151,7 @@ dV = V*ones(1,n) - ones(n)*V'
 I = dV.*A0
 figure("Graph, DC flows")
 plot_ch()
-plot_vescale(abs.(I),X,Y,P,"coolwarm","hot",cbv=true,cbvl="Power",cbe=true,cbel="DC flow")
+plot_vescale(abs.(I),X,Y,P,"coolwarm","rainbow",cbv=true,cbvl="Power",cbe=true,cbel="DC flow")
 # =#
 
 

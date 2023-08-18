@@ -58,7 +58,7 @@ function plot_vscale(A::Matrix{Float64}, Add::Matrix{Float64}, x::Vector{Float64
 	for i in 1:n-1
 		for j in i+1:n
 			if Add[i,j] > 1e-10
-				PyPlot.plot(x[[i,j]],y[[i,j]],"-r",linewidth=2,zorder=-1)
+				PyPlot.plot(x[[i,j]],y[[i,j]],"--r",linewidth=2,zorder=-1)
 			end
 		end
 	end
@@ -100,25 +100,29 @@ function plot_escale(A::Matrix{Float64},x::Vector{Float64},y::Vector{Float64},cm
 	yticks([])
 end
 
-function plot_vescale(A::Matrix{Float64}, x::Vector{Float64}, y::Vector{Float64}, v::Vector{Float64}, cmv::String="plasma", cme::String="plasma"; cbv::Bool=false, cbe::Bool=false, cbvl::String="", cbel::String="")
+function plot_vescale(A::Matrix{Float64}, x::Vector{Float64}, y::Vector{Float64}, v::Vector{Float64}, cmv::String="plasma", cme::String="plasma"; cbv::Bool=false, cbe::Bool=false, cbvl::String="", cbel::String="", fmax::Float64=-1.)
 	n = length(x)
+
+	fm = fmax
+	if fmax < 0.
+		fm = maximum(abs.(A))
+	end
 
 	cmapv = get_cmap(cmv)
 	cmape = get_cmap(cme)
 
-	dA = maximum(A) - minimum(A)
-
 	for i in 1:n-1
 		for j in i+1:n
 			if abs(A[i,j]) > 1e-10
-				PyPlot.plot(x[[i,j]],y[[i,j]],color=cmape((A[i,j]-minimum(A))/dA),zorder=-1,lw=2)
+				PyPlot.plot(x[[i,j]],y[[i,j]],color=cmape(clamp(A[i,j]/fm,0.,1.)),zorder=-1,lw=2)
 			end
 		end
 	end
 
 	if cbe
-		V = union(vec(A))
-		PyPlot.scatter(-1000*ones(length(V)),-1000*ones(length(V));c=V,cmap=cme)
+		PyPlot.scatter([-1000,-1000],[-1000,-1000];c=[0.,fm],cmap=cme)
+		#V = union(vec(A))
+		#PyPlot.scatter(-1000*ones(length(V)),-1000*ones(length(V));c=V,cmap=cme)
 		colorbar(label=cbel)
 	end
 
@@ -151,6 +155,26 @@ function plot_vescale(A::Matrix{Float64}, x::Vector{Float64}, y::Vector{Float64}
 	yticks([])
 end
 
+function plot_vescale(A::Matrix{Float64}, Add::Matrix{Float64}, x::Vector{Float64}, y::Vector{Float64}, v::Union{Vector{Int64},Vector{Float64}}, cmv::String="plasma", cme::String="plasma"; cbv::Bool=false, cbvl::String="", cbe::Bool=false, cbel::String="", fmax::Float64=-1.)
+	n = length(x)
+	fm = fmax
+	if fmax < 0.
+		maximum(abs.(A+Add))
+	end
+
+	cmape = get_cmap(cme)
+
+	for i in 1:n-1
+		for j in i+1:n
+			if Add[i,j] > 1e-10
+				PyPlot.plot(x[[i,j]],y[[i,j]],"--",color=cmape(clamp(Add[i,j]/fm,0.,1.)),linewidth=2,zorder=-1)
+			end
+		end
+	end
+
+	plot_vescale(A,x,y,v,cmv,cme,cbv=cbv,cbvl=cbvl,cbe=cbe,cbel=cbel,fmax=fm)
+end
+
 function get_list(v::Union{Vector{Int64},Vector{Float64}},names::Vector{String},n::Int64)
 	V = sortslices([v names collect(1:length(v))],dims=1,rev=true)
 	V1 = Float64.(V[:,1])
@@ -171,7 +195,7 @@ function plot_ch(col::String="k", lw::Union{Float64,Int64}=1)
 	x = xy[:,1]
 	y = xy[:,2]
 
-	PyPlot.plot(x,y,color=col,linewidth=lw)
+	PyPlot.plot(x,y,color=col,linewidth=lw,zorder=-2)
 end
 
 function get_measure(m::String, g::SimpleGraph{Int64})

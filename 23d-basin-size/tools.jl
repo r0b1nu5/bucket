@@ -317,10 +317,6 @@ function get_normal_par(Qs::Dict{Int64,Dict{Int64,Int64}})
 	return Mf_slope,Mi_slope,σf,σi
 end
 
-
-
-########## NOT READY YET...
-
 function get_exp_par(Qs::Dict{Int64,Dict{Int64,Int64}}, qmax::Int64)
 	qis = sort(collect(keys(Qs)))
 
