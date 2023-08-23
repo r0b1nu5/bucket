@@ -46,10 +46,14 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 		end
 	end
 =#
+
 	res = solve(problem,basis,STLSQ())
+#	res = solve(problem,basis,SR3())
+#	res = solve(problem,basis,ADMM())
+
 # Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
-	coeff = res.out.Ξ[1,:,:]
-#	coeff = Matrix(res.out[1].coefficients')
+#	coeff = Matrxi(res.out.Ξ[1,:,:]')
+	coeff = Matrix(res.out[1].coefficients)
 
 #	@info "coeff = $coeff"
 
@@ -57,19 +61,17 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
 	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
-	inf_o = Dict{Int64,Vector{Vector{Int64}}}()
 	Ainf = Dict{Int64,Any}()
 	Uinf = Dict{Int64,Any}(maximum(ooi) => Vector{Vector{Int64}}())
 	for o in sort(ooi,rev=true)
 		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
 		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
 		idx_o[o],agents_o[o] = get_idx_o(o-1,x,prebasis)
-		inf_o[o] = Vector{Int64}()
 		for k in 1:length(idx_o[o])
 			id = idx_o[o][k]
 			agents = agents_o[o][k]
 			cagents = setdiff(1:n,agents)
-			y = coeff[id,cagents]
+			y = coeff[cagents,id]
 			ynz = y[Int64.(setdiff((1:length(y)).*(abs.(y) .> thr_glob),[0.,]))]
 			yds = Int64.(setdiff(cagents.*(abs.(y) .> thr_glob),[0,]))
 			for j in 1:length(yds)
@@ -121,6 +123,50 @@ function one2dim(Ainf::Dict{Int64,Any}, d::Int64=1)
 	end
 
 	return A,AA
+end
+
+# Generates the adjacency tensors of systems with d internal dimension of the agents, from the Ainf blindly inferred from 'hyper_inf' without knowledge of the internal dimension of the agents. (Implemented for up to 3-order edges.) Note that the interactions are assumed symetric.
+function adj_tensors(Ainf::Dict{Int64,Any}, n::Int64, d::Int64=1)
+	A2 = zeros(n,n)
+	A3 = zeros(n,n,n)
+
+	if 2 in keys(Ainf)
+		for k in keys(Ainf[2])
+			i,v = k
+			j = ceil(Int64,i/d)
+			u = ceil.(Int64,v./d)
+			w = (v .- 1).%d .+ 1
+
+			if length(union(u)) == 2
+				p,q = u
+				A2[p,q] = max(A2[p,q],abs(Ainf[2][k]))
+				A2[q,p] = max(A2[q,p],abs(Ainf[2][k]))
+			end
+		end
+	end
+
+	O3 = zeros(3,3,3)
+	O3[1,2,3] = 1.
+	O3[1,3,2] = 1.
+	O3[2,1,3] = 1.
+	O3[2,3,1] = 1.
+	O3[3,1,2] = 1.
+	O3[3,2,1] = 1.
+	if 3 in keys(Ainf)
+		for k in keys(Ainf[3])
+			i,v = k
+			j = ceil(Int64,i/d)
+			u = ceil.(Int64,v./d)
+			w = (v .- 1).%d .+ 1
+
+			if length(union(u)) == 3
+				p,q,r = u
+				A3[u,u,u] = max(A3[p,q,r],abs(Ainf[3][k]))*O3
+			end
+		end
+	end
+
+	return A2,A3
 end
 
 # Retrieves the indices (in 'prebasis') of the monomials of order 'o' in the variables 'x', involving distincts agents.

@@ -28,10 +28,15 @@ ntw = "ER"
 p1 = 0.
 p2 = .99
 # =#
-# #=
+ #=
 ntw = "Hyper-ER"
 p1 = .05
 p2 = .4
+# =#
+# #= 
+ntw = "Hyper-ER"
+p1 = .5
+p2 = .8
 # =#
 
 if ntw in ["Wheel", "Hyper-wheel"]
@@ -64,7 +69,7 @@ NT = 80
 # #=
 amplitude = .1
 X = amplitude*(rand(n,400) .- .5)
-Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + .01*randn(size(Y))
+Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + .01*randn(size(X))
 # =#
  #=
 amplitude = .1
