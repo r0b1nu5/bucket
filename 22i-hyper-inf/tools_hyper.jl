@@ -41,6 +41,7 @@ function adj2As(adj::Union{BitMatrix,Matrix{Float64}})
 					A2[i,n1] = adj[i,c]
 				else
 					A3[i,n1,n2] = adj[i,c]
+					A3[i,n2,n1] = adj[i,c]
 				end
 			end
 		end

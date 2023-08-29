@@ -47,12 +47,12 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	end
 =#
 
-	res = solve(problem,basis,STLSQ())
-#	res = solve(problem,basis,SR3())
-#	res = solve(problem,basis,ADMM())
+	res = solve(problem,basis,STLSQ()); @info "Finished SINDy."
+#	res = solve(problem,basis,SR3()); @info "Finished SR3."
+#	res = solve(problem,basis,ADMM()); @info "Finished ADMM."
 
 # Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
-#	coeff = Matrxi(res.out.Ξ[1,:,:]')
+#	coeff = Matrix(res.out.Ξ[1,:,:]')
 	coeff = Matrix(res.out[1].coefficients)
 
 #	@info "coeff = $coeff"
@@ -263,6 +263,18 @@ function inferred_adj_4th(Ainf4::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::In
 	end
 
 	return A4t_bool, A4t_float
+end
+
+# Concatenates A2 and the slices of A3 into a n x (n^2+1) matrix.
+function cat_As(A2::Matrix{Float64}, A3::Array{Float64,3})
+	n = size(A2)[1]
+	
+	adj = A2
+	for i in 1:n
+		adj = [adj A3[:,:,i]]
+	end
+
+	return adj
 end
 
 # Checks the sensitivity and specificity of our inference.

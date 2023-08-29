@@ -11,7 +11,7 @@ include("../../ARNI/reconstruct_3rd.jl")
 
 # Generating the hypergraph.
 n = 7
- #=
+# #=
 ntw = "Hyper-wheel"
 p1 = .3
 p2 = .3 
@@ -33,7 +33,7 @@ ntw = "Hyper-ER"
 p1 = .05
 p2 = .4
 # =#
-# #= 
+ #= 
 ntw = "Hyper-ER"
 p1 = .5
 p2 = .8
@@ -56,7 +56,8 @@ cmaparni = get_cmap("viridis")
 c0 = 0.
 c1 = 1.
 
-adj = get_adj_3rd(A2,A3)[1]
+#adj = get_adj_3rd(A2,A3)[1]
+adj = cat_As(A2,A3)
 # ========================================================================
 
 T = 400
@@ -66,12 +67,12 @@ NT = 80
 # Testing the efficiency of the inference using the result of the vector field directly.
 
 # Generate the data
-# #=
+ #=
 amplitude = .1
 X = amplitude*(rand(n,400) .- .5)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + .01*randn(size(X))
 # =#
- #=
+# #=
 amplitude = .1
 ξ0 = 0.0005
 X = amplitude*(rand(n,400) .- .5)
@@ -136,6 +137,8 @@ for iter in iters
 	A2us = inferred_adj_2nd(xxx[1][2],n)[1]
 	A3us = inferred_adj_3rd(xxx[1][3],n)[1]
 	adjus = get_adj_3rd(A2us,A3us)[1]
+	adju = cat_As(A2us,A3us)
+@info "============= WE ARE DONE ================"
 
 	if test_arni
 		adjarni = zeros(n,Int64(n*(n-1)/2))
@@ -145,18 +148,21 @@ for iter in iters
 			adjarni[i,:] = w[1]
 		end
 		A2arni,A3arni = adj2As(adjarni)
-		
+		adja = cat_As(A2arni,A3arni)
+
 		ξ = 1e-10
 		
-		rocadjus = roc(adjus + ξ*rand(Float64,size(adj)),adj)
+#		rocadjus = roc(adjus + ξ*rand(Float64,size(adj)),adj)
+		rocadjus = roc(adju + ξ*rand(Float64,size(adju)),adj)
 		rocA2us = roc(A2us + ξ*rand(n,n),A2)
 		rocA3us = roc(A3us + ξ*rand(n,n,n),A3)
 
-		rocadjarni = roc(adjarni + ξ*rand(Float64,size(adj)),adj)
+#		rocadjarni = roc(adjarni + ξ*rand(Float64,size(adj)),adj)
+		rocadjarni = roc(adja + ξ*rand(Float64,size(adj)),adj)
 		rocA2arni = roc(A2arni + ξ*rand(n,n),A2)
 		rocA3arni = roc(A3arni + ξ*rand(n,n,n),A3)
 
-		figure("ROCs-"*ntw*"-$n")
+		figure("ROCs-"*ntw*"-$n",(15,10))
 		subplot(2,3,1)
 		PyPlot.plot(rocadjus.FPR,rocadjus.TPR,color=cmapme(c0+c1*iter/maximum(iters)))
 		subplot(2,3,2)
@@ -184,7 +190,7 @@ for iter in iters
 	push!(spe4,yyy[3][2])
 end
 
-figure("ROCs-"*ntw*"-$n")
+figure("ROCs-"*ntw*"-$n",(15,10))
 subplot(2,3,1)
 ylabel("TPR")
 title("ROC adj, us")
