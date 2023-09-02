@@ -33,6 +33,8 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	basis = Basis(prebasis,[x[i] for i in 1:n])
 	l = length(basis.eqs)
 
+	@info "Problem is set."
+
 	# Solving the problem using SINDy.
 #=
 	coeff = try 
@@ -51,9 +53,11 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 #	res = solve(problem,basis,SR3()); @info "Finished SR3."
 #	res = solve(problem,basis,ADMM()); @info "Finished ADMM."
 
+	@info "Problem is solved."
+
 # Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
-#	coeff = Matrix(res.out.Ξ[1,:,:]')
-	coeff = Matrix(res.out[1].coefficients)
+	coeff = Matrix(res.out.Ξ[1,:,:]')
+#	coeff = Matrix(res.out[1].coefficients)
 
 #	@info "coeff = $coeff"
 

@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from scipy.integrate import solve_ivp
 #from scipy.integrate import odeint
@@ -39,9 +40,10 @@ def coupled_lorenz(t, xyz, sigma, rho, beta, links, triangles, k2, k3):
 
 # Parameters
 N = 5 # Number of oscillators
-M = 100 # Number of different initial conditions
+M = 10 # Number of different initial conditions
 T = 3 # Simulation length for each initial condition
-time = np.linspace(0, T, 300) # Record data every 0.01 time unit
+#time = np.linspace(0, T, 300) # Record data every 0.01 time unit
+time = np.linspace(0,T,301)
 sigma = 10.0
 rho = 28.0
 beta = 8.0 / 3.0
@@ -64,11 +66,14 @@ pos1 = xgi.random_layout(H)
 pos2 = xgi.pairwise_spring_layout(H)
 xgi.draw(H, pos2)
 
+if os.path.exists('coupled_lorenz_solution.txt'):
+    os.remove('coupled_lorenz_solution.txt')
+
 f = open('coupled_lorenz_solution.txt','a')
 
 for i in range(M):
     # Initial conditions (may want to control the box size)
-    xyz0 = 1e-1*np.random.randn(N*3)
+    xyz0 = 1e-1*np.random.randn(N*3) + 20*np.ones(N*3)
     #sol = odeint(coupled_lorenz, xyz0, time, args=(sigma, rho, beta, links, triangles, k2, k3))
     sol = solve_ivp(coupled_lorenz, [0, T], xyz0, t_eval=time, args=(sigma, rho, beta, links, triangles, k2, k3), max_step=1e-3)# rtol=1e-9, atol=1e-9)
     print(np.shape(sol.y.T))

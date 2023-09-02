@@ -11,7 +11,7 @@ include("../../ARNI/reconstruct_3rd.jl")
 
 # Generating the hypergraph.
 n = 7
-# #=
+ #=
 ntw = "Hyper-wheel"
 p1 = .3
 p2 = .3 
@@ -28,7 +28,7 @@ ntw = "ER"
 p1 = 0.
 p2 = .99
 # =#
- #=
+# #=
 ntw = "Hyper-ER"
 p1 = .05
 p2 = .4
@@ -76,7 +76,7 @@ Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + .01*randn(size(X))
 amplitude = .1
 ξ0 = 0.0005
 X = amplitude*(rand(n,400) .- .5)
-Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + ξ0*randn(size(Y))
+Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + ξ0*randn(size(X))
  #=
 X = zeros(n,0)
 Y = zeros(n,0)
@@ -125,7 +125,8 @@ spe4 = Float64[]
 
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
 iters = 10:5:200
-iters = 10:5:80
+iters = 10:15:150
+#iters = 10:10:200
 #iters = 200:5:200
 ooi = [2,3]
 c = 0
@@ -134,8 +135,10 @@ for iter in iters
 	@info "Run $c/$(length(iters))"
 
 	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,-1e-4)
-	A2us = inferred_adj_2nd(xxx[1][2],n)[1]
-	A3us = inferred_adj_3rd(xxx[1][3],n)[1]
+#	A2us = inferred_adj_2nd(xxx[1][2],n)[1]
+	A2us = inferred_adj_2nd(xxx[1][2],n)[2]
+#	A3us = inferred_adj_3rd(xxx[1][3],n)[1]
+	A3us = inferred_adj_3rd(xxx[1][3],n)[2]
 	adjus = get_adj_3rd(A2us,A3us)[1]
 	adju = cat_As(A2us,A3us)
 @info "============= WE ARE DONE ================"
@@ -143,8 +146,8 @@ for iter in iters
 	if test_arni
 		adjarni = zeros(n,Int64(n*(n-1)/2))
 		for i in 1:n
-# bases = ["polynomial", "polynomial_diff", "fourier", "fourier_diff", "power_series", "RBF"]
 			w = reconstruct_3rd(X[:,1:iter],Y[:,1:iter],i,adj,1e-6,"power_series")
+#			w = reconstruct_3rd(X[:,1:2*iter],Y[:,1:2*iter],i,adj,1e-6,"power_series")
 			adjarni[i,:] = w[1]
 		end
 		A2arni,A3arni = adj2As(adjarni)
@@ -153,9 +156,9 @@ for iter in iters
 		ξ = 1e-10
 		
 #		rocadjus = roc(adjus + ξ*rand(Float64,size(adj)),adj)
-		rocadjus = roc(adju + ξ*rand(Float64,size(adju)),adj)
-		rocA2us = roc(A2us + ξ*rand(n,n),A2)
-		rocA3us = roc(A3us + ξ*rand(n,n,n),A3)
+		rocadjus = roc(abs.(adju) + ξ*rand(Float64,size(adju)),adj)
+		rocA2us = roc(abs.(A2us) + ξ*rand(n,n),A2)
+		rocA3us = roc(abs.(A3us) + ξ*rand(n,n,n),A3)
 
 #		rocadjarni = roc(adjarni + ξ*rand(Float64,size(adj)),adj)
 		rocadjarni = roc(adja + ξ*rand(Float64,size(adj)),adj)
