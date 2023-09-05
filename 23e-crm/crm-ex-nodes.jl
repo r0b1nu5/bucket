@@ -114,7 +114,7 @@ while measure == "unknown"
 	@info "Légende :"
 	@info "'bc' : Betweenness centrality,"
 	@info "'cc' : Closeness centrality,"
-	@info "'dc' : Degree centrality),"
+	@info "'dc' : Degree centrality,"
 	@info "'de' : Degree,"
 	@info "'ec' : Eigenvector centrality,"
 	@info "'pr' : PageRank,"
@@ -202,6 +202,7 @@ if measure == "xxx"
 	@info "Interrompu..."
 end
 
+close("all")
 
 
 

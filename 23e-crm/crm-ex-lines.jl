@@ -1,4 +1,4 @@
-using DelimitedFiles, PyPlot, LinearAlgebra, Graphs
+using DelimitedFiles, PyPlot, LinearAlgebra, Graphs, Statistics
 
 include("tools.jl")
 
@@ -121,6 +121,9 @@ end
 # =#
 
 scen_dict = Dict{String,String}("pr" => "Présent",
+				"eo" => "Eolien",
+				"s1" => "Solaire 1",
+				"s2" => "Solaire 2",
 				"xxx" => "xxx")
 
 scenario = "unknown"
@@ -128,6 +131,9 @@ while scenario == "unknown"
 	@info "======================================"
 	@info "Légende :"
 	@info "'pr' : Présent,"
+	@info "'eo' : Eolien sur le Jura, pas de nucléaire,"
+	@info "'s1' : Solaire dans les agglomérations, pas de nucléaire,"
+	@info "'s2' : Solaire partout, pas de nucléaire,"
 	@info "'xxx' : Annuler et quitter."
 	@info "======================================"
 	print("Quel scénario veux-tu utiliser ? ")
@@ -137,6 +143,8 @@ while scenario == "unknown"
 		@info "CODE INVALIDE !"
 		@info "======================================"
 		scenario = "unknown"
+	elseif scenario in ["eo","s1","s2"]
+		global P = vec(readdlm("P-"*scenario*".csv",','))
 	end
 end
 
@@ -147,7 +155,7 @@ Add = zeros(n,n)
 Ldd = zeros(n,n)
 Ddd = zeros(n,n)
 while scenario != "xxx" && add_edge in yess
-	figure(scen_dict[scenario],(16,7.5))
+	figure(scen_dict[scenario],(16,7))
 	
 	V = pinv(L0)*P
 	dV = V*ones(1,n) - ones(n)*V'
@@ -155,7 +163,7 @@ while scenario != "xxx" && add_edge in yess
 	
 	plot_ch()
 	plot_vescale(abs.(I),X,Y,P,"coolwarm","rainbow",cbv=true,cbvl="Power",cbe=true,cbel="DC flow")
-	title("Charge max. : $(round(maximum(abs.(I))))")
+	title("Charge max. : $(round(maximum(abs.(I)))). Conso. totale : $(round(sum(abs.(P))/2))")
 	
 	fm = maximum(abs.(I))
 
@@ -189,7 +197,7 @@ while scenario != "xxx" && add_edge in yess
 
 			plot_ch()
 			plot_vescale(abs.(J),abs.(Jdd),X,Y,P,"coolwarm","rainbow",cbv=true,cbvl="Power",cbe=true,cbel="DC flow",fmax=fm)
-			title("Charge max. : $(round(maximum(abs.(J+Jdd))))")
+			title("Charge max. : $(round(maximum(abs.(J+Jdd)))). Conso. totale : $(round(sum(abs.(P))/2))")
 
 		end
 		global add_edge = "???"
@@ -205,6 +213,7 @@ if scenario == "xxx"
 	@info "Interrompu..."
 end
 
+close("all")
 
 
 
