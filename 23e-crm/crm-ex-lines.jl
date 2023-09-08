@@ -7,6 +7,9 @@ buses = readdlm("buses.csv",',')
 lines = readdlm("lines.csv",',')
 gens = readdlm("generators.csv",',')
 
+# Charge maximale sur une ligne
+fm = 600.
+
 # Sommets déconnectés de la composante principale.
 rm_ids = [243,247,575]
 
@@ -155,17 +158,17 @@ Add = zeros(n,n)
 Ldd = zeros(n,n)
 Ddd = zeros(n,n)
 while scenario != "xxx" && add_edge in yess
-	figure(scen_dict[scenario],(16,7))
+	figure(scen_dict[scenario],(13,5.5))
 	
 	V = pinv(L0)*P
 	dV = V*ones(1,n) - ones(n)*V'
 	I = dV.*A0
 	
 	plot_ch()
-	plot_vescale(abs.(I),X,Y,P,"coolwarm","rainbow",cbv=true,cbvl="Power",cbe=true,cbel="DC flow")
+	plot_vescale(abs.(I),X,Y,P,"coolwarm","rainbow",cbv=true,cbvl="Power",cbe=true,cbel="DC flow",fmax=fm)
 	title("Charge max. : $(round(maximum(abs.(I)))). Conso. totale : $(round(sum(abs.(P))/2))")
 	
-	fm = maximum(abs.(I))
+#	fm = maximum(abs.(I))
 
 	global add_edge = "???"
 	while !(add_edge in union(yess,nos))
@@ -186,9 +189,9 @@ while scenario != "xxx" && add_edge in yess
 
 			h = Graph(A0+Add)
 			
-			figure("re-"*scen_dict[scenario],(16,7.5))
+			figure(scen_dict[scenario],(16,7.5))
 			clf()
-			figure("re-"*scen_dict[scenario],(16,7.5))
+			figure(scen_dict[scenario],(16,7.5))
 
 			W = pinv(L0+Ldd)*P
 			dW = W*ones(1,n) - ones(n)*W'

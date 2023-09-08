@@ -137,7 +137,7 @@ nos = ["no","No","NO","N","n","non","Non","NON"]
 add_edge = "yes"
 Add = zeros(n,n)
 while measure != "xxx" && add_edge in yess
-	figure(title_dict[measure],(14,7.5))
+	figure(title_dict[measure],(10,5.5))
 	
 	v = get_measure(measure,g)
 	
@@ -168,9 +168,9 @@ while measure != "xxx" && add_edge in yess
 			Add[[i,j],[i,j]] += [0. 1.;1. 0.]
 			h = Graph(A0+Add)
 			
-			figure("re-"*title_dict[measure],(14,7.5))
+			figure(title_dict[measure],(14,7.5))
 			clf()
-			figure("re-"*title_dict[measure],(14,7.5))
+			figure(title_dict[measure],(14,7.5))
 
 			w = get_measure(measure,h)
 
@@ -193,9 +193,6 @@ while measure != "xxx" && add_edge in yess
 	end
 
 end
-
-
-
 
 if measure == "xxx"
 	@info "======================================"
