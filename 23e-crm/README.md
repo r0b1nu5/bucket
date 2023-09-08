@@ -20,7 +20,7 @@ Vous pouvez copier le code suivant dans le terminal Julia pour installer les lib
 
 `using Pkg; Pkg.add("DelimitedFiles"); Pkg.add("Graphs"); Pkg.add("LinearAlgebra"); Pkg.add("PyPlot"); Pkg.add("Statistics");`
 
-Il faut ensuite télécharger l'ensemble des fichier de ce répertoire, soit en clonant le lien GitHub, soit en téléchargeant et décompressant le fichier compressé `23e-crm.zip`. 
+Il faut ensuite télécharger l'ensemble des fichier de ce répertoire, soit en clonant le lien GitHub, soit en téléchargeant et décompressant le fichier compressé [`23e-crm.zip`](https://github.com/r0b1nu5/bucket/blob/master/23e-crm/23e-crm.zip).  
 
 ### Lancer un script
 Il y a deux scripts à disposition :
