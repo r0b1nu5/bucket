@@ -95,7 +95,7 @@ L0 = D0 - A0
 d1 = vec(sum(A1,dims=1))
 D1 = diagm(0 => d1)
 L1 = D1 - A1
-# Vecteur des degrés, matrice des degrés et matric laplacienne pondéré·es
+# Vecteur des degrés, matrice des degrés et matrice laplacienne pondéré·es
 d2 = vec(sum(A2,dims=1))
 D2 = diagm(0 => d2)
 L2 = D2 - A2
@@ -166,7 +166,7 @@ while scenario != "xxx" && add_edge in yess
 	
 	plot_ch()
 	plot_vescale(abs.(I),X,Y,P,"coolwarm","rainbow",cbv=true,cbvl="Power",cbe=true,cbel="DC flow",fmax=fm)
-	title("Charge max. : $(round(maximum(abs.(I)))). Conso. totale : $(round(sum(abs.(P))/2))")
+	title("Charge max. : $(round(maximum(abs.(I)))). Conso. totale : $(round(sum(abs.(P))/2)). Stabilité : $(round(eigvals(L0)[2],sigdigits=2))")
 	
 #	fm = maximum(abs.(I))
 
@@ -199,8 +199,8 @@ while scenario != "xxx" && add_edge in yess
 			Jdd = dW.*Add
 
 			plot_ch()
-			plot_vescale(abs.(J),abs.(Jdd),X,Y,P,"coolwarm","rainbow",cbv=true,cbvl="Power",cbe=true,cbel="DC flow",fmax=fm)
-			title("Charge max. : $(round(maximum(abs.(J+Jdd)))). Conso. totale : $(round(sum(abs.(P))/2))")
+			plot_vescale(abs.(J),abs.(Jdd),X,Y,P,"coolwarm","rainbow",cbv=true,cbvl="Puissance [a.u.]",cbe=true,cbel="Flux DC",fmax=fm)
+			title("Charge max. : $(round(maximum(abs.(J+Jdd)))). Conso. totale : $(round(sum(abs.(P))/2)). Stabilité : $(round(eigvals(L0+Ldd)[2],sigdigits=2))")
 
 		end
 		global add_edge = "???"

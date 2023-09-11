@@ -209,6 +209,8 @@ function get_measure(m::String, g::SimpleGraph{Int64})
 		return degree(g)
 	elseif m == "ec"
 		return eigenvector_centrality(g)
+	elseif m == "kc"
+		return katz_centrality(g)
 	elseif m == "pr"
 		return pagerank(g)
 	elseif m == "rc"

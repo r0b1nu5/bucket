@@ -70,10 +70,12 @@ for k in 1:length(ls[:,1])
 	l = ls[k,:]
 	i = i2n[l[1]]
 	j = i2n[l[2]]
-	A0[i,j] = 1.
-	A0[j,i] = 1.
-	A1[i,j] += norm(l[3:4])
-	A1[j,i] += norm(l[3:4])
+	if i != j
+		A0[i,j] = 1.
+		A0[j,i] = 1.
+		A1[i,j] += norm(l[3:4])
+		A1[j,i] += norm(l[3:4])
+	end
 end
 # Vecteur des degrés, matrice des degrés et matrice laplacienne (booléen·es)
 d0 = vec(sum(A0,dims=1))
@@ -102,6 +104,7 @@ title_dict = Dict{String,String}("bc" => "Betweenness centrality",
 				 "dc" => "Degree centrality",
 				 "de" => "Degree",
 				 "ec" => "Eigenvector centrality",
+				 "kc" => "Katz's centrality",
 				 "pr" => "PageRank",
 				 "rc" => "Radiality centrality",
 				 "sc" => "Stress centrality",
@@ -117,6 +120,7 @@ while measure == "unknown"
 	@info "'dc' : Degree centrality,"
 	@info "'de' : Degree,"
 	@info "'ec' : Eigenvector centrality,"
+	@info "'kc' : Katz's centrality,"
 	@info "'pr' : PageRank,"
 	@info "'rc' : Radiality centrality,"
 	@info "'sc' : Stress centrality,"
@@ -137,7 +141,7 @@ nos = ["no","No","NO","N","n","non","Non","NON"]
 add_edge = "yes"
 Add = zeros(n,n)
 while measure != "xxx" && add_edge in yess
-	figure(title_dict[measure],(10,5.5))
+	figure(title_dict[measure],(13,6.5))
 	
 	v = get_measure(measure,g)
 	
