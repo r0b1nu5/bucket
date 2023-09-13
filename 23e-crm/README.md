@@ -3,7 +3,7 @@
 
 *En cas de questions : robin.delabays@hevs.ch*
 
-Vous trouverez ici quelques codes en accompagnement de la présentation (le pdf de la présentation sera mis à disposition ici).
+Vous trouverez ici quelques codes en accompagnement de [la présentation](https://github.com/r0b1nu5/bucket/blob/master/23e-crm/crm-champery.pdf).
 
 ### Prérequis
 Les codes sont écrits en Julia, un langage similaire an Matlab, mais en accès libre. L'installation se fait directement depuis [le site de Julia](https://julialang.org). 
