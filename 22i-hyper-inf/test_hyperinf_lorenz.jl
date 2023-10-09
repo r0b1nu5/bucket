@@ -2,7 +2,7 @@ using PyPlot, DelimitedFiles, ROC
 
 include("hyper_inf.jl")
 
-cm = get_cmap("plasma")
+cm = get_cmap("cividis")
 
 t = .01
 d = 3
