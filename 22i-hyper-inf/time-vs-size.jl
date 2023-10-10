@@ -6,7 +6,7 @@ include("gen_rand_hyperg.jl")
 include("tools_hyper.jl")
 
 ns = [5,10,15,20]
-ns = [5,6,7,8]
+ns = [6,7,8,9]
 iter = 10
 
 ooi = [2,3]
@@ -14,7 +14,7 @@ T = 100
 amplitude = .1
 ξ0 = .0005
 
-p1 = .05
+p1 = .1
 p2 = .4
 
 ξ = 1e-10

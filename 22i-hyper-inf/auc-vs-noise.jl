@@ -10,8 +10,8 @@ iter = 10
 
 ooi = [2,3]
 T = 100
-amps = [.01,.02,.05,.1,.2,.5,1.,2.,5.]
-ξ0 = .0005
+amp = .1
+ξ0s = [.0005,.001,.002,.005,.01,.02,.05]
 
 p1 = .05
 p2 = .4
@@ -24,8 +24,8 @@ a3s = zeros(Float64,iter,0)
 
 figure("ntw")
 
-for amp in amps
-@info "amp = $amp"
+for ξ0 in ξ0s
+@info "ξ0 = $ξ0"
 a1 = Float64[]
 a2 = Float64[]
 a3 = Float64[]
@@ -67,19 +67,23 @@ global a3s = [a3s a3]
 end
 
 figure()
-for i in 1:length(amps)
-	PyPlot.plot([amps[i],amps[i]],[quantile(a1s[:,i],0.),quantile(a1s[:,i],1.)],"x",color="C0")
-	PyPlot.plot([amps[i],amps[i]],[quantile(a1s[:,i],.25),quantile(a1s[:,i],.75)],color="C0")
-	PyPlot.plot(amps[i],median(a1s[:,i]),"o",color="C0")
-	PyPlot.plot([amps[i],amps[i]],[quantile(a2s[:,i],0.),quantile(a2s[:,i],1.)],"x",color="C1")
-	PyPlot.plot([amps[i],amps[i]],[quantile(a2s[:,i],.25),quantile(a2s[:,i],.75)],color="C1")
-	PyPlot.plot(amps[i],median(a2s[:,i]),"o",color="C1")
-	PyPlot.plot([amps[i],amps[i]],[quantile(a3s[:,i],0.),quantile(a3s[:,i],1.)],"x",color="C2")
-	PyPlot.plot([amps[i],amps[i]],[quantile(a3s[:,i],.25),quantile(a3s[:,i],.75)],color="C2")
-	PyPlot.plot(amps[i],median(a3s[:,i]),"o",color="C2")
+for i in 1:length(ξ0s)
+	PyPlot.plot([ξ0s[i],ξ0s[i]],[quantile(a1s[:,i],0.),quantile(a1s[:,i],1.)],"x",color="C0")
+	PyPlot.plot([ξ0s[i],ξ0s[i]],[quantile(a1s[:,i],.25),quantile(a1s[:,i],.75)],color="C0")
+	PyPlot.plot(ξ0s[i],median(a1s[:,i]),"o",color="C0")
+	PyPlot.plot([ξ0s[i],ξ0s[i]],[quantile(a2s[:,i],0.),quantile(a2s[:,i],1.)],"x",color="C1")
+	PyPlot.plot([ξ0s[i],ξ0s[i]],[quantile(a2s[:,i],.25),quantile(a2s[:,i],.75)],color="C1")
+	PyPlot.plot(ξ0s[i],median(a2s[:,i]),"o",color="C1")
+	PyPlot.plot([ξ0s[i],ξ0s[i]],[quantile(a3s[:,i],0.),quantile(a3s[:,i],1.)],"x",color="C2")
+	PyPlot.plot([ξ0s[i],ξ0s[i]],[quantile(a3s[:,i],.25),quantile(a3s[:,i],.75)],color="C2")
+	PyPlot.plot(ξ0s[i],median(a3s[:,i]),"o",color="C2")
 end
-xlabel("box size")
+xlabel("noise amplitude")
 ylabel("AUCs")
 
+figure()
+PyPlot.plot(vec(ones(iter)*ξ0s'),vec(a1s),"xk")
+xlabel("noise amplitude")
+ylabel("AUCs")
 
 
