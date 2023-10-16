@@ -56,8 +56,8 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	@info "Problem is solved."
 
 # Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
-	coeff = Matrix(res.out.Ξ[1,:,:]')
-#	coeff = Matrix(res.out[1].coefficients)
+#	coeff = Matrix(res.out.Ξ[1,:,:]')
+	coeff = Matrix(res.out[1].coefficients)
 
 #	@info "coeff = $coeff"
 
