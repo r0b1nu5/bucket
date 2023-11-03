@@ -79,7 +79,7 @@ end
 
 # =#
 
- #=
+# #=
 # Solving with our iteration scheme for KSakaguchi
 h,hi,γ,B,as,ϕs = load_ksakaguchi(Y)
 n,m = size(B)
@@ -119,8 +119,8 @@ subplot(2,1,2)
 shift = -2.7
 PyPlot.plot([-1,1],[0,0],"k")
 PyPlot.plot([0,0],[-1,1],"k")
-#plot_voltages(.6*exp.(im*(θ1 .- θ1[73] .+ t1[73])),cycle,"C1",.6,.6)
-#plot_voltages(.6*exp.(im*(θ2 .- θ2[39] .+ t2[39] .+ shift)),cycle,"C3",-1.)
+plot_voltages(.6*exp.(im*(θ1 .- θ1[73] .+ t1[73])),cycle,"C1",.6,.6)
+plot_voltages(.6*exp.(im*(θ2 .- θ2[39] .+ t2[39] .+ shift)),cycle,"C3",-1.)
 plot_voltages(v1.*exp.(im*t1),cycle,col1)
 plot_voltages(v2.*exp.(im*(t2 .+ shift)),cycle,col2,-1.)
 
