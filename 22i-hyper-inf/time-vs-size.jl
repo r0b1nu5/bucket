@@ -23,6 +23,8 @@ tt = zeros(Int64,iter,0)
 
 figure("ntw")
 
+do_plot = false
+
 for n in ns
 	@info "n = $n"
 	t = Int64[]
@@ -38,8 +40,7 @@ for n in ns
 		t0 = CPUtime_us()
 		xxx = hyper_inf(X,Y,ooi,4,1e-1)
 		t1 = CPUtime_us()
-		push!(t,Int64(t1-t0)) # nanoseconds
-		push!(c,Int64(c1-c0)) # microseconds
+		push!(t,Int64(t1-t0)) # microseconds
 	
 		A2h = inferred_adj_2nd(xxx[1][2],n)[2]
 		A3h = inferred_adj_3rd(xxx[1][3],n)[2]
@@ -50,13 +51,17 @@ for n in ns
 		r2 = roc(abs.(A2h) + ξ*rand(n,n),A2)
 		r3 = roc(abs.(A3h) + ξ*rand(n,n,n),A3)
 	
-		figure(111)
-		subplot(1,3,1)
-		PyPlot.plot(r1.FPR,r1.TPR)
-		subplot(1,3,2)
-		PyPlot.plot(r2.FPR,r2.TPR)
-		subplot(1,3,3)
-		PyPlot.plot(r3.FPR,r3.TPR)
+		if do_plot
+			figure(111)
+			subplot(1,3,1)
+			PyPlot.plot(r1.FPR,r1.TPR)
+			subplot(1,3,2)
+			PyPlot.plot(r2.FPR,r2.TPR)
+			subplot(1,3,3)
+			PyPlot.plot(r3.FPR,r3.TPR)
+		end
+
+		writedlm("data/time-for-n-$n-iter-$i.csv",t1-t0,',')
 	end
 	global tt = [tt t]
 end

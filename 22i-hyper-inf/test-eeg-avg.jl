@@ -63,12 +63,19 @@ for subject in subjects
 
 		# Plots (not too many)
 		if length(subjects)*length(states) < 10
-			figure("Histograms - average-7 - S"*subject*"R"*state)
+			figure("Histograms - average-$nz - S"*subject*"R"*state)
 			subplot(2,1,1)
 			PyPlot.hist(vec(abs.(A2)),20)
 			subplot(2,1,2)
 			PyPlot.hist(vec(abs.(A3)),20)
 		end
+		
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A2.csv",A2,',')
+		x = zeros(nz,0)
+		for i in 1:nz
+			x = [x A3[:,:,i]]
+		end
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3.csv",x,',')
 	end
 end
 

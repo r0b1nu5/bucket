@@ -68,6 +68,13 @@ for subject in subjects
 			subplot(2,1,2)
 			PyPlot.hist(vec(abs.(A3)),20)
 		end
+		
+		writedlm("eeg-data/S"*subject*"R"*state*"-sub-A2.csv",A2,',')
+		x = zeros(nz,0)
+		for i in 1:nz
+			x = [x A3[:,:,i]]
+		end
+		writedlm("eeg-data/S"*subject*"R"*state*"-sub-A3.csv",x,',')
 	end
 end
 
