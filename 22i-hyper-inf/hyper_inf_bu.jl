@@ -8,6 +8,7 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 # 'ooi': orders of interest. Vector of integers listing the orders of interactions that we analyze. 
 # 'dmax': maximal degree to be considered in the Taylor expansion. Typically, dmax=maximum(ooi).
 # 'thr_global': Threshold value to decide whether an edge exists or not.
+# 'd': Internal dimension of the agents. It is assmued that the components of an agents are consecutive in the state vector.
 #
 # OUTPUTS:
 # 'Ainf': dictionary associating the inferred coefficient of the Taylor expansion to a pair (node,hyperedge). Namely, 'Ainf[(i,h)]' is the coefficient corresponding to the hyperedge 'h' in the Taylor expansion of the dynamics of node 'i'. 
@@ -32,16 +33,31 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	basis = Basis(prebasis,[x[i] for i in 1:n])
 	l = length(basis.eqs)
 
+	@info "Problem is set."
+
 	# Solving the problem using SINDy.
+#=
 	coeff = try 
 		res = solve(problem,basis,STLSQ())
-		res.out.Ξ[1,:,:]
+#		res.out.Ξ[1,:,:]
+		Matrix(res.out[1].coefficients')
 	catch e
 		if isa(e,DimensionMismatch)
 			@error "No interaction was inferred for some of the variables. Either some of them are completely disconnected from the rest of the system (in which case they need to be removed from the data), or the time series were too far from eachother and no Taylor expansion was valid (in which case, the spread of initial conditions should be reduced)."
 			zeros(n,l)
 		end
 	end
+=#
+
+	res = solve(problem,basis,STLSQ()); @info "Finished SINDy."
+#	res = solve(problem,basis,SR3()); @info "Finished SR3."
+#	res = solve(problem,basis,ADMM()); @info "Finished ADMM."
+
+	@info "Problem is solved."
+
+# Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
+#	coeff = Matrix(res.out.Ξ[1,:,:]')
+	coeff = Matrix(res.out[1].coefficients)
 
 #	@info "coeff = $coeff"
 
@@ -49,26 +65,23 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
 	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
-	inf_o = Dict{Int64,Vector{Vector{Int64}}}()
 	Ainf = Dict{Int64,Any}()
 	Uinf = Dict{Int64,Any}(maximum(ooi) => Vector{Vector{Int64}}())
 	for o in sort(ooi,rev=true)
 		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
 		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
-		idx_o[o],agents_o[o] = get_idx_o(o,x,prebasis)
-		inf_o[o] = Vector{Int64}()
-		for i in 1:length(idx_o[o])
-			id = idx_o[o][i]
-			agents = agents_o[o][i]
-			if !(agents in Uinf[o])
-				y = coeff[id,agents]
-				if mean(abs.(y)) > thr_glob
-					for a in agents
-						Ainf[o][(a,agents)] = coeff[id,a]
-						for b in setdiff(agents,[a,])
-							push!(Uinf[o-1],setdiff(agents,[b,]))
-						end
-					end
+		idx_o[o],agents_o[o] = get_idx_o(o-1,x,prebasis)
+		for k in 1:length(idx_o[o])
+			id = idx_o[o][k]
+			agents = agents_o[o][k]
+			cagents = setdiff(1:n,agents)
+			y = coeff[cagents,id]
+			ynz = y[Int64.(setdiff((1:length(y)).*(abs.(y) .> thr_glob),[0.,]))]
+			yds = Int64.(setdiff(cagents.*(abs.(y) .> thr_glob),[0,]))
+			for j in 1:length(yds)
+				Ainf[o][(yds[j],sort([yds[j];agents]))] = ynz[j]
+				for a in agents
+					push!(Uinf[o-1],sort([yds[j];setdiff(agents,[a,])]))
 				end
 			end
 		end
@@ -77,12 +90,143 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	return Ainf, coeff, idx_o, agents_o
 end
 
+# Same with the tuning of the sparsity parameter λ in SINDy
+function hyper_inf_sparsity(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1, λ::Float64=1e-1)
+	n,T = size(X)
+
+	if size(X) != size(Y)
+		@info "Dimensions of states and derivatives do not match."
+		return nothing
+	end
+
+	# Setting up the problem
+	@variables x[1:n]
+	problem = DirectDataDrivenProblem(X,Y,name = :HyperInference)
+
+	# Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
+	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
+	basis = Basis(prebasis,[x[i] for i in 1:n])
+	l = length(basis.eqs)
+
+	@info "Problem is set."
+
+	res = solve(problem,basis,STLSQ(λ)); @info "Finished SINDy."
+
+	@info "Problem is solved."
+
+# Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
+#	coeff = Matrix(res.out.Ξ[1,:,:]')
+	coeff = Matrix(res.out[1].coefficients)
+
+	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
+	idx_o = Dict{Int64,Vector{Int64}}()
+	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
+	Ainf = Dict{Int64,Any}()
+	Uinf = Dict{Int64,Any}(maximum(ooi) => Vector{Vector{Int64}}())
+	for o in sort(ooi,rev=true)
+		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
+		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
+		idx_o[o],agents_o[o] = get_idx_o(o-1,x,prebasis)
+		for k in 1:length(idx_o[o])
+			id = idx_o[o][k]
+			agents = agents_o[o][k]
+			cagents = setdiff(1:n,agents)
+			y = coeff[cagents,id]
+			ynz = y[Int64.(setdiff((1:length(y)).*(abs.(y) .> thr_glob),[0.,]))]
+			yds = Int64.(setdiff(cagents.*(abs.(y) .> thr_glob),[0,]))
+			for j in 1:length(yds)
+				Ainf[o][(yds[j],sort([yds[j];agents]))] = ynz[j]
+				for a in agents
+					push!(Uinf[o-1],sort([yds[j];setdiff(agents,[a,])]))
+				end
+			end
+		end
+	end
+
+	return Ainf, coeff, idx_o, agents_o
+end
 
 # In case we want to infer only one order of hyperedge.
 function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Int64, dmax::Int64, thr_glob::Float64=1.)
     return hyper_inf(X,Y,[ooi,],dmax,thr_glob)
 end
 
+# When the agents have a internal dimension d higher than 1.
+function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Union{Int64,Vector{Int64}}, dmax::Int64, d::Int64=1, thr_glob::Float64=.1)
+	Ainf, coeff, idx_o, agents_o = hyper_inf(X,Y,ooi,dmax,thr_glob)
+
+	Ainf, AAinf = one2dim(Ainf,d)
+
+
+end
+
+# Transforms Ainf to agents with d-dimensional internal dynamics.
+function one2dim(Ainf::Dict{Int64,Any}, d::Int64=1)
+	ooi = keys(Ainf)
+	A = Dict{Int64,Any}()
+	AA = Dict{Int64,Any}()
+	for o in ooi
+		A[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}()
+		AA[o] = Dict{Tuple{Int64,Vector{Int64},Vector{Int64}},Float64}() # Description of the keys: 1. index of the source node of the interaction, 2. list of the interacting agents, 3. list of the components interacting.
+		for k in keys(Ainf[o])
+			i,v = k
+			j = ceil(Int64,i/d)
+			u = ceil.(Int64,v./d)
+			w = (v .- 1).%d .+ 1
+			
+			if length(union(u)) == length(u)
+				A[o][(j,u)] = 1.
+				AA[o][(j,u,w)] = Ainf[o][k]
+			end
+		end
+	end
+
+	return A,AA
+end
+
+# Generates the adjacency tensors of systems with d internal dimension of the agents, from the Ainf blindly inferred from 'hyper_inf' without knowledge of the internal dimension of the agents. (Implemented for up to 3-order edges.) Note that the interactions are assumed symetric.
+function adj_tensors(Ainf::Dict{Int64,Any}, n::Int64, d::Int64=1)
+	A2 = zeros(n,n)
+	A3 = zeros(n,n,n)
+
+	if 2 in keys(Ainf)
+		for k in keys(Ainf[2])
+			i,v = k
+			j = ceil(Int64,i/d)
+			u = ceil.(Int64,v./d)
+			w = (v .- 1).%d .+ 1
+
+			if length(union(u)) == 2
+				p,q = u
+				A2[p,q] = max(A2[p,q],abs(Ainf[2][k]))
+				A2[q,p] = max(A2[q,p],abs(Ainf[2][k]))
+			end
+		end
+	end
+
+	O3 = zeros(3,3,3)
+	O3[1,2,3] = 1.
+	O3[1,3,2] = 1.
+	O3[2,1,3] = 1.
+	O3[2,3,1] = 1.
+	O3[3,1,2] = 1.
+	O3[3,2,1] = 1.
+	if 3 in keys(Ainf)
+		for k in keys(Ainf[3])
+			i,v = k
+			j = ceil(Int64,i/d)
+			u = ceil.(Int64,v./d)
+			w = (v .- 1).%d .+ 1
+
+			if length(union(u)) == 3
+				p,q,r = u
+				A3[u,u,u] = max(A3[p,q,r],abs(Ainf[3][k]))*O3
+			end
+		end
+	end
+
+	return A2,A3
+end
 
 # Retrieves the indices (in 'prebasis') of the monomials of order 'o' in the variables 'x', involving distincts agents.
 function get_idx_o(o::Int64, x::Symbolics.Arr{Num,1}, prebasis::Vector{Num})
@@ -178,6 +322,18 @@ function inferred_adj_4th(Ainf4::Dict{Tuple{Int64,Vector{Int64}},Float64}, n::In
 	end
 
 	return A4t_bool, A4t_float
+end
+
+# Concatenates A2 and the slices of A3 into a n x (n^2+1) matrix.
+function cat_As(A2::Matrix{Float64}, A3::Array{Float64,3})
+	n = size(A2)[1]
+	
+	adj = A2
+	for i in 1:n
+		adj = [adj A3[:,:,i]]
+	end
+
+	return adj
 end
 
 # Checks the sensitivity and specificity of our inference.

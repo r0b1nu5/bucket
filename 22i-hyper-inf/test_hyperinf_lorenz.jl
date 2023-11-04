@@ -25,7 +25,7 @@ for l in 0:n_iter-1
 	ooi = [2,3]
 
 	@info "Inference starts..."
-	xxx = hyper_inf(Xs,Ys,ooi,3,-.1,)
+	xxx = hyper_inf(Xs,Ys,ooi,3,1e-1)
 	
 	
 	#A2,AA2 = inferred_adj_2nd(xxx[1][2],n)

@@ -6,8 +6,8 @@ include("hyper_ktanh.jl")
 include("gen_rand_hyperg.jl")
 include("tools_hyper.jl")
 
-include("../../ARNI/reconstruct.jl")
-include("../../ARNI/reconstruct_3rd.jl")
+include("arni-reconstruct.jl")
+include("arni-reconstruct_3rd.jl")
 
 # Generating the hypergraph.
 n = 7
@@ -134,7 +134,7 @@ for iter in iters
 	global c += 1
 	@info "Run $c/$(length(iters))"
 
-	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,-1e-4)
+	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,1e-1)
 #	A2us = inferred_adj_2nd(xxx[1][2],n)[1]
 	A2us = inferred_adj_2nd(xxx[1][2],n)[2]
 #	A3us = inferred_adj_3rd(xxx[1][3],n)[1]
@@ -349,7 +349,7 @@ for mag in magnitudes
 	X = mag*(rand(n,400) .- .5)
 	Y = f_kuramoto_3rd(X,A2,A3,zeros(n))
 
-	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,1e-6)
+	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,1e-1)
 	yyy = check_inference_bool(A2,A3,A4,xxx[1])
 	push!(sen2,yyy[1][1])
 	push!(spe2,yyy[1][2])

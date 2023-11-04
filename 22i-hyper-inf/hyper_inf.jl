@@ -7,7 +7,7 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 # 'Y': time series of the system's velocity. Each row is the time series of the velocity of on agent. 
 # 'ooi': orders of interest. Vector of integers listing the orders of interactions that we analyze. 
 # 'dmax': maximal degree to be considered in the Taylor expansion. Typically, dmax=maximum(ooi).
-# 'thr_global': Threshold value to decide whether an edge exists or not.
+# 'sparse_thr': Sparsity threshold in SINDy. Threshold value to decide whether an edge exists or not.
 # 'd': Internal dimension of the agents. It is assmued that the components of an agents are consecutive in the state vector.
 #
 # OUTPUTS:
@@ -16,7 +16,7 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 # 'idx_o': dictionary of each monomial index in the matrix coeff. To each order 'o' is associated the list of the indices of monomial of order 'o' involving distinct agents.
 # 'agents_o': dictionary of the agents involved in each monomial of 'idx_o'. Each element of 'idx_o[o]' is the index of a monomial, and each element of 'agents_o[o]' is the list of agents (their indices) involved in this monomial.
 
-function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1)
+function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, sparse_thr::Float64=.1)
 	n,T = size(X)
 
 	if size(X) != size(Y)
@@ -49,7 +49,7 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	end
 =#
 
-	res = solve(problem,basis,STLSQ()); @info "Finished SINDy."
+	res = solve(problem,basis,STLSQ(sparse_thr))
 #	res = solve(problem,basis,SR3()); @info "Finished SR3."
 #	res = solve(problem,basis,ADMM()); @info "Finished ADMM."
 
@@ -61,6 +61,62 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 
 #	@info "coeff = $coeff"
 
+
+	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
+	idx_o = Dict{Int64,Vector{Int64}}()
+	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
+	Ainf = Dict{Int64,Any}()
+	Uinf = Dict{Int64,Any}(maximum(ooi) => Vector{Vector{Int64}}())
+	for o in sort(ooi,rev=true)
+		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
+		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
+		idx_o[o],agents_o[o] = get_idx_o(o-1,x,prebasis)
+		for k in 1:length(idx_o[o])
+			id = idx_o[o][k]
+			agents = agents_o[o][k]
+			cagents = setdiff(1:n,agents)
+			y = coeff[cagents,id]
+			ynz = y[Int64.(setdiff((1:length(y)),[0.,]))]
+			yds = Int64.(setdiff(cagents,[0,]))
+			for j in 1:length(yds)
+				Ainf[o][(yds[j],sort([yds[j];agents]))] = ynz[j]
+				for a in agents
+					push!(Uinf[o-1],sort([yds[j];setdiff(agents,[a,])]))
+				end
+			end
+		end
+	end
+
+	return Ainf, coeff, idx_o, agents_o
+end
+
+# Same with the tuning of the sparsity parameter λ in SINDy
+function hyper_inf_sparsity(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1, λ::Float64=1e-1)
+	n,T = size(X)
+
+	if size(X) != size(Y)
+		@info "Dimensions of states and derivatives do not match."
+		return nothing
+	end
+
+	# Setting up the problem
+	@variables x[1:n]
+	problem = DirectDataDrivenProblem(X,Y,name = :HyperInference)
+
+	# Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
+	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
+	basis = Basis(prebasis,[x[i] for i in 1:n])
+	l = length(basis.eqs)
+
+	@info "Problem is set."
+
+	res = solve(problem,basis,STLSQ(λ)); @info "Finished SINDy."
+
+	@info "Problem is solved."
+
+# Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
+#	coeff = Matrix(res.out.Ξ[1,:,:]')
+	coeff = Matrix(res.out[1].coefficients)
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
@@ -89,7 +145,6 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 
 	return Ainf, coeff, idx_o, agents_o
 end
-
 
 # In case we want to infer only one order of hyperedge.
 function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Int64, dmax::Int64, thr_glob::Float64=1.)

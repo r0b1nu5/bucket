@@ -36,7 +36,7 @@ for i in 1:iter
 	Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + ξ0*randn(size(X))
 
 	t0 = now()
-	xxx = hyper_inf(X,Y,ooi,4,-1e-4)
+	xxx = hyper_inf(X,Y,ooi,4,1e-1)
 	t1 = now()
 	push!(t,(t1-t0).value)
 

@@ -5,6 +5,9 @@ include("hyper_kuramoto.jl")
 include("gen_rand_hyperg.jl")
 include("tools_hyper.jl")
 
+include("arni-reconstruct.jl")
+include("arni-reconstruct-3rd.jl")
+
 n = 7
 iter = 10
 
@@ -37,12 +40,14 @@ for i in 1:iter
 
 	X = amp*(rand(n,T) .- .5)
 	Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + ξ0*randn(size(X))
+	
+	adjarni = zeros(n,Int64(n*(n-1)/2))
+	for i in 1:n
+		w = reconstruct_3rd(X,Y,i,adj,1e-6,"power_series")
+		adjarni[i,:] = w[1]
+	end
 
-	xxx = hyper_inf(X,Y,ooi,4,-1e-4)
-
-	A2h = inferred_adj_2nd(xxx[1][2],n)[2]
-	A3h = inferred_adj_3rd(xxx[1][3],n)[2]
-#	adh = get_adj_3rd(A2h,A3h)[1]
+	A2h,A3h = adj2As(adjarni)
 	adh = cat_As(A2h,A3h)
 
 	r1 = roc(abs.(adh) + ξ*rand(Float64,size(adh)), adj)
