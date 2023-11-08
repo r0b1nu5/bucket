@@ -21,7 +21,7 @@ for i in 100:109
 	push!(subjects,string(i))
 end
 # =#
-subjects = ["001",]
+#subjects = ["001","002"]
 states = ["01","02"]
 
 AA2 = zeros(Int64,nz,nz)
@@ -40,16 +40,16 @@ for subject in subjects
 		
 		# Finite differences
 		dt = 1/160
-		truncate = 128
+		truncat = findmin(vec(maximum(abs.([asig zeros(nz)]),dims=1)) .> 1e-6)[2] - 1
 		
-		X0 = asig[:,1:end-truncate]
+		X0 = asig[:,1:truncat]
 		X = X0[:,1:end-1]
 		Y = (X0[:,2:end]-X0[:,1:end-1])/dt
 
 		# Inference
 		ooi = [2,3]
 		dmax = 4
-		xxx = hyper_inf(X,Y,ooi,dmax)
+		xxx = hyper_inf(X,Y,ooi,dmax,.01)
 		
 		# Retrieve adjacency tensors	
 		A2 = inferred_adj_2nd(xxx[1][2],nz)[2]
@@ -70,22 +70,29 @@ for subject in subjects
 			PyPlot.hist(vec(abs.(A3)),20)
 		end
 		
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A2.csv",A2,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A2-bis.csv",A2,',')
 		x = zeros(nz,0)
 		for i in 1:nz
 			x = [x A3[:,:,i]]
 		end
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3.csv",x,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3-bis.csv",x,',')
 	end
 end
 
+N = length(subjects)*length(states)
+M2 = maximum(AA2)
+M3 = maximum(AA3)
+
 figure("Histograms - average-$nz")
 subplot(2,1,1)
-PyPlot.hist(vec(AA2),maximum(AA2)+1)
+PyPlot.hist(100*vec(AA2)./N,bins=100*((0:.5:M2+.5) .- .25)./N)
+xticks(100*(0:ceil(M2/10):M2)./N)
+ylabel("# of 2-edges")
 subplot(2,1,2)
-PyPlot.hist(vec(AA3),maximum(AA3)+1)
-
-
+PyPlot.hist(100*vec(AA3)./N,bins=100*((0:.5:M3+.5) .- .25)./N)
+xticks(100*(0:ceil(M3/10):M3)./N)
+xlabel("Appears in x% of the inferred hypergraphs")
+ylabel("# of 3-edges")
 
 
 

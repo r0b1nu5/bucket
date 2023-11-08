@@ -1,4 +1,4 @@
-using PyPlot, Random
+using PyPlot, Random, Combinatorics
 
 # Generates a wheel graph with 'n' nodes (including the center which is node 1) where the spokes are removed with proba p2, the tires are removed with proba p3 and triangles are added between spokes with proba p1)
 

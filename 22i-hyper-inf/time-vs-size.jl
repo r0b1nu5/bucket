@@ -1,13 +1,14 @@
-using Random, Dates, ROC
+using Random, Dates, ROC, CPUTime
 
 include("hyper_inf.jl")
 include("hyper_kuramoto.jl")
 include("gen_rand_hyperg.jl")
 include("tools_hyper.jl")
 
-ns = [5,10,15,20]
-ns = [5,6]
-iter = 10
+ns = [3,4,6,8,10,12]
+ns = [3,10]
+iter = 20
+plus = 0
 
 ooi = [2,3]
 T = 100
@@ -26,9 +27,13 @@ figure("ntw")
 do_plot = false
 
 for n in ns
+	@info "-------------------------"
 	@info "n = $n"
 	t = Int64[]
-	for i in 1:iter	
+	for i in (1+plus):(iter+plus)
+#	for i in iters
+		@info "$n: $i/$iter"
+
 		figure("ntw")
 		clf()
 		A2,A3 = gen_hyper_er(n,p1,p2,true)
@@ -67,7 +72,7 @@ for n in ns
 end
 
 figure()
-PyPlot.plot(ns,vec(mean(cc,dims=1)).*1e-6,"o")
+PyPlot.plot(ns,vec(mean(tt,dims=1)).*1e-6,"o")
 xlabel("n")
 ylabel("computation time [s]")
 
