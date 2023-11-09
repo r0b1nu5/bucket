@@ -1,10 +1,11 @@
-using PyPlot, DelimitedFiles
+using PyPlot, DelimitedFiles, Statistics
 
 include("eeg-tools.jl")
 
 n = 7
 type = "avg" # "avg" or "sub"
 data_exist = true
+Tmax = 2000
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)
@@ -58,6 +59,7 @@ for su in subjects
 		end
 
 		if !(data_exist)
+			writedlm("eeg-data/T-S"*su*"R"*st*".csv",T,',')
 			for t in 1:T
 				ρ = Float64[]
 				for i in 1:n
@@ -72,7 +74,7 @@ for su in subjects
 					push!(ρ,z3/(z2+z3))
 				end
 #				global ρ3 = [ρ3 ρ]
-				writedlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*".csv",ρ,',')
+				writedlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-$t.csv",ρ,',')
 			end
 		end
 
@@ -83,7 +85,10 @@ end
 
 for su in subjects
 	for st in states
-		global ρ3 = [ρ3 readdlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*".csv",',')]
+		T = Int64(1000*floor(readdlm("eeg-data/T-S"*su*"R"*st*".csv",',')[1]/1000))
+		for t in 1000:1000:min(T,Tmax)
+			global ρ3 = [ρ3 readdlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-T$t.csv",',')]
+		end
 	end
 end
 
@@ -98,10 +103,15 @@ figure("Violins",(15,6))
 #	PyPlot.plot(i*ones(length(ρ3[i,:])),ρ3[i,:],"xk",alpha=.002)
 #end
 fig = plt.violinplot(ρ3',showextrema=false,showmedians=false)
+cmap = get_cmap("magma")
+cols = [cmap(r) for r in LinRange(.2,.8,7)]
+c = 0
 for pc in fig["bodies"]
-	pc.set_facecolor("#d41367")
+	global c += 1
+#	pc.set_facecolor("#d41367")
+	pc.set_facecolor(cols[c])
 	pc.set_edgecolor("black")
-	pc.set_alpha(.3)
+	pc.set_alpha(.5)
 end
 for i in 1:n
 	PyPlot.plot([i,i],[minimum(ρ3[i,:]),maximum(ρ3[i,:])],"k")
@@ -120,7 +130,7 @@ M3 = maximum(AA3)
 figure("Histograms - average - $n",(15,6))
 subplot(2,1,1)
 #PyPlot.hist(100*vec(AA2)./N,bins=100*((0:.5:M2+.5) .- .25)./N,color="#d41367")
-PyPlot.hist(100*vec(AA2)./N,bins=100*((0:1:M2+.5) .- .25)./N,color="#d41367")
+PyPlot.hist(100*vec(AA2)./N,bins=100*((0:1:M2+.5) .- .25)./N,color=cols[1])
 PyPlot.plot([-25/N,(100*M2+25)/N],[n^2,n^2],"--k")
 dM = 10*(M2/N > .5) + 5*(.05 < M2/N < .5) + 1*(M2/N < .05)
 xticks(0:dM:(100*M2/N + dM - 1e-4))
@@ -128,7 +138,7 @@ xticks(0:dM:(100*M2/N + dM - 1e-4))
 ylabel("# of 2-edges")
 subplot(2,1,2)
 #PyPlot.hist(100*vec(AA3)./N,bins=100*((0:.5:M3+.5) .- .25)./N,color="#d41367")
-PyPlot.hist(100*vec(AA3)./N,bins=100*((0:1:M3+.5) .- .25)./N,color="#d41367")
+PyPlot.hist(100*vec(AA3)./N,bins=100*((0:1:M3+.5) .- .25)./N,color=cols[1])
 PyPlot.plot([-25/N,(100*M3+25)/N],[n^3,n^3],"--k")
 dM = 10*(M3/N > .5) + 5*(.05 < M3/N < .5) + 1*(M3/N < .05)
 xticks(0:dM:(100*M2/N + dM - 1e-4))
@@ -151,7 +161,7 @@ for i in 1:nr
 		ids = [idx[k] for k in 1:3]
 		a3temp[idx] = -1000.
 		subplot(nr,nc,c)
-		plot_brain_3dge(ids,v/N)
+		plot_brain_3dge(ids,v/N,cols)
 	end
 end
 
