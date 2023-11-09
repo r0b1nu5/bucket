@@ -97,7 +97,18 @@ figure("Violins",(15,6))
 #for i in 1:n
 #	PyPlot.plot(i*ones(length(ρ3[i,:])),ρ3[i,:],"xk",alpha=.002)
 #end
-plt.violinplot(ρ3',showextrema=false,showmedians=true)
+fig = plt.violinplot(ρ3',showextrema=false,showmedians=false)
+for pc in fig["bodies"]
+	pc.set_facecolor("#d41367")
+	pc.set_edgecolor("black")
+	pc.set_alpha(.3)
+end
+for i in 1:n
+	PyPlot.plot([i,i],[minimum(ρ3[i,:]),maximum(ρ3[i,:])],"k")
+	PyPlot.plot([i,i],quantile(ρ3[i,:],[.25,.75]),"k",linewidth=5)
+	PyPlot.plot(i,median(ρ3[i,:]),"ok",markersize=10)
+end
+
 xlabel("Area")
 ylabel("Amount of the dynamics that is explained by 3rd-order interactions")
 
@@ -108,19 +119,41 @@ M3 = maximum(AA3)
 
 figure("Histograms - average - $n",(15,6))
 subplot(2,1,1)
-PyPlot.hist(100*vec(AA2)./N,bins=100*((0:.5:M2+.5) .- .25)./N,density=true)
+#PyPlot.hist(100*vec(AA2)./N,bins=100*((0:.5:M2+.5) .- .25)./N,color="#d41367")
+PyPlot.hist(100*vec(AA2)./N,bins=100*((0:1:M2+.5) .- .25)./N,color="#d41367")
+PyPlot.plot([-25/N,(100*M2+25)/N],[n^2,n^2],"--k")
 dM = 10*(M2/N > .5) + 5*(.05 < M2/N < .5) + 1*(M2/N < .05)
 xticks(0:dM:(100*M2/N + dM - 1e-4))
 #xticks(100*(0:ceil(M2/10):M2)./N)
 ylabel("# of 2-edges")
 subplot(2,1,2)
-PyPlot.hist(100*vec(AA3)./N,bins=100*((0:.5:M3+.5) .- .25)./N)
+#PyPlot.hist(100*vec(AA3)./N,bins=100*((0:.5:M3+.5) .- .25)./N,color="#d41367")
+PyPlot.hist(100*vec(AA3)./N,bins=100*((0:1:M3+.5) .- .25)./N,color="#d41367")
+PyPlot.plot([-25/N,(100*M3+25)/N],[n^3,n^3],"--k")
 dM = 10*(M3/N > .5) + 5*(.05 < M3/N < .5) + 1*(M3/N < .05)
 xticks(0:dM:(100*M2/N + dM - 1e-4))
 #xticks(100*(0:ceil(M3/10):M3)./N)
 xlabel("Appears in x% of the inferred hypergraphs")
 ylabel("# of 3-edges")
 
+# Fig 3
+figure("Brains",(15,8))
+nr = 3
+nc = 4
+c = 0
+nrc = nr*nc
+
+a3temp = copy(AA3)
+for i in 1:nr
+	for j in 1:nc
+		global c += 1
+		v,idx = findmax(a3temp)
+		ids = [idx[k] for k in 1:3]
+		a3temp[idx] = -1000.
+		subplot(nr,nc,c)
+		plot_brain_3dge(ids,v/N)
+	end
+end
 
 
 

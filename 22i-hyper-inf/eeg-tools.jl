@@ -60,5 +60,23 @@ function list_all_subjects(n::Int64)
 	return subjects
 end
 
+function plot_brain_3dge(ids::Vector{Int64}, p::Float64)
+#	brain_bord = readdlm("eeg-data/brain-bord.csv",',')
+	xy = readdlm("eeg-data/zones-7-xy.csv",',')
+
+#	PyPlot.plot(brain_bord[:,1],brain_bord[:,2],"k")
+	x = LinRange(-1,1,300)
+	PyPlot.plot(x,-.8*sqrt.(1 .- x.^2),"k",x,.8*sqrt.(1 .- x.^2),"k")
+	PyPlot.plot(xy[:,1],xy[:,2],"ok",markersize=9)
+	PyPlot.fill(xy[ids,1],xy[ids,2],color="#d41367",alpha=.3)
+	PyPlot.plot(xy[ids[1],1],xy[ids[1],2],"o",color="#d41367",markersize=20)
+	PyPlot.plot(xy[ids[2],1],xy[ids[2],2],"o",color="#d41367",markersize=15)
+	PyPlot.plot(xy[ids[3],1],xy[ids[3],2],"o",color="#d41367",markersize=10)
+	title("p = $(round(p,digits=2)*100)%")
+	xticks([])
+	yticks([])
+end
+
+
 
 
