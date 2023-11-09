@@ -33,7 +33,7 @@ for subject in subjects
 		# Loading data
 		file = "eeg-data/S"*subject*"R"*state*".edf"
 		s2signal = read_eeg(file)
-		ssig = zeros(0,length(s2signal[keys(s2signal)[1]]))
+		ssig = zeros(0,length(s2signal["Pz.."]))
 		for s in slist
 			ssig = [ssig;s2signal[s]']
 		end
@@ -47,7 +47,7 @@ for subject in subjects
 		Y = (X0[:,2:end]-X0[:,1:end-1])/dt
 		
 		for sen in slist
-			X0 = [X0;s2signal[sen][1:end-truncate]']
+			X0 = [X0;s2signal[sen][1:truncat]']
 		end
 		X = X0[:,1:end-1]
 		Y = (X0[:,2:end]-X0[:,1:end-1])/dt
@@ -55,7 +55,7 @@ for subject in subjects
 		# Inference
 		ooi = [2,3]
 		dmax = 4
-		xxx = hyper_inf(X,Y,ooi,dmax)
+		xxx = hyper_inf(X,Y,ooi,dmax,.01)
 
 		# Retrieve adjacency tensors
 		A2 = inferred_adj_2nd(xxx[1][2],n)[2]
