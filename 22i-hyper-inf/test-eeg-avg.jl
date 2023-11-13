@@ -27,7 +27,7 @@ states = ["01","02"]
 AA2 = zeros(Int64,nz,nz)
 AA3 = zeros(Int64,nz,nz,nz)
 
-for subject in subjects[32:109]
+for subject in subjects[51:109]
 	for state in states
 		@info "Running S"*subject*"R"*state
 
@@ -76,6 +76,8 @@ for subject in subjects[32:109]
 			x = [x A3[:,:,i]]
 		end
 		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3-bis.csv",x,',')
+		
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-coeff.csv",coeff,',')
 	end
 end
 

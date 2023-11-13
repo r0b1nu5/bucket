@@ -83,6 +83,37 @@ function plot_brain_3dge(ids::Vector{Int64}, p::Float64, cols=Vector{NTuple{4,Fl
 	yticks([])
 end
 
+function vectorize_adj(A::Matrix{Float64})
+	n = size(A)[1]
+	a = Float64[]
+	for i in 1:n-1
+		for j in i+1:n
+			push!(a,A[i,j])
+			push!(a,A[j,i])
+		end
+	end
+	return a
+end
+
+function vectorize_adj(A::Array{Float64,3})
+	n = size(A)[1]
+	a = Float64[]
+	for i in 1:n-2
+		for j in i+1:n-1
+			for k in j+1:n
+				push!(a,A[i,j,k])
+				push!(a,A[i,k,j])
+				push!(a,A[j,i,k])
+				push!(a,A[j,k,i])
+				push!(a,A[k,i,j])
+				push!(a,A[k,j,i])
+			end
+		end
+	end
+	return a
+end
+
+
 
 
 
