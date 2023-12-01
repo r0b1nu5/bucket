@@ -2,6 +2,8 @@ include("hyper_inf.jl")
 include("eeg-tools.jl")
 
 nz = 7
+λ = .01
+ρ = .1
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$nz.csv",',',String)
@@ -9,25 +11,19 @@ z = readdlm("eeg-data/zones-$nz.csv",',',Int64)
 s2z = Dict{String,Int64}(s[i] => z[i] for i in 1:length(s))
 
 # Data to be loaded
-# #=
-subjects = String[]
-for i in 1:9
-	push!(subjects,"00"*string(i))
-end
-for i in 10:99
-	push!(subjects,"0"*string(i))
-end
-for i in 100:109
-	push!(subjects,string(i))
-end
-# =#
+subjects = list_all_subjects(109)
 #subjects = ["001","002"]
+#subjects = ["001"]
 states = ["01","02"]
+states = ["03","07","11"]
 
 AA2 = zeros(Int64,nz,nz)
 AA3 = zeros(Int64,nz,nz,nz)
 
-for subject in subjects[51:109]
+relerr = zeros(length(states),0)
+
+for subject in subjects
+	re = Float64[]
 	for state in states
 		@info "Running S"*subject*"R"*state
 
@@ -41,15 +37,20 @@ for subject in subjects[51:109]
 		# Finite differences
 		dt = 1/160
 		truncat = findmin(vec(maximum(abs.([asig zeros(nz)]),dims=1)) .> 1e-6)[2] - 1
-		
-		X0 = asig[:,1:truncat]
-		X = X0[:,1:end-1]
-		Y = (X0[:,2:end]-X0[:,1:end-1])/dt
+		truncat = 3001
+
+#		X0 = asig[:,1:truncat]
+		X0 = denoise_fourier(asig[:,1:truncat],100)
+		Y0 = (X0[:,2:end]-X0[:,1:end-1])./dt
+		X0 = X0[:,1:end-1]
+		X = X0./mean(abs.(X0))
+		Y = Y0./mean(abs.(Y0))
 
 		# Inference
 		ooi = [2,3]
 		dmax = 4
-		xxx = hyper_inf(X,Y,ooi,dmax,.01)
+		xxx = hyper_inf(X,Y,ooi,dmax,λ,ρ)
+		push!(re,xxx[4])
 		
 		# Retrieve adjacency tensors	
 		A2 = inferred_adj_2nd(xxx[1][2],nz)[2]
@@ -62,7 +63,7 @@ for subject in subjects[51:109]
 		global AA3 += B3
 
 		# Plots (not too many)
-		if length(subjects)*length(states) < 10
+		if length(subjects)*length(states) < 1
 			figure("Histograms - average-$nz - S"*subject*"R"*state)
 			subplot(2,1,1)
 			PyPlot.hist(vec(abs.(A2)),20)
@@ -70,16 +71,19 @@ for subject in subjects[51:109]
 			PyPlot.hist(vec(abs.(A3)),20)
 		end
 		
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A2-bis.csv",A2,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A2-ter.csv",A2,',')
 		x = zeros(nz,0)
 		for i in 1:nz
 			x = [x A3[:,:,i]]
 		end
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3-bis.csv",x,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3-ter.csv",x,',')
 		
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-coeff.csv",coeff,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-coeff.csv",xxx[2],',')
 	end
+	global relerr = [relerr re]
 end
+
+writedlm("eeg-data/relative-error.csv",relerr,',')
 
 N = length(subjects)*length(states)
 M2 = maximum(AA2)
@@ -96,6 +100,8 @@ xticks(100*(0:ceil(M3/10):M3)./N)
 xlabel("Appears in x% of the inferred hypergraphs")
 ylabel("# of 3-edges")
 
+figure("Relative error")
+PyPlot.plot(vec(mean(relerr,dims=1)),"x")
 
 
 

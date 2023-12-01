@@ -1,5 +1,7 @@
 using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics
 
+include("this.jl")
+
 # Infers an hypergraph with knowledge of the states 'X' and of the derivatives 'Y'.
 #
 # INPUTS:
@@ -16,7 +18,7 @@ using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, Linear
 # 'idx_o': dictionary of each monomial index in the matrix coeff. To each order 'o' is associated the list of the indices of monomial of order 'o' involving distinct agents.
 # 'agents_o': dictionary of the agents involved in each monomial of 'idx_o'. Each element of 'idx_o[o]' is the index of a monomial, and each element of 'agents_o[o]' is the list of agents (their indices) involved in this monomial.
 
-function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, sparse_thr::Float64=.1)
+function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, λ::Float64=.1, ρ::Float64=1.)
 	n,T = size(X)
 
 	if size(X) != size(Y)
@@ -24,14 +26,15 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 		return nothing
 	end
 
-	# Setting up the problem
-	@variables x[1:n]
-	problem = DirectDataDrivenProblem(X,Y,name = :HyperInference)
-
 	# Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
+	@variables x[1:n]
 	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
 	basis = Basis(prebasis,[x[i] for i in 1:n])
 	l = length(basis.eqs)
+
+#= # USES PRE-IMPLEMENTED SINDY
+	# Setting up the problem
+	problem = DirectDataDrivenProblem(X,Y,name = :HyperInference)
 
 	@info "Problem is set."
 
@@ -58,9 +61,14 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 # Apparently, depending on some package version, either of the following lines can work. Choose your own and comment the other.
 #	coeff = Matrix(res.out.Ξ[1,:,:]')
 	coeff = Matrix(res.out[1].coefficients)
+	err = res.residuals
 
 #	@info "coeff = $coeff"
+# =#
 
+# #= USES MYSINDY
+	coeff,err,relerr = this(X,Y,ooi,dmax,λ,ρ)
+# =#
 
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
@@ -87,7 +95,8 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 		end
 	end
 
-	return Ainf, coeff, idx_o, agents_o
+#	return Ainf, coeff, idx_o, agents_o
+	return Ainf, coeff, err, relerr
 end
 
 # Same with the tuning of the sparsity parameter λ in SINDy
@@ -143,7 +152,8 @@ function hyper_inf_sparsity(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{
 		end
 	end
 
-	return Ainf, coeff, idx_o, agents_o
+#	return Ainf, coeff, idx_o, agents_o
+	return Ainf, coeff, res.residuals
 end
 
 # In case we want to infer only one order of hyperedge.

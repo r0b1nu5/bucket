@@ -4,10 +4,10 @@ include("eeg-tools.jl")
 
 n = 7
 type = "avg" # "avg" or "sub"
-data_exist = true
-Tmax = 3000
-thr2 = .01
-thr3 = .01
+data_exist = false
+Tmax = 1000
+thr2 = 10.
+thr3 = .02
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)
@@ -16,7 +16,8 @@ s2z = Dict{String,Int64}(s[i] => z[i] for i in 1:length(s))
 
 # Data to be loaded
 subjects = list_all_subjects(109)
-#subjects = ["001","002"]
+subjects = ["001","002"]
+states = ["01","02"]
 states = ["03","07","11"]
 
 #if data_exist
@@ -35,19 +36,30 @@ for su in subjects
 	for st in states
 		@info "Working on S"*su*"R"*st
 		if !(data_exist)
-			s2signal = read_eeg("eeg-data/S"*su*"R"*st*".edf")
-			asig = average_over_zones(s2signal,s2z)
-			dt = 1/160
-#			truncat = findmin(vec(maximum(abs.([asig zeros(n)]),dims=1)) .> 1e-6)[2] - 1
-			truncat = 3001
-			X0 = denoise_fourier(asig[:,1:truncat],100)
-			X0 = X0[:,1:end-1]
-			X = X0./mean(abs.(X0))
+			if type == "avg"
+				s2signal = read_eeg("eeg-data/S"*su*"R"*st*".edf")
+				asig = average_over_zones(s2signal,s2z)
+				dt = 1/160
+				truncat = findmin(vec(maximum(abs.([asig zeros(n)]),dims=1)) .> 1e-6)[2] - 1
+				X0 = asig[:,1:truncat]
+				X = X0[:,1:end-1]
+			elseif type == "sub"
+				s2signal = read_eeg("eeg-data/S"*su*"R"*st*".edf")
+				ssig = zeros(0,length(s2signal["Pz.."]))
+				for s in slist
+					ssig = [ssig;s2signal[s]']
+				end
+				dt = 1/160
+				truncat = findmin(vec(maximum(abs.([ssig zeros(n)]),dims=1)) .> 1e-6)[2] - 1
+				X0 = ssig[:,1:truncat]
+				X = X0[:,1:end-1]
+			end
+			
 			T = size(X)[2]
 		end
 
-		A2 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A2-ter.csv",',')
-		a3 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A3-ter.csv",',')
+		A2 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A2-bis.csv",',')
+		a3 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A3-bis.csv",',')
 		A3 = zeros(n,n,n)
 		for k in 1:n
 			A3[:,:,k] = a3[:,(k-1)*n .+ (1:n)]
@@ -74,16 +86,6 @@ for su in subjects
 #				global ρ3 = [ρ3 ρ]
 				writedlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-$t.csv",ρ,',')
 			end
-			ρ = zeros(n,0)
-			for t in 1:T
-				ρ = [ρ vec(readdlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-$t.csv",','))]
-				rm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-$t.csv")
-				if t%1000 == 0
-					writedlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-T$t.csv",ρ,',')
-					ρ = zeros(n,0)
-				end
-			end
-
 		end
 
 		global AA2 += (abs.(A2) .> thr2)
@@ -126,21 +128,22 @@ end
 
 
 # Fig 1
-#figure("Violins-bis")
-#plt.violinplot(ρ3')
+figure("Violins-bis")
+plt.violinplot(ρ3')
 
 figure("Violins-ter",(10,4))
 ζ = [vec(ρ3),]
 #fig = plt.violinplot(vec(ρ3),positions=[1,],showextrema=false)
-qs = quantile(vec(q2),[0.,.25,.5,.75,1.])
-#qs = quantile(vec(q2),[.01,.25,.5,.75,.99])
+#qs = quantile(vec(q2),[0.,.25,.5,.75,1.])
+qs = quantile(vec(q2),[.01,.25,.5,.75,.99])
 #qs = quantile(vec(q2),[.2,.4,.5,.8])
 m0,i0 = findmin(abs.(q2 .- qs[1]))
 m1,i1 = findmin(abs.(q2 .- qs[2]))
 m2,i2 = findmin(abs.(q2 .- qs[3]))
 m3,i3 = findmin(abs.(q2 .- qs[4]))
 m4,i4 = findmin(abs.(q2 .- qs[5]))
-for i in [i0,i1,i2,i3,i4] 
+for i in [i0,i1,i2,i3,i4] # Got rid of three indices because they were at zero
+#for i in [CartesianIndex(4,118),i1,i2,i3,i4]
 	push!(ζ,ρ3[i[1],(i[2]-1)*Tmax .+ (1:Tmax)])
 end
 #ζ = [ρ3[i0[1],(i0[2]-1)*Tmax .+ (1:Tmax)] ρ3[i1[1],(i1[2]-1)*Tmax .+ (1:Tmax)] ρ3[i2[1],(i2[2]-1)*Tmax .+ (1:Tmax)] ρ3[i3[1],(i3[2]-1)*Tmax .+ (1:Tmax)] ρ3[i4[1],(i4[2]-1)*Tmax .+ (1:Tmax)]]
@@ -160,8 +163,7 @@ for i in 1:length(ζ)
 	PyPlot.plot([i,i],quantile(ζ[i],[.25,.75]),color=cc[i],linewidth=5)
 	PyPlot.plot(i,median(ζ[i]),"o",color=cc[i],markersize=10)
 end
-#xticks([1,2,3,4,5,6],["All","1%","25%","50%","75%","99%"])
-xticks([1,2,3,4,5,6],["All","0%","25%","50%","75%","100%"])
+xticks([1,2,3,4,5,6],["All","1%","25%","50%","75%","99%"])
 xlabel("Percentile")
 ylabel("Amount of the dynamics that is\nexplained by 3rd-order interactions")
 

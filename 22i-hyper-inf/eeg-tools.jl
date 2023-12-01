@@ -1,4 +1,4 @@
-using EDF, DelimitedFiles
+using EDF, DelimitedFiles, FFTW
 
 function read_eeg(file::String)
 	xxx = EDF.read(file)
@@ -113,7 +113,69 @@ function vectorize_adj(A::Array{Float64,3})
 	return a
 end
 
+# Use a sliding mean with Δt horizon
+function smooth_time_series(x::Vector{Float64}, Δt::Int64=10)
+	return [mean(x[t:t+Δt]) for t in 1:(length(x)-Δt)]
+end
 
+function smooth_time_series(x::Matrix{Float64}, Δt::Int64=10)
+	n,T = size(x)
+	y = zeros(T-Δt,0)
+	for i in 1:n
+		y = [y smooth_time_series(x[i,:],Δt)]
+	end
+	return Matrix(y')
+end
 
+function subsample_time_series(x::Vector{Float64}, Δt::Int64=10)
+	return [mean(x[t:t+Δt]) for t in 1:Δt:length(x)-Δt]
+end
+
+function subsample_time_series(x::Matrix{Float64}, Δt::Int64=10)
+	n,T = size(x)
+	y = zeros(Int64(floor(T/Δt)),0)
+	for i in 1:n
+		y = [y subsample_time_series(x[i,:],Δt)]
+	end
+	return Matrix(y')
+end
+
+# Estimates the derivative from discrete data points with the 9-point stencil.
+# Keeps data point every Δt time steps.
+# Time step length is δt.
+function stencil9(x::Vector{Float64}, δt::Float64, Δt::Int64=10)
+	c = [1/280,-4/105,1/5,-4/5,0,4/5,-1/5,4/105,-1/280]./δt
+	return x[5:Δt:length(x)-4], [dot(c,x[(-4:4) .+ t]) for t in 5:Δt:length(x)-4]
+end
+
+function stencil9(X::Matrix{Float64}, δt::Float64, Δt::Int64=10)
+	n,T = size(X)
+	x = zeros(length(5:Δt:T-4),0)
+	dx = zeros(length(5:Δt:T-4),0)
+	for i in 1:n
+		a,b = stencil9(X[i,:],δt,Δt)
+		x = [x a]
+		dx = [dx b]
+	end
+	return Matrix(x'), Matrix(dx')
+end
+
+function denoise_fourier(x::Vector{Float64},nmodes::Int64)
+	T = length(x)
+	f = fft(x)
+	g = zeros(Complex{Float64},T)
+	g[1:nmodes+1] = f[1:nmodes+1]
+	g[T-nmodes+1:T] = f[T-nmodes+1:T]
+	return real.(ifft(g))
+end
+
+function denoise_fourier(X::Matrix{Float64},nmodes::Int64)
+	n,T = size(X)
+	Y = zeros(n,T)
+	for i in 1:n
+		Y[i,:] = denoise_fourier(X[i,:],nmodes)
+	end
+	return Y
+end
 
 

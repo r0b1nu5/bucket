@@ -1,5 +1,6 @@
 using PyPlot, DelimitedFiles, Statistics
 
+include("hyper_inf.jl")
 include("eeg-tools.jl")
 
 n = 7
@@ -23,6 +24,7 @@ states = ["01","02"]
 	ρ3 = zeros(n,0)
 #end
 
+dmax = 4
 # Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
 @variables x[1:n]
 prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
