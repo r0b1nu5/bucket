@@ -2,20 +2,23 @@ include("hyper_inf.jl")
 include("eeg-tools.jl")
 
 nz = 7
-λ = .01
+λ = .1
 ρ = .1
+
+suffix = "xx7"
+
+# Data to be loaded
+subjects = list_all_subjects(109)
+#subjects = ["001","002"]
+#subjects = ["021",]
+#states = ["01","02"]
+states = ["03","07","11"]
+#states = ["01","02","03","07","11"]
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$nz.csv",',',String)
 z = readdlm("eeg-data/zones-$nz.csv",',',Int64)
 s2z = Dict{String,Int64}(s[i] => z[i] for i in 1:length(s))
-
-# Data to be loaded
-subjects = list_all_subjects(109)
-#subjects = ["001","002"]
-#subjects = ["001"]
-states = ["01","02"]
-states = ["03","07","11"]
 
 AA2 = zeros(Int64,nz,nz)
 AA3 = zeros(Int64,nz,nz,nz)
@@ -37,7 +40,7 @@ for subject in subjects
 		# Finite differences
 		dt = 1/160
 		truncat = findmin(vec(maximum(abs.([asig zeros(nz)]),dims=1)) .> 1e-6)[2] - 1
-		truncat = 3001
+#		truncat = 3001
 
 #		X0 = asig[:,1:truncat]
 		X0 = denoise_fourier(asig[:,1:truncat],100)
@@ -45,6 +48,9 @@ for subject in subjects
 		X0 = X0[:,1:end-1]
 		X = X0./mean(abs.(X0))
 		Y = Y0./mean(abs.(Y0))
+
+		X,ids = restrict_box_size(X,1000)
+		Y = Y[:,ids]
 
 		# Inference
 		ooi = [2,3]
@@ -71,19 +77,19 @@ for subject in subjects
 			PyPlot.hist(vec(abs.(A3)),20)
 		end
 		
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A2-ter.csv",A2,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A2-"*suffix*".csv",A2,',')
 		x = zeros(nz,0)
 		for i in 1:nz
 			x = [x A3[:,:,i]]
 		end
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3-ter.csv",x,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3-"*suffix*".csv",x,',')
 		
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-coeff.csv",xxx[2],',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-coeff-"*suffix*".csv",xxx[2],',')
 	end
 	global relerr = [relerr re]
 end
 
-writedlm("eeg-data/relative-error.csv",relerr,',')
+writedlm("eeg-data/relative-error-"*suffix*".csv",relerr,',')
 
 N = length(subjects)*length(states)
 M2 = maximum(AA2)

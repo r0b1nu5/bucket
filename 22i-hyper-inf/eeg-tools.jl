@@ -1,5 +1,7 @@
 using EDF, DelimitedFiles, FFTW
 
+include("this.jl")
+
 function read_eeg(file::String)
 	xxx = EDF.read(file)
 
@@ -177,5 +179,55 @@ function denoise_fourier(X::Matrix{Float64},nmodes::Int64)
 	end
 	return Y
 end
+
+function compare_eeg_trajectories(X::Matrix{Float64}, Y::Matrix{Float64}, Ξ::Matrix{Float64}, dmax::Int64)
+	n,T = size(X)
+	
+	θ = get_θ(X,dmax)
+	Yh = Ξ*θ 
+
+	for i in 1:min(n,10)
+		PyPlot.plot(Y[i,:],color="C$(i-1)")
+		PyPlot.plot(Yh[i,:],"--",color="C$(i-1)")
+	end
+
+	return sum((Y-Yh).^2)
+end
+
+function cleaned_time_series(su::String, st::String, truncat::Int64)
+	nz = 7
+	s = readdlm("eeg-data/sensors-$nz.csv",',',String)
+	z = readdlm("eeg-data/zones-$nz.csv",',',Int64)
+	s2z = Dict{String,Int64}(s[i] => z[i] for i in 1:length(s))
+
+	s2signal = read_eeg("eeg-data/S"*su*"R"*st*".edf")
+	asig = average_over_zones(s2signal,s2z)
+
+	dt = 1/160
+	X0 = denoise_fourier(asig[:,1:truncat],100)
+	Y0 = (X0[:,2:end] - X0[:,1:end-1])/dt
+	X0 = X0[:,1:end-1]
+	X = X0./mean(abs.(X0))
+	Y = Y0./mean(abs.(Y0))
+
+	return X,Y
+end
+
+function restrict_box_size(X::Matrix{Float64}, nstep::Int64)
+	n,T = size(X)
+	ns = min(T-1,nstep)
+
+	mX = median(X,dims=2)
+	dX = X - repeat(mX,1,T)
+	nX = vec(sum(dX.^2,dims=1))
+	sX = sort(nX)
+	th = (sX[ns+1] + sX[ns])/2
+	
+	ids = (1:T)[nX .< th]
+
+	return X[:,ids], ids
+end
+
+
 
 

@@ -5,19 +5,22 @@ include("eeg-tools.jl")
 n = 7
 type = "avg" # "avg" or "sub"
 data_exist = true
-Tmax = 3000
-thr2 = .01
-thr3 = .01
+Tmax = 1000
+thr2 = 1.
+thr3 = 10.
+
+# Data to be loaded
+subjects = list_all_subjects(109)
+#subjects = ["001","002"]
+#states = ["01","02"]
+states = ["03","07","11"]
+
+suffix = "xx7"
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)
 z = readdlm("eeg-data/zones-$n.csv",',',Int64)
 s2z = Dict{String,Int64}(s[i] => z[i] for i in 1:length(s))
-
-# Data to be loaded
-subjects = list_all_subjects(109)
-#subjects = ["001","002"]
-states = ["03","07","11"]
 
 #if data_exist
 #	ρ3 = readdlm("eeg-data/violin-data-"*type*"-$n.csv",',')
@@ -26,28 +29,34 @@ states = ["03","07","11"]
 #end
 
 AA2 = zeros(n,n)
+AAA2 = zeros(n,n,length(subjects)*length(states))
 AA3 = zeros(n,n,n)
+AAA3 = zeros(n,n,n,length(subjects)*length(states))
 vA2 = Float64[]
 vA3 = Float64[]
 contr_per_subject = zeros(n,0)
 
+c = 0
 for su in subjects
 	for st in states
-		@info "Working on S"*su*"R"*st
+		global c += 1
+		@info "Working on S"*su*"R"*st*": run "*suffix
 		if !(data_exist)
 			s2signal = read_eeg("eeg-data/S"*su*"R"*st*".edf")
 			asig = average_over_zones(s2signal,s2z)
 			dt = 1/160
-#			truncat = findmin(vec(maximum(abs.([asig zeros(n)]),dims=1)) .> 1e-6)[2] - 1
-			truncat = 3001
+			truncat = findmin(vec(maximum(abs.([asig zeros(n)]),dims=1)) .> 1e-6)[2] - 1
+#			truncat = 3001
 			X0 = denoise_fourier(asig[:,1:truncat],100)
 			X0 = X0[:,1:end-1]
 			X = X0./mean(abs.(X0))
+		
+			X,ids = restrict_box_size(X,1000)
 			T = size(X)[2]
 		end
 
-		A2 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A2-ter.csv",',')
-		a3 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A3-ter.csv",',')
+		A2 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A2-"*suffix*".csv",',')
+		a3 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A3-"*suffix*".csv",',')
 		A3 = zeros(n,n,n)
 		for k in 1:n
 			A3[:,:,k] = a3[:,(k-1)*n .+ (1:n)]
@@ -57,7 +66,7 @@ for su in subjects
 		global vA3 = [vA3;vectorize_adj(A3)]
 
 		if !(data_exist)
-			writedlm("eeg-data/T-S"*su*"R"*st*".csv",T,',')
+			writedlm("eeg-data/T-S"*su*"R"*st*"-"*suffix*".csv",T,',')
 			for t in 1:T
 				ρ = Float64[]
 				for i in 1:n
@@ -69,17 +78,21 @@ for su in subjects
 						end
 						z2 += abs(A2[i,j]*X[j,t])
 					end
-					push!(ρ,z3/(z2+z3))
+					if z2+z3 == 0.
+						push!(ρ,0.)
+					else
+						push!(ρ,z3/(z2+z3))
+					end
 				end
 #				global ρ3 = [ρ3 ρ]
-				writedlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-$t.csv",ρ,',')
+				writedlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",ρ,',')
 			end
 			ρ = zeros(n,0)
 			for t in 1:T
-				ρ = [ρ vec(readdlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-$t.csv",','))]
-				rm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-$t.csv")
+				ρ = [ρ vec(readdlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",','))]
+				rm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv")
 				if t%1000 == 0
-					writedlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-T$t.csv",ρ,',')
+					writedlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t.csv",ρ,',')
 					ρ = zeros(n,0)
 				end
 			end
@@ -87,7 +100,20 @@ for su in subjects
 		end
 
 		global AA2 += (abs.(A2) .> thr2)
+		global AAA2[:,:,c] = abs.(A2)
 		global AA3 += (abs.(A3) .> thr3)
+		global AAA3[:,:,:,c] = abs.(A3)
+	end
+end
+
+MA2 = zeros(n,n)
+MA3 = zeros(n,n,n)
+for i in 1:n
+	for j in 1:n
+		MA2[i,j] = median(AAA2[i,j,:])
+		for k in 1:n
+			MA3[i,j,k] = median(AAA3[i,j,k,:])
+		end
 	end
 end
 
@@ -99,10 +125,12 @@ q4 = zeros(n,0)
 nams = String[]
 for su in subjects
 	for st in states
-		T = Int64(1000*floor(readdlm("eeg-data/T-S"*su*"R"*st*".csv",',')[1]/1000))
+		@info "Loading S"*su*"R"*st
+
+		T = Int64(1000*floor(readdlm("eeg-data/T-S"*su*"R"*st*"-"*suffix*".csv",',')[1]/1000))
 		ρ = zeros(n,0)
 		for t in 1000:1000:min(T,Tmax)
-			ρ = [ρ readdlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-T$t.csv",',')]
+			ρ = [ρ readdlm("eeg-data/violin-data-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t.csv",',')]
 		end
 		global ρ3 = [ρ3 ρ]
 		global contr_per_subject = [contr_per_subject mean(ρ,dims=2)]
@@ -112,16 +140,16 @@ for su in subjects
 		global q3 = [q3 [quantile(ρ[i,:],.75) for i in 1:n]]
 		global q4 = [q4 [quantile(ρ[i,:],1.0) for i in 1:n]]
 		push!(nams,"S"*su*"R"*st)
-		figure("Violins-bis",(15,6))
-		fig = plt.violinplot(ρ',showextrema=false)
-		for pc in fig["bodies"]
-			pc.set_alpha(0.05)
-		end
+#		figure("Violins-bis",(15,6))
+#		fig = plt.violinplot(ρ',showextrema=false)
+#		for pc in fig["bodies"]
+#			pc.set_alpha(0.05)
+#		end
 	end
 end
 
 if !(data_exist)
-	writedlm("eeg-data/violin-data-"*type*"-$n.csv",ρ3,',')
+	writedlm("eeg-data/violin-data-"*type*"-$n-"*suffix*".csv",ρ3,',')
 end
 
 
@@ -134,6 +162,7 @@ figure("Violins-ter",(10,4))
 #fig = plt.violinplot(vec(ρ3),positions=[1,],showextrema=false)
 qs = quantile(vec(q2),[0.,.25,.5,.75,1.])
 #qs = quantile(vec(q2),[.01,.25,.5,.75,.99])
+#qs = quantile(vec(q2),[.05,.25,.5,.75,.95])
 #qs = quantile(vec(q2),[.2,.4,.5,.8])
 m0,i0 = findmin(abs.(q2 .- qs[1]))
 m1,i1 = findmin(abs.(q2 .- qs[2]))
