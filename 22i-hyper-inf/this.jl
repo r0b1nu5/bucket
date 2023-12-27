@@ -16,7 +16,7 @@ end
 function mySINDy(θ::Matrix{Float64}, Y::Matrix{Float64}, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
 	n,T = size(Y)
 	m,T = size(θ)
-	energy = sum(abs.(Y))
+	energy = sum(Y.^2)
 
 	Ξ = Y*θ'*pinv(θ*θ' + ρ*Id(m)) # Least square with Tikhonov regularization
 

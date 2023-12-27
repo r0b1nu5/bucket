@@ -7,7 +7,7 @@ type = "avg" # "avg" or "sub"
 data_exist = true
 Tmax = 1000
 thr2 = 1.
-thr3 = 10.
+thr3 = 1.
 
 # Data to be loaded
 subjects = list_all_subjects(109)
