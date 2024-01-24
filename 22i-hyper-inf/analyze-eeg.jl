@@ -12,10 +12,10 @@ thr3 = 1.
 # Data to be loaded
 subjects = list_all_subjects(109)
 #subjects = ["001","002"]
-#states = ["01","02"]
-states = ["03","07","11"]
+states = ["01","02"]
+#states = ["03","07","11"]
 
-suffix = "xx7"
+suffix = "xx6"
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)
@@ -117,14 +117,24 @@ for i in 1:n
 	end
 end
 
+re = readdlm("eeg-data/relative-error-"*suffix*".csv",',')
+
 q0 = zeros(n,0)
 q1 = zeros(n,0)
 q2 = zeros(n,0)
 q3 = zeros(n,0)
 q4 = zeros(n,0)
 nams = String[]
+sss = 0
+ttt = 0
 for su in subjects
+	global sss += 1
+	global ttt = 0
 	for st in states
+		global ttt += 1
+
+if re[ttt,sss] < .5
+
 		@info "Loading S"*su*"R"*st
 
 		T = Int64(1000*floor(readdlm("eeg-data/T-S"*su*"R"*st*"-"*suffix*".csv",',')[1]/1000))
@@ -145,6 +155,9 @@ for su in subjects
 #		for pc in fig["bodies"]
 #			pc.set_alpha(0.05)
 #		end
+
+end
+
 	end
 end
 
@@ -160,6 +173,7 @@ end
 figure("Violins-ter",(10,4))
 ζ = [vec(ρ3),]
 #fig = plt.violinplot(vec(ρ3),positions=[1,],showextrema=false)
+#=
 qs = quantile(vec(q2),[0.,.25,.5,.75,1.])
 #qs = quantile(vec(q2),[.01,.25,.5,.75,.99])
 #qs = quantile(vec(q2),[.05,.25,.5,.75,.95])
@@ -170,6 +184,16 @@ m2,i2 = findmin(abs.(q2 .- qs[3]))
 m3,i3 = findmin(abs.(q2 .- qs[4]))
 m4,i4 = findmin(abs.(q2 .- qs[5]))
 for i in [i0,i1,i2,i3,i4] 
+	push!(ζ,ρ3[i[1],(i[2]-1)*Tmax .+ (1:Tmax)])
+end
+=#
+qs = quantile(vec(q2),[.05,.35,.65,.95])
+#qs = quantile(vec(q2),[.2,.4,.6,.8])
+m1,i1 = findmin(abs.(q2 .- qs[1]))
+m2,i2 = findmin(abs.(q2 .- qs[2]))
+m3,i3 = findmin(abs.(q2 .- qs[3]))
+m4,i4 = findmin(abs.(q2 .- qs[4]))
+for i in [i1,i2,i3,i4]
 	push!(ζ,ρ3[i[1],(i[2]-1)*Tmax .+ (1:Tmax)])
 end
 #ζ = [ρ3[i0[1],(i0[2]-1)*Tmax .+ (1:Tmax)] ρ3[i1[1],(i1[2]-1)*Tmax .+ (1:Tmax)] ρ3[i2[1],(i2[2]-1)*Tmax .+ (1:Tmax)] ρ3[i3[1],(i3[2]-1)*Tmax .+ (1:Tmax)] ρ3[i4[1],(i4[2]-1)*Tmax .+ (1:Tmax)]]
@@ -190,7 +214,9 @@ for i in 1:length(ζ)
 	PyPlot.plot(i,median(ζ[i]),"o",color=cc[i],markersize=10)
 end
 #xticks([1,2,3,4,5,6],["All","1%","25%","50%","75%","99%"])
-xticks([1,2,3,4,5,6],["All","0%","25%","50%","75%","100%"])
+#xticks([1,2,3,4,5,6],["All","0%","25%","50%","75%","100%"])
+#xticks([1,2,3,4,5],["All","20%","40%","60%","80%"])
+xticks([1,2,3,4,5],["All","5%","35%","65%","95%"])
 xlabel("Percentile")
 ylabel("Amount of the dynamics that is\nexplained by 3rd-order interactions")
 

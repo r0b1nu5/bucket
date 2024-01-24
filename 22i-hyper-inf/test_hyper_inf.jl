@@ -7,7 +7,7 @@ include("gen_rand_hyperg.jl")
 include("tools_hyper.jl")
 
 include("arni-reconstruct.jl")
-include("arni-reconstruct_3rd.jl")
+include("arni-reconstruct-3rd.jl")
 
 # Generating the hypergraph.
 n = 7
