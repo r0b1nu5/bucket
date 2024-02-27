@@ -5,14 +5,14 @@ nz = 7
 λ = .1
 ρ = .1
 
-suffix = "xx7"
+suffix = "x10"
 
 # Data to be loaded
 subjects = list_all_subjects(109)
 #subjects = ["001","002"]
 #subjects = ["021",]
-#states = ["01","02"]
-states = ["03","07","11"]
+states = ["01","02"]
+#states = ["03","07","11"]
 #states = ["01","02","03","07","11"]
 
 # Sensor to zone pairing
@@ -43,7 +43,8 @@ for subject in subjects
 #		truncat = 3001
 
 #		X0 = asig[:,1:truncat]
-		X0 = denoise_fourier(asig[:,1:truncat],100)
+#		X0 = denoise_fourier(asig[:,1:truncat],100)
+		X0 = denoise_fourier(asig[:,1:truncat],200)
 		Y0 = (X0[:,2:end]-X0[:,1:end-1])./dt
 		X0 = X0[:,1:end-1]
 		X = X0./mean(abs.(X0))

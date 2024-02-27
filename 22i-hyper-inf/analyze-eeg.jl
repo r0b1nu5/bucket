@@ -15,7 +15,7 @@ subjects = list_all_subjects(109)
 states = ["01","02"]
 #states = ["03","07","11"]
 
-suffix = "xx6"
+suffix = "xx9"
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)
@@ -47,7 +47,7 @@ for su in subjects
 			dt = 1/160
 			truncat = findmin(vec(maximum(abs.([asig zeros(n)]),dims=1)) .> 1e-6)[2] - 1
 #			truncat = 3001
-			X0 = denoise_fourier(asig[:,1:truncat],100)
+			X0 = denoise_fourier(asig[:,1:truncat],300)
 			X0 = X0[:,1:end-1]
 			X = X0./mean(abs.(X0))
 		
@@ -133,7 +133,7 @@ for su in subjects
 	for st in states
 		global ttt += 1
 
-if re[ttt,sss] < .5
+if re[ttt,sss] < .3
 
 		@info "Loading S"*su*"R"*st
 
