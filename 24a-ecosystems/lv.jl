@@ -40,7 +40,7 @@ function f_lv(x::Vector{Float64}, r::Vector{Float64}, θ::Vector{Float64}, B::Ma
 end
 
 # From "notes-pj-240417.pdf"
-function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μ::Float64, σ::Float64, tol::Float64=1e-6, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.01)
+function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, zer0::Float64=1e-15)
 	S = length(N0)
 
 	N = N0
@@ -59,7 +59,7 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 
 		dN = (k1+2*k2+2*k3+k4)/6
 		N += h*dN
-		N .*= (N .> 1e-15)
+		N .*= (N .> zer0)
 		Ns = [Ns N]
 
 		if (iter-1)%1000 == 0
@@ -70,11 +70,11 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 		end
 	end
 
-	Ss = sum(N .> 1e-15)
+	Ss = sum(N .> zer0)
 	S0 = length(N)+1
 
 	while Ss != S0 && iter < max_iter
-		S0 = sum(N .> 1e-15)
+		S0 = sum(N .> zer0)
 
 		for i in 1:min_iter
 			iter += 1
@@ -86,7 +86,7 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 	
 			dN = (k1+2*k2+2*k3+k4)/6
 			N += h*dN
-			N .*= (N .> 1e-15)
+			N .*= (N .> zer0)
 			Ns = [Ns N]
 	
 			if (iter-1)%1000 == 0
@@ -97,7 +97,7 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 			end
 		end
 
-		Ss = sum(N .> 1e-15)
+		Ss = sum(N .> zer0)
 	end
 
 	c += 1
@@ -112,14 +112,12 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 	return Ns
 end
 
-function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Float64, μ::Float64, σ::Float64, tol::Float64=1e-6, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.01)
-	return lv_bunin(N0,A,κ*ones(length(N0)),μ,σ,tol,min_iter,max_iter,h)
+function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Float64=1., μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, zer0::Float64=1e-15)
+	return lv_bunin(N0,A,κ*ones(length(N0)),μ,σ,min_iter,max_iter,h,zer0)
 end
 
-function f_lv_bunin(N::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μ::Float64, σ::Float64)
-	S = length(N)
-
-	return N.*(κ - N .- μ/S*sum(N) - σ/sqrt(S)*A*N)
+function f_lv_bunin(N::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μsS::Float64, σsS::Float64)
+	return N.*(κ - N .- μsS*sum(N) - σsS*A*N)
 end
 
 

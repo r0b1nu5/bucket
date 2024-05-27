@@ -2,7 +2,7 @@ using Statistics, LinearAlgebra, PyPlot
 
 # X: Data matrix. Each row is one time step, each column is one type of data.
 # c0: Initial centers of the groups. Each row is one center
-function my_kmeans(X::Matrix{Float64}, c0::Matrix{Float64}, max_iter::Int64=1000)
+function my_kmeans(X::Matrix{Float64}, c0::Matrix{Float64}, γ::Vector{Float64}, max_iter::Int64=1000)
 	if size(X)[2] != size(c0)[2]
 		@info "Sizes don't match..."
 	end
@@ -18,7 +18,7 @@ function my_kmeans(X::Matrix{Float64}, c0::Matrix{Float64}, max_iter::Int64=1000
 	while g1 != g2 && iter < max_iter
 		iter += 1
 
-		D = dist2c(X,c)
+		D = dist2c(X,c,γ)
 		g1 = g2
 		g2 = [findmin(D[i,:])[2] for i in 1:n]
 		for i in 1:k
@@ -28,6 +28,11 @@ function my_kmeans(X::Matrix{Float64}, c0::Matrix{Float64}, max_iter::Int64=1000
 
 	return g2, c
 end
+
+function my_kmeans(X::Matrix{Float64}, c0::Matrix{Float64}, max_iter::Int64=1000)
+	return my_kmeans(X,c0,ones(size(c)[2]),max_iter)
+end
+
 
 function dist2c(X::Matrix{Float64}, c::Matrix{Float64}, γ::Vector{Float64})
 	if size(X)[2] != size(c0)[2] || size(X)[2] != length(γ) || size(c)[2] != length(γ)
@@ -69,8 +74,8 @@ function plot_grps(X::Matrix{Float64}, g::Vector{Int64}, dims::Vector{Int64})
 	elseif length(dims) == 1
 		c = [mean(X[g .== i,dims]) for i in 1:maximum(g)]
 		for i in 1:maximum(g)
-			PyPlot.plot(X[g .== i,dims[1]],zeros(length(g[g .== i])),".",color="C$(i-1)")
-			PyPlot.plot([c[i],c[i]],[-1,1],"--",color="C$(i-1)")
+			PyPlot.plot(X[g .== i,dims[1]],i*ones(length(g[g .== i])),".",color="C$(i-1)")
+			PyPlot.plot([c[i],c[i]],[-1,1] .+ i,"--",color="C$(i-1)")
 		end
 	elseif length(dims) == 2
 		c = [vec(mean(X[g .== i,dims],dims=1)) for i in 1:maximum(g)]
