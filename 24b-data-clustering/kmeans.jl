@@ -30,7 +30,7 @@ function my_kmeans(X::Matrix{Float64}, c0::Matrix{Float64}, γ::Vector{Float64},
 end
 
 function my_kmeans(X::Matrix{Float64}, c0::Matrix{Float64}, max_iter::Int64=1000)
-	return my_kmeans(X,c0,ones(size(c)[2]),max_iter)
+	return my_kmeans(X,c0,ones(size(c0)[2]),max_iter)
 end
 
 

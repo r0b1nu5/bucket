@@ -62,7 +62,7 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 		N .*= (N .> zer0)
 		Ns = [Ns N]
 
-		if (iter-1)%1000 == 0
+		if (iter-1)%10000 == 0
 			@info "iter: $iter"
 			c += 1
 			writedlm("data/Ns-$c.csv",Ns[:,1:end-1],',')
@@ -89,7 +89,7 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 			N .*= (N .> zer0)
 			Ns = [Ns N]
 	
-			if (iter-1)%1000 == 0
+			if (iter-1)%10000 == 0
 				@info "iter: $iter"
 				c += 1
 				writedlm("data/Ns-$c.csv",Ns[:,1:end-1],',')
