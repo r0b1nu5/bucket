@@ -25,7 +25,7 @@ np = 0
 
 #for k in 1:100
 k = 0
-while np < 2
+while np < 4
 	global k += 1
 	global N0 = -ones(S)
 	global A = zeros(S,S)
@@ -74,6 +74,28 @@ for s in 1:S
 end
 title("np = $np, # survivors = $(length(surv))")
 
+
+ #=
+#############################
+σs = LinRange(2,2.7,8)
+
+figure()
+for i in 1:length(σs)
+	σ0 = σs[i]
+	N0 = inv(Id + μ/Si*ones(S,S) + σ0/sqrt(Si)*A)*κ*ones(S)
+	J,λ,us = analyze_jac(N0,A,κ,μ/Si,σ0/sqrt(Si))
+	n0 = sum(real.(λ) .> -zer0)
+	λ0 = λ[real.(λ) .> -zer0]
+
+	N = lv_bunin(N0 + 1e-2*randn(S),A,κ,μ/Si,σ0/sqrt(Si),200_000,100_000,1e-3)
+	
+	PyPlot.plot3D(σ0*ones(length(N[1,:])),N[1,:] .- N0[1],N[2,:] .- N0[2],color="C$(i-1)", label="σ = $σ0")
+end
+xlabel("N1")
+ylabel("N2")
+legend()
+
+# =#
 
 
 
