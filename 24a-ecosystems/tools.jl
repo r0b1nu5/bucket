@@ -59,6 +59,27 @@ function analyze_limit_cycle(Ns::Matrix{Float64}, A::Matrix{Float64}, κ::Float6
 end
 
 
+# Matches each eigenvalue of λ2 to the closest eigenvalue of λ1
+function associate_eigvals(λ1::Vector{Complex{Float64}}, λ2::Union{Vector{Float64},Vector{Complex{Float64}}})
+	λ3 = Complex{Float64}[]
+	λt = copy(λ2)
+	for λ in λ1
+		l,i = findmin(abs.(λ2 .- λ))
+		push!(λ3,λ2[i])
+		popat!(λ2,i)
+	end
+	return λ3
+end
 
 
+# Plots a curve with increasing color density
+function plot_density(x::Vector{Float64}, y::Vector{Float64}, col::Any)
+	n = length(x)
+	αs = LinRange(0,1,n)
 
+	for i in 4:5:n-3
+		PyPlot.plot(x[i-3:i+3],y[i-3:i+3],color=col,alpha=αs[i])
+	end
+
+	return nothing
+end
