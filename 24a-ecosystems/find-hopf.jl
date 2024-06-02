@@ -1,10 +1,10 @@
-using LinearAlgebra, PyPlot
+using LinearAlgebra, PyPlot, DelimitedFiles
 
 include("tools.jl")
 include("lv.jl")
 
 
-# #= 
+ #= 
 S = 21
 Si = 157
 
@@ -49,8 +49,31 @@ end
 
 # =#
 
+# #= 
+x = readdlm("data/matr_aij.dat")
+S = 37
+Si = 157
+
+A = zeros(S,S)
+for k in 1:size(x)[1]
+	i = Int64(x[k,1])
+	j = Int64(x[k,2])
+	A[i,j] = x[k,3]
+end
+
+zer0 = 1e-15
+
+κ = 1.
+μ = 5.
+σ = 2.7
+Id = diagm(0 => ones(S))
+
+
+# =#
+
+
 #σs = LinRange(0,σ,1000)
-σs = log.(LinRange(exp(0),exp(σ),1000))
+σs = log.(LinRange(exp(0),exp(1.45*σ),1000))
 
 λs = zeros(Complex{Float64},S,1)
 λr = zeros(S,0)
