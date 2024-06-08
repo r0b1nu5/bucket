@@ -40,6 +40,7 @@ function f_lv(x::Vector{Float64}, r::Vector{Float64}, θ::Vector{Float64}, B::Ma
 end
 
 # From "notes-pj-240417.pdf"
+# Runs the LV dynamics from PJ's notes, with inital conditions N0, interaction matrix A, parameters κ, μ, and σ for at least min_iter iterations and at most max_iter iterations, with a time step of h. Simulation stops if the number of species remains the same for min_iter consecutive iterations.
 function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, zer0::Float64=1e-15)
 	S = length(N0)
 

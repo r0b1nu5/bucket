@@ -7,7 +7,7 @@ zer0 = 1e-10
 
 S = 157
 
-N0 = N[:,end]
+#N0 = N[:,end]
 # #=
 N0 = .1*rand(S)
 A = randn(S,S)
