@@ -4,7 +4,7 @@ include("tools.jl")
 include("lv.jl")
 
 
-# #= 
+ #= 
 S = 3
 Si = 157
 
@@ -50,9 +50,9 @@ end
 
 # =#
 
- #= 
-x = readdlm("data/matr_aij.dat")
-S = 37
+# #= 
+x = readdlm("data/matr-aij-02.dat")
+S = 42
 Si = 157
 
 A = zeros(S,S)
@@ -81,6 +81,7 @@ Id = diagm(0 => ones(S))
 λi = zeros(S,0)
 for σ0 in σs
 	N0 = inv(Id + μ/Si*ones(S,S) + σ0/sqrt(Si)*A)*κ*ones(S)
+	# @info "min(N0) = $(minimum(N0))"
 	J,λ,us = analyze_jac(N0,A,κ,μ/Si,σ0/sqrt(Si))
 	λ = associate_eigvals(λs[:,end],λ)
 	global λs = [λs λ]
