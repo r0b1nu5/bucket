@@ -4,8 +4,8 @@ include("tools.jl")
 include("lv.jl")
 
 
- #= 
-S = 3
+# #= 
+S = 21
 Si = 157
 
 zer0 = 1e-15
@@ -13,7 +13,7 @@ zer0 = 1e-15
 κ = 1.
 μ = 5.
 σ = 2.7
-σ = 10.
+#σ = 10.
 Id = diagm(0 => ones(S))
 
 N0 = -ones(S)
@@ -23,7 +23,7 @@ np = 0
 
 #for k in 1:100
 k = 0
-while np < 1 && k < 1000
+while np < 2 && k < 1000
 	global k += 1
 	global N0 = -ones(S)
 	global A = zeros(S,S)
@@ -50,7 +50,7 @@ end
 
 # =#
 
-# #= 
+ #= 
 x = readdlm("data/matr-aij-02.dat")
 S = 42
 Si = 157
@@ -73,8 +73,8 @@ Id = diagm(0 => ones(S))
 # =#
 
 
-#σs = LinRange(0,σ,1000)
-σs = log.(LinRange(exp(0),exp(1.45*σ),1000))
+σs = LinRange(0,σ,1000)
+#σs = log.(LinRange(exp(0),exp(1.45*σ),1000))
 
 λs = zeros(Complex{Float64},S,1)
 λr = zeros(S,0)
