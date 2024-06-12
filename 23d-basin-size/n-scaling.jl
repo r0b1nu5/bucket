@@ -38,10 +38,10 @@ if length(ns) > 1
 	figure("n-scaling")
 	PyPlot.plot(ns,Mf_slope,"-o",color="C0",label="μf slope")
 	PyPlot.plot(ns,Σf./sqrt.(ns),"--o",color="C0",label="σf/√n")
-	PyPlot.plot(ns,Λf.*sqrt.(ns),":o",color="C0",label="λf*√n")
+	PyPlot.plot(ns,Λf./sqrt.(ns),":o",color="C0",label="λf*√n")
 	PyPlot.plot(ns,Mi_slope,"-o",color="C1",label="μi slope")
 	PyPlot.plot(ns,Σi./sqrt.(ns),"--o",color="C1",label="σi/√n")
-	PyPlot.plot(ns,Λi.*sqrt.(ns),":o",color="C1",label="λi*√n")
+	PyPlot.plot(ns,Λi./sqrt.(ns),":o",color="C1",label="λi*√n")
 	legend()
 	xlabel("n")
 	ylabel("parameter")
@@ -58,19 +58,19 @@ if length(ns) > 1
 	mσi = mean(Σi./sqrt.(ns))
 	dσi = norm(Σi./sqrt.(ns) .- mσi,Inf)
 	eσi = round(dσi/mσi*100,sigdigits=4)
-	mλf = mean(Λf.*sqrt.(ns))
-	dλf = norm(Λf.*sqrt.(ns) .- mλf,Inf)
+	mλf = mean(Λf./sqrt.(ns))
+	dλf = norm(Λf./sqrt.(ns) .- mλf,Inf)
 	eλf = round(dλf/mλf*100,sigdigits=4)
-	mλi = mean(Λi.*sqrt.(ns))
-	dλi = norm(Λi.*sqrt.(ns) .- mλi,Inf)
+	mλi = mean(Λi./sqrt.(ns))
+	dλi = norm(Λi./sqrt.(ns) .- mλi,Inf)
 	eλi = round(dλi/mλi*100,sigdigits=4)
 
 	@info "Av. μf_slope = $(round(mμf,digits=2)) [±$(eμf)%]"
 	@info "Av. μi_slope = $(round(mμi,digits=2)) [±$(eμi)%]"
 	@info "Av. σf/√n = $(round(mσf,digits=2)) [±$(eσf)%] (if normal dist.)"
 	@info "Av. σi/√n = $(round(mσi,digits=2)) [±$(eσi)%] (if normal dist.)"
-	@info "Av. λf*√n = $(round(mλf,digits=2)) [±$(eλf)%] (if expo dist.)"
-	@info "Av. λi*√n = $(round(mλi,digits=2)) [±$(eλi)%] (if expo dist.)"
+	@info "Av. λf/√n = $(round(mλf,digits=2)) [±$(eλf)%] (if expo dist.)"
+	@info "Av. λi/√n = $(round(mλi,digits=2)) [±$(eλi)%] (if expo dist.)"
 else
 	plot_Qs(Qs)
 	@info "μf_slope = $(Mf_slope[1])"

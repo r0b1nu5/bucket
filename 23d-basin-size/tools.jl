@@ -105,7 +105,7 @@ function mle_exp(ns::Vector{Float64}, μ::Float64, qmax::Int64)
 	while side > 1e-4
 		βs = LinRange(max(β-side,side/100),β+side,100)
 		for i in 1:100
-			L[i] = l*log(C_exp(βs[i],μ,qmax)) - βs[i]*sum(ns.*abs.((-qmax:qmax).-μ))
+			L[i] = l*log(C_exp(βs[i],μ,qmax)) - sum(ns.*abs.((-qmax:qmax).-μ))/βs[i]
 		end
 
 		β = βs[findmax(L)[2]]
@@ -116,11 +116,11 @@ function mle_exp(ns::Vector{Float64}, μ::Float64, qmax::Int64)
 end
 
 function C_exp(β::Float64, μ::Float64, qmax::Int64)
-	return 1/sum(exp.(-β*abs.((-qmax:qmax) .- μ)))
+	return 1/sum(exp.(-abs.((-qmax:qmax) .- μ)./β))
 end
 
 function ks_exp(x::Vector{<:Any}, β::Float64, μ::Float64, qmax::Int64)
-	pdft = [0.;C_exp(β,μ,qmax)*exp.(-β*abs.((-qmax:qmax) .- μ))]
+	pdft = [0.;C_exp(β,μ,qmax)*exp.(-abs.((-qmax:qmax) .- μ)./β)]
 	cdft = cumsum(pdft)
 	cdfe = [0.;[sum(x .<= q)/length(x) for q in -qmax:qmax]]
 	
@@ -128,7 +128,7 @@ function ks_exp(x::Vector{<:Any}, β::Float64, μ::Float64, qmax::Int64)
 end
 
 function rand_exp(yy::Vector{Float64}, β::Float64, μ::Float64, C::Float64, qmax::Int64)
-	pdft = [0.;C_exp(β,μ,qmax)*exp.(-β*abs.((-qmax:qmax) .- μ))]
+	pdft = [0.;C_exp(β,μ,qmax)*exp.(-abs.((-qmax:qmax) .- μ)./β)]
 	cdft = cumsum(pdft)
 	
 	qs = [maximum((1:2*qmax+2).*(y .>= cdft)) for y in yy] .- qmax .- 1
