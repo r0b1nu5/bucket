@@ -60,9 +60,6 @@ c1 = 1.
 adj = cat_As(A2,A3)
 # ========================================================================
 
-T = 400
-ΔT = 5
-NT = 80
 # #=
 # Testing the efficiency of the inference using the result of the vector field directly.
 
@@ -72,19 +69,35 @@ amplitude = .1
 X = amplitude*(rand(n,400) .- .5)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + .01*randn(size(X))
 # =#
-# #=
+ #= ########## PERFECT MEASUREMENTS ###############
 amplitude = 2.
 ξ0 = 0.0005
 X = amplitude*(rand(n,400) .- .5)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + ξ0*randn(size(X))
- #=
+# =#
+# #= ########### TRUNCATE TIME SERIES IN THE δ-BOX #############
+T = 10000
+δ0 = .1
+δ1 = 2.
+h = .001
+amplitude = 2π
 X = zeros(n,0)
+Yh = zeros(n,0)
 Y = zeros(n,0)
-for t in 1:NT
-	xxx = hyper_k(A2,A3,zeros(n),amplitude*(rand(n) .- .5),0.,0.,π/4,π/4,.01,ΔT)
-	global X = [X xxx[1]]
-	global Y = [Y (xxx[2] + ξ0*randn(n,ΔT))]
+count = 0
+while size(X)[2] < T
+	global count += 1
+	xxx = hyper_k(2*A2,A3,zeros(n),amplitude*(rand(n) .- .5),0.,0.,π/4,π/4,h,Int64(50/h))
+	xx = mod.(xxx[1] .+ π,2π) .- π
+	xx = xx - repeat(xx[:,end],1,size(xx)[2])
+	t = [(δ0 < norm(xx[:,i]) < δ1) for i in 1:(size(xx)[2]-1)]
+	idx = vec(1:size(xx)[2]-1)[t]
+	yyy = (xxx[1][:,2:end] - xxx[1][:,1:end-1])./h
+	global X = [X xx[:,idx]]
+	global Yh = [Yh yyy[:,idx]]
+	global Y = [Y xxx[2][:,idx]]
 end
+@info "Number of time series used: $count"
 # =#
 
 # =#
@@ -107,7 +120,7 @@ X = .2*(rand(n,400) .- .5) + repeat(xxx[1][:,end],1,400)
 Y = f_ktanh_3rd(X,A2,A3,ω)
 # =#
 
-test_arni = true
+test_arni = false
 if test_arni
 	writedlm("data/test-arni-Xs.csv",X,',')
 	writedlm("data/test-arni-Ys.csv",Y,',')
@@ -126,6 +139,7 @@ spe4 = Float64[]
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
 iters = 10:5:200
 iters = 10:15:150
+iters = 5000:1000:T
 #iters = 10:10:200
 #iters = 200:5:200
 ooi = [2,3]
@@ -179,8 +193,21 @@ for iter in iters
 		PyPlot.plot(rocA2arni.FPR,rocA2arni.TPR,color=cmaparni(c0+c1*iter/maximum(iters)))
 		subplot(2,3,6)
 		PyPlot.plot(rocA3arni.FPR,rocA3arni.TPR,color=cmaparni(c0+c1*iter/maximum(iters)))
+	else
+		ξ = 1e-10
+		
+#		rocadjus = roc(adjus + ξ*rand(Float64,size(adj)),adj)
+		rocadjus = roc(abs.(adju) + ξ*rand(Float64,size(adju)),adj)
+		rocA2us = roc(abs.(A2us) + ξ*rand(n,n),A2)
+		rocA3us = roc(abs.(A3us) + ξ*rand(n,n,n),A3)
 
-
+		figure("ROCs-"*ntw*"-$n",(15,4))
+		subplot(1,3,1)
+		PyPlot.plot(rocadjus.FPR,rocadjus.TPR,color=cmapme(c0+c1*iter/maximum(iters)))
+		subplot(1,3,2)
+		PyPlot.plot(rocA2us.FPR,rocA2us.TPR,color=cmapme(c0+c1*iter/maximum(iters)))
+		subplot(1,3,3)
+		PyPlot.plot(rocA3us.FPR,rocA3us.TPR,color=cmapme(c0+c1*iter/maximum(iters)))
 
 	end
 
@@ -193,24 +220,39 @@ for iter in iters
 	push!(spe4,yyy[3][2])
 end
 
-figure("ROCs-"*ntw*"-$n",(15,10))
-subplot(2,3,1)
-ylabel("TPR")
-title("ROC adj, us")
-subplot(2,3,2)
-title("ROC A2, us")
-subplot(2,3,3)
-title("ROC A3, us")
-subplot(2,3,4)
-xlabel("FPR")
-ylabel("TPR")
-title("ROC adj, ARNI")
-subplot(2,3,5)
-xlabel("FPR")
-title("ROC A2, ARNI")
-subplot(2,3,6)
-xlabel("FPR")
-title("ROC A3, ARNI")
+if test_arni
+	figure("ROCs-"*ntw*"-$n",(15,10))
+	subplot(2,3,1)
+	ylabel("TPR")
+	title("ROC adj, THIS")
+	subplot(2,3,2)
+	title("ROC A2, THIS")
+	subplot(2,3,3)
+	title("ROC A3, THIS")
+	subplot(2,3,4)
+	xlabel("FPR")
+	ylabel("TPR")
+	title("ROC adj, ARNI")
+	subplot(2,3,5)
+	xlabel("FPR")
+	title("ROC A2, ARNI")
+	subplot(2,3,6)
+	xlabel("FPR")
+	title("ROC A3, ARNI")
+else
+	figure("ROCs-"*ntw*"-$n",(15,10))
+	subplot(1,3,1)
+	xlabel("FPR")
+	ylabel("TPR")
+	title("ROC adj, THIS")
+	subplot(1,3,2)
+	xlabel("FPR")
+	title("ROC A2, THIS")
+	subplot(1,3,3)
+	title("ROC A3, THIS")
+	xlabel("FPR")
+	ylabel("TPR")
+end
 
 # Plot the sensitivity and specificity as a function of the length of the time series.
 #figure("Perfect measurement",(7.5,5))

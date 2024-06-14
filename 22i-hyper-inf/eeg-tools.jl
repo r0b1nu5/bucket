@@ -115,6 +115,23 @@ function vectorize_adj(A::Array{Float64,3})
 	return a
 end
 
+function vectorize_adj(A::Array{Float64,4})
+	n = size(A)[1]
+	a = Float64[]
+	for i in 1:n-3
+		for j in i+1:n-2
+			for k in j+1:n-1
+				for l in k+1:n
+					for p in permutations([i,j,k,l])
+						push!(a,A[p[1],p[2],p[3],p[4]])
+					end
+				end
+			end
+		end
+	end
+	return a
+end
+
 # Use a sliding mean with Δt horizon
 function smooth_time_series(x::Vector{Float64}, Δt::Int64=10)
 	return [mean(x[t:t+Δt]) for t in 1:(length(x)-Δt)]
@@ -228,6 +245,112 @@ function restrict_box_size(X::Matrix{Float64}, nstep::Int64)
 	return X[:,ids], ids
 end
 
+
+function contour_trigon_data(x::Vector{Float64}, y::Vector{Float64}, res::Int64=100, fig::String="trigon", cm::String="plasma", frame::Bool=true)
+	N = length(x)
+
+	M = [1 cos(π/3);0 sin(π/3)]
+	Mi = inv(M)
+	T = zeros(res,res)
+
+ #=
+	for i in 1:res
+		for j in 1:res
+			z = Mi*[i,j]
+			if minimum(z) < 0 || sum(z) > res
+				T[j,i] = NaN
+			end
+		end
+	end		
+# =#
+
+	for i in 1:N
+		#z = ceil.(Int64,res*M*[x[i],y[i]])
+		z = floor.(Int64,res*M*[x[i],y[i]])
+		T[z[2],z[1]] += 1
+	end
+
+	figure(fig,(5,5))
+	cmap = get_cmap(cm)
+	PyPlot.contourf(LinRange(0,1,res),LinRange(0,1,res),T,cmap=cmap,res)
+	
+	if frame
+		plot_trigon_frame(fig)
+	end
+
+	return nothing
+end
+
+function contour_trigon_data(x::Matrix{Float64}, y::Matrix{Float64}, res::Int64=100, fig::String="trigon", cm::String="plasma", frame::Bool=true)
+	contour_trigon_data(vec(x),vec(y),res,fig,cm,frame)
+
+	return nothing
+end
+
+
+function plot_trigon_data(x::Float64, y::Float64, fig::String="trigon", col::String="C0", al::Float64=1., frame::Bool=false)
+	z = [1 cos(π/3);0 sin(π/3)]*[x,y]
+	figure(fig)
+	PyPlot.plot(z[1],z[2],".",color=col,alpha=al)
+	if frame
+		plot_trigon_frame(fig)
+	end
+
+	return nothing
+end
+
+function plot_trigon_data(x::Vector{Float64}, y::Vector{Float64}, fig::String="trigon", col::String="C0", al::Float64=1., frame::Bool=true)
+	for i in 1:length(x)
+		plot_trigon_data(x[i],y[i],fig,col,al,false)
+	end
+	if frame
+		plot_trigon_frame(fig)
+	end
+
+	return nothing
+end
+
+function plot_trigon_data(x::Matrix{Float64}, y::Matrix{Float64}, fig::String="trigon", col::String="C0", al::Float64=1., frame::Bool=true)
+	plot_trigon_data(vec(x),vec(y),fig,col,al,frame)
+
+	return nothing
+end
+
+function plot_trigon_frame(fig::String="trigon")
+	figure(fig)
+	PyPlot.fill([-.01,cos(π/3),1.01,1.01,-.01,-.01],[-.01,sin(π/3),-.01,1.01,1.01,-.01],"w")
+	PyPlot.plot([0,1,cos(π/3),0],[0,0,sin(π/3),0],"-k")
+	axis([-.05,1.05,-.11,1-.01])
+	xticks([])
+	yticks([])
+
+	return nothing
+end
+
+function plot_trigon_label(x::String="x", y::String="y", z::String="z")
+	for pos in [.25,.5,.75]
+		PyPlot.plot([pos,pos],
+			    [0,-.02],
+			    "-k",lw=1,)
+		PyPlot.text(pos,-.05,"$pos",size="small",ha="center",va="center")
+
+		PyPlot.plot([1+pos*cos(2π/3),1+pos*cos(2π/3)+.02*cos(π/6)],
+			    [0+pos*sin(2π/3),0+pos*sin(2π/3)+.02*sin(π/6)],
+			    "-k",lw=1)
+		PyPlot.text(1+pos*cos(2π/3)+.05*cos(π/6),0+pos*sin(2π/3)+.05*sin(π/6),"$pos",size="small",rotation=-60.,rotation_mode="anchor",ha="center",va="center")
+
+		PyPlot.plot([cos(π/3)+pos*cos(4π/3),cos(π/3)+pos*cos(4π/3)+.02*cos(5π/6)],
+			    [sin(π/3)+pos*sin(4π/3),sin(π/3)+pos*sin(4π/3)+.02*sin(5π/6)],
+			    "-k",lw=1)
+		PyPlot.text(cos(π/3)+pos*cos(4π/3)+.05*cos(5π/6),sin(π/3)+pos*sin(4π/3)+.05*sin(5π/6),"$pos",size="small",rotation=60.,rotation_mode="anchor",ha="center",va="center")
+	end
+
+	PyPlot.text(.5,-.15,x,ha="center",va="center")
+	PyPlot.text(1+.5*cos(2π/3)+.15*cos(π/6),0+.5*sin(2π/3)+.15*sin(π/6),y,rotation=-60.,rotation_mode="anchor",ha="center",va="center")
+	PyPlot.text(cos(π/3)+.5*cos(4π/3)+.15*cos(5π/6),sin(π/3)+.5*sin(4π/3)+.15*sin(5π/6),z,rotation=60.,rotation_mode="anchor",ha="center",va="center")
+
+	return nothing
+end
 
 
 
