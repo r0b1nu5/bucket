@@ -15,7 +15,7 @@ subjects = list_all_subjects(109)
 states = ["01","02"]
 #states = ["03","07","11"]
 
-suffix = "xx9"
+suffix = "x14"
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)

@@ -11,12 +11,12 @@ thr3 = 1.
 thr4 = 1.
 
 # Data to be loaded
-#subjects = list_all_subjects(109)
-subjects = ["001","002"]
+subjects = list_all_subjects(109)
+#subjects = ["001","002"]
 states = ["01","02"]
 #states = ["03","07","11"]
 
-suffix = "x11"
+suffix = "x13"
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)

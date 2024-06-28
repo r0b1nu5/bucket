@@ -5,11 +5,11 @@ nz = 7
 λ = .1
 ρ = .1
 
-suffix = "x11"
+suffix = "x13"
 
 # Data to be loaded
-#subjects = list_all_subjects(109)
-subjects = ["001","002"]
+subjects = list_all_subjects(109)
+#subjects = ["001","002"]
 #subjects = ["021",]
 states = ["01","02"]
 #states = ["03","07","11"]
@@ -56,7 +56,7 @@ for subject in subjects
 
 		# Inference
 		ooi = [2,3,4]
-		dmax = 5
+		dmax = 4
 		xxx = hyper_inf(X,Y,ooi,dmax,λ,ρ)
 		push!(re,xxx[4])
 		
