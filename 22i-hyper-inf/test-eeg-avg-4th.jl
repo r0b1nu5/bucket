@@ -5,11 +5,11 @@ nz = 7
 λ = .1
 ρ = .1
 
-suffix = "x13"
+suffix = "x4x"
 
 # Data to be loaded
-subjects = list_all_subjects(109)
-#subjects = ["001","002"]
+#subjects = list_all_subjects(109)
+subjects = ["001","002"]
 #subjects = ["021",]
 states = ["01","02"]
 #states = ["03","07","11"]
@@ -96,7 +96,8 @@ for subject in subjects
 		end ############################
 		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A4-"*suffix*".csv",y,',') ############################
 
-		writedlm("eeg-data/S"*subject*"R"*state*"-avg-coeff-"*suffix*".csv",xxx[2],',')	end
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-coeff-"*suffix*".csv",xxx[2],',')	
+	end
 	global relerr = [relerr re]
 end
 

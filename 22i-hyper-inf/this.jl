@@ -38,7 +38,8 @@ function mySINDy(θ::Matrix{Float64}, Y::Matrix{Float64}, λ::Float64=.1, ρ::Fl
 		end
 	end
 
-	err = sum((Y - Ξ*θ).^2) + ρ*sum(Ξ.^2)
+	cost = sum((Y - Ξ*θ).^2) + ρ*sum(Ξ.^2)
+	err = sum((Y - Ξ*θ).^2)
 
 	return Ξ, err, err/energy
 end
