@@ -69,6 +69,7 @@ end
 
 function gen_hyper_er(n,p1,p2,plot=false)
 	A2 = zeros(n,n)
+	A2l = zeros(0,3)
 	n2 = round(Int64,p2*(n*(n-1)/2))
 	i2 = shuffle(1:binomial(n,2))[1:n2]
 	E2 = Vector{Vector{Int64}}()
@@ -79,10 +80,12 @@ function gen_hyper_er(n,p1,p2,plot=false)
 			push!(E2,c)
 			A2[c[1],c[2]] = 1.
 			A2[c[2],c[1]] = 1.
+			A2l = [A2l;[c[1] c[2] 1.]]
 		end
 	end
 
 	A3 = zeros(n,n,n)
+	A3l = zeros(0,4)
 	n3 = round(Int64,p1*(n*(n-1)*(n-2)/6))
 	i3 = shuffle(1:binomial(n,3))[1:n3]
 	E3 = Vector{Vector{Int64}}()
@@ -97,6 +100,7 @@ function gen_hyper_er(n,p1,p2,plot=false)
 			A3[c[2],c[3],c[1]] = 1.
 			A3[c[3],c[1],c[2]] = 1.
 			A3[c[3],c[2],c[1]] = 1.
+			A3l = [A3l;[c[1] c[2] c[3] 1.];[c[1] c[3] c[2] 1.]]
 		end
 	end
 
@@ -122,11 +126,8 @@ function gen_hyper_er(n,p1,p2,plot=false)
 		PyPlot.plot(x,y,"o",color="C0")
 	end
 
-	return A2,A3
+	return A2,A3,A2l,A3l
 end
-
-
-
 
 
 

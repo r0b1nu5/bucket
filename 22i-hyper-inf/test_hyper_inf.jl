@@ -10,7 +10,7 @@ include("arni-reconstruct.jl")
 include("arni-reconstruct-3rd.jl")
 
 # Generating the hypergraph.
-n = 7
+n = 100
  #=
 ntw = "Hyper-wheel"
 p1 = .3
@@ -30,7 +30,7 @@ p2 = .99
 # =#
 # #=
 ntw = "Hyper-ER"
-p1 = .05
+p1 = .01
 p2 = .4
 # =#
  #= 
@@ -69,13 +69,13 @@ amplitude = .1
 X = amplitude*(rand(n,400) .- .5)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + .01*randn(size(X))
 # =#
- #= ########## PERFECT MEASUREMENTS ###############
+# #= ########## PERFECT MEASUREMENTS ###############
 amplitude = 2.
 ξ0 = 0.0005
 X = amplitude*(rand(n,400) .- .5)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + ξ0*randn(size(X))
 # =#
-# #= ########### TRUNCATE TIME SERIES IN THE δ-BOX #############
+ #= ########### TRUNCATE TIME SERIES IN THE δ-BOX #############
 T = 10000
 δ0 = .1
 δ1 = 2.
@@ -137,22 +137,25 @@ spe4 = Float64[]
 
 
 # Compute the sensitivity and specificity of the inference for various lengths of time series.
-iters = 10:5:200
-iters = 10:15:150
-iters = 5000:1000:T
+#iters = 10:5:200
+#iters = 10:15:150
+#iters = 5000:1000:T
 #iters = 10:10:200
-#iters = 200:5:200
+iters = 200:5:200
 ooi = [2,3]
+dmax = 2
 c = 0
 for iter in iters
 	global c += 1
 	@info "Run $c/$(length(iters))"
 
-	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,4,1e-1)
+	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,dmax,1e-1)
 #	A2us = inferred_adj_2nd(xxx[1][2],n)[1]
-	A2us = inferred_adj_2nd(xxx[1][2],n)[2]
+#	A2us = inferred_adj_2nd(xxx[1][2],n)[2]
+	A2us = xxx[1][2]
 #	A3us = inferred_adj_3rd(xxx[1][3],n)[1]
-	A3us = inferred_adj_3rd(xxx[1][3],n)[2]
+#	A3us = inferred_adj_3rd(xxx[1][3],n)[2]
+	A3us = xxx[1][3]
 	adjus = get_adj_3rd(A2us,A3us)[1]
 	adju = cat_As(A2us,A3us)
 @info "============= WE ARE DONE ================"

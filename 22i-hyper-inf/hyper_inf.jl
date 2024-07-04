@@ -20,17 +20,22 @@ include("this.jl")
 
 function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, λ::Float64=.1, ρ::Float64=1.)
 	n,T = size(X)
+	zer0 = 1e-10
 
 	if size(X) != size(Y)
 		@info "Dimensions of states and derivatives do not match."
 		return nothing
 	end
 
+ #= ####### THIS IS DONE IN THIS FOR NOW...
 	# Defining the basis of functions to use, i.e., the monomials up to order 'dmax'.
 	@variables x[1:n]
+	@info "Prebasis..."
 	prebasis = polynomial_basis([x[i] for i in 1:n],dmax)
+	@info "Basis..."
 	basis = Basis(prebasis,[x[i] for i in 1:n])
 	l = length(basis.eqs)
+# =#
 
 #= # USES PRE-IMPLEMENTED SINDY
 	# Setting up the problem
@@ -67,9 +72,22 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 # =#
 
 # #= USES MYSINDY
-	coeff,err,relerr = this(X,Y,ooi,dmax,λ,ρ)
+	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,λ,ρ)
 # =#
+	
+	Ainf = Dict{Int64,Matrix{Float64}}(o => zeros(0,o+1) for o in 1:dmax+1)
+	for i in 1:n
+		ids = (1:length(coeff[i,:]))[abs.(coeff[i,:]) .> zer0]
+		for id in ids
+			js = idx_mon[id]
+			edge = [i;sort(setdiff(js,[i,]))]
+			o = length(edge)
+			Ainf[o] = [Ainf[o];[edge' coeff[i,id]]]
+		end
+	end
 
+
+#= ################## A BIT OUTDATED NOW...
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
 	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
@@ -94,6 +112,7 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 			end
 		end
 	end
+# =#
 
 #	return Ainf, coeff, idx_o, agents_o
 	return Ainf, coeff, err, relerr
@@ -530,6 +549,43 @@ function check_inference_float(A2::Matrix{Float64}, A3::Array{Float64,3}, Ainf::
 	end
 
 	return (r2,a2,a2t), (r3,a3,a3t)
+end
+
+# ROC curve for adjacenty lists
+# A0 is the inferred adjacency, A is the ground truth (assumed boolean adjacency list).
+# hyperedges are distinct by their first index, the ordering of the other indices does not matter.
+function my_ROC(A0::Matrix{Float64}, A::Matrix{Float64}, n::Int64)
+	m,o = size(A0)
+	mm,o = size(A)
+	o -= 1
+
+	max_edges = n*binomial(n-1,o-1)
+
+	A1 = sortslices([A0[:,o+1] A0[:,1:o]],dims=1,rev=true)
+	I1 = [A1[i,2:o+1] for i in 1:m]
+	V1 = [A1[i,1] for i in 1:m]
+	I = [A[i,1:o] for i in 1:mm]
+
+	tp = [0,]
+	fp = [0,]
+	
+	for i in I1
+		if i in I
+			push!(tp,tp[end]+1)
+			push!(fp,fp[end])
+		else
+			push!(tp,tp[end])
+			push!(fp,fp[end]+1)
+		end
+	end
+
+	push!(tp,length(I))
+	push!(fp,max_edges-length(I))
+
+	tpr = tp/length(I)
+	fpr = fp/(max_edges-length(I))
+
+	return tpr,fpr
 end
 
 
