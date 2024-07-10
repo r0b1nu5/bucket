@@ -353,4 +353,29 @@ function plot_trigon_label(x::String="x", y::String="y", z::String="z")
 end
 
 
+function plot_relerr(col::Any="C0")
+	E = zeros(218,0)
+
+	for o in 2:7
+		E = [E vec(readdlm("eeg-data/relative-error-$(o)$(o)x.csv",','))]
+	end
+
+	q00 = vec(minimum(E,dims=1))
+	q25 = [quantile(E[:,o-1],.25) for o in 2:7]
+	q50 = vec(median(E,dims=1))
+	q75 = [quantile(E[:,o-1],.75) for o in 2:7]
+	q100 = vec(maximum(E,dims=1))
+	qm = vec(mean(E,dims=1))
+	
+	figure("EEG",(3,5))
+	PyPlot.fill([2:7;7:-1:2],[q00;q100[6:-1:1]],color=col,alpha=.2)
+	PyPlot.fill([2:7;7:-1:2],[q25;q75[6:-1:1]],color=col,alpha=.7)
+	PyPlot.plot(2:7,q50,color=col,lw=2.)
+	PyPlot.plot(2:7,qm,"--k",lw=2.)
+
+	xlabel("interaction order")
+	ylabel("relative error")
+end
+
+
 

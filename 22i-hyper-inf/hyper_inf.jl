@@ -1,4 +1,4 @@
-using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics
+using DataDrivenDiffEq, ModelingToolkit, LinearAlgebra, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics, Random
 
 include("this.jl")
 
@@ -74,27 +74,44 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 # #= USES MYSINDY
 	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,λ,ρ)
 # =#
-	
+
+# #=
 	Ainf = Dict{Int64,Matrix{Float64}}(o => zeros(0,o+1) for o in 1:dmax+1)
+	for id in keys(idx_mon)
+		js = idx_mon[id]
+		for i in setdiff(1:n,js)
+			Ainf[length(js)+1] = [Ainf[length(js)+1];[i js' coeff[i,id]]]
+		end
+	end
+# =#
+
+ #=
+	Ainf = Dict{Int64,Matrix{Float64}}(o => zeros(0,o+1) for o in 1:dmax+1)
+	edges = Dict{Vector{Float64},Int64}()
 	for i in 1:n
 		ids = (1:length(coeff[i,:]))[abs.(coeff[i,:]) .> zer0]
 		for id in ids
 			js = idx_mon[id]
 			edge = [i;sort(setdiff(js,[i,]))]
 			o = length(edge)
-			Ainf[o] = [Ainf[o];[edge' coeff[i,id]]]
+			if edge in keys(edges)
+				Ainf[o][edges[edge],o+1] += coeff[i,id]
+			else
+				Ainf[o] = [Ainf[o];[edge' coeff[i,id]]]
+				edges[edge] = size(Ainf[o])[1]
+			end
 		end
 	end
+# =#
 
-
-#= ################## A BIT OUTDATED NOW...
+ #= ################## A BIT OUTDATED NOW...
 	# Retrieving the results of SINDy and doing the inference by comparing the identified coefficients with the threshold.
 	idx_o = Dict{Int64,Vector{Int64}}()
 	agents_o = Dict{Int64,Vector{Vector{Int64}}}()
-	Ainf = Dict{Int64,Any}()
+	Ainf_ = Dict{Int64,Any}()
 	Uinf = Dict{Int64,Any}(maximum(ooi) => Vector{Vector{Int64}}())
 	for o in sort(ooi,rev=true)
-		Ainf[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
+		Ainf_[o] = Dict{Tuple{Int64,Vector{Int64}},Float64}() # Inferred hyperedges of order o
 		Uinf[o-1] = Vector{Vector{Int64}}() # Uninferrable hyperedges of order o-1
 		idx_o[o],agents_o[o] = get_idx_o(o-1,x,prebasis)
 		for k in 1:length(idx_o[o])
@@ -105,7 +122,7 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 			ynz = y[Int64.(setdiff((1:length(y)),[0.,]))]
 			yds = Int64.(setdiff(cagents,[0,]))
 			for j in 1:length(yds)
-				Ainf[o][(yds[j],sort([yds[j];agents]))] = ynz[j]
+				Ainf_[o][(yds[j],sort([yds[j];agents]))] = ynz[j]
 				for a in agents
 					push!(Uinf[o-1],sort([yds[j];setdiff(agents,[a,])]))
 				end
@@ -114,8 +131,9 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 	end
 # =#
 
-#	return Ainf, coeff, idx_o, agents_o
+##	return Ainf, coeff, idx_o, agents_o
 	return Ainf, coeff, err, relerr
+#	return Ainf, Ainf_, coeff, err, relerr
 end
 
 # Same with the tuning of the sparsity parameter λ in SINDy
@@ -560,6 +578,7 @@ function my_ROC(A0::Matrix{Float64}, A::Matrix{Float64}, n::Int64)
 	o -= 1
 
 	max_edges = n*binomial(n-1,o-1)
+	max_edges = n*sum(binomial(n-i,o-i) for i in 1:o)
 
 	A1 = sortslices([A0[:,o+1] A0[:,1:o]],dims=1,rev=true)
 	I1 = [A1[i,2:o+1] for i in 1:m]
@@ -579,8 +598,20 @@ function my_ROC(A0::Matrix{Float64}, A::Matrix{Float64}, n::Int64)
 		end
 	end
 
-	push!(tp,length(I))
-	push!(fp,max_edges-length(I))
+	# Completes the inference randomly
+	mtp = length(I) - tp[end]
+	mfp = max_edges-length(I)-fp[end]
+	@info "$mtp, $mfp"
+	t = shuffle([ones(mtp);zeros(mfp)])
+	tt = 1 .- t
+	s = [sum(t[1:i]) for i in 1:length(t)]
+	ss = [sum(tt[1:i]) for i in 1:length(tt)]
+
+	tp = [tp;(tp[end] .+ s)]
+	fp = [fp;(fp[end] .+ ss)]
+
+	#push!(tp,length(I))
+	#push!(fp,max_edges-length(I))
 
 	tpr = tp/length(I)
 	fpr = fp/(max_edges-length(I))
@@ -588,6 +619,66 @@ function my_ROC(A0::Matrix{Float64}, A::Matrix{Float64}, n::Int64)
 	return tpr,fpr
 end
 
+function my_ROC(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{Float64}, A2::Matrix{Float64}, n::Int64)
+	m1,o1 = size(A01)
+	mm1,o1 = size(A1)
+	o1 -= 1
+	max_edges1 = n*sum(binomial(n-i,o1-i) for i in 1:o1)
+
+	m2,o2 = size(A02)
+	mm2,o2 = size(A2)
+	o2 -= 1
+	max_edges2 = n*sum(binomial(n-i,o2-i) for i in 1:o2)
+
+	max_edges = max_edges1 + max_edges2
+
+	a1 = sortslices([A01[:,o1+1] A01[:,1:o1]],dims=1,rev=true)
+	I01 = [a1[i,2:o1+1] for i in 1:m1]
+	V1 = [a1[i,1] for i in 1:m1]
+	I1 = [A1[i,1:o1] for i in 1:mm1]
+
+	a2 = sortslices([A02[:,o2+1] A02[:,1:o2]],dims=1,rev=true)
+	I02 = [a2[i,2:o2+1] for i in 1:m2]
+	V2 = [a2[i,1] for i in 1:m2]
+	I2 = [A2[i,1:o2] for i in 1:mm2]
+
+	I0 = [I01;I02]
+	V = [V1;V2]
+	I = [I1;I2]
+
+	tp = [0,]
+	fp = [0,]
+	
+	for i in I0
+		if i in I
+			push!(tp,tp[end]+1)
+			push!(fp,fp[end])
+		else
+			push!(tp,tp[end])
+			push!(fp,fp[end]+1)
+		end
+	end
+
+	# Completes the inference randomly
+	mtp = length(I) - tp[end]
+	mfp = max_edges-length(I)-fp[end]
+	@info "$mtp, $mfp"
+	t = shuffle([ones(mtp);zeros(mfp)])
+	tt = 1 .- t
+	s = [sum(t[1:i]) for i in 1:length(t)]
+	ss = [sum(tt[1:i]) for i in 1:length(tt)]
+
+	tp = [tp;(tp[end] .+ s)]
+	fp = [fp;(fp[end] .+ ss)]
+
+	#push!(tp,length(I))
+	#push!(fp,max_edges-length(I))
+
+	tpr = tp/length(I)
+	fpr = fp/(max_edges-length(I))
+
+	return tpr,fpr
+end
 
 
 
