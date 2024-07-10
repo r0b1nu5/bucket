@@ -9,7 +9,6 @@ suffix = "77x"
 
 # Data to be loaded
 subjects = list_all_subjects(109)
-subjects = [["00$i" for i in 1:9];["0$i" for i in 10:54]]
 #subjects = ["001","002"]
 #subjects = ["021",]
 states = ["01","02"]
