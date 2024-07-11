@@ -266,16 +266,17 @@ function contour_trigon_data(x::Vector{Float64}, y::Vector{Float64}, res::Int64=
 
 	for i in 1:N
 		#z = ceil.(Int64,res*M*[x[i],y[i]])
-		z = floor.(Int64,res*M*[x[i],y[i]])
+		z = floor.(Int64,1 .+ (res-1)*M*[x[i],y[i]])
 		T[z[2],z[1]] += 1
 	end
 
-	figure(fig,(5,5))
+	figure(fig,(6,5))
 	cmap = get_cmap(cm)
 	PyPlot.contourf(LinRange(0,1,res),LinRange(0,1,res),T,cmap=cmap,res)
 	
 	if frame
 		plot_trigon_frame(fig)
+		colorbar()
 	end
 
 	return nothing

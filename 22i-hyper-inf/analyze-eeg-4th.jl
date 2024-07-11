@@ -4,7 +4,7 @@ include("eeg-tools.jl")
 
 n = 7
 type = "avg" # "avg" or "sub"
-data_exist = true
+data_exist = false
 Tmax = 1000
 thr2 = 1.
 thr3 = 1.
@@ -16,7 +16,7 @@ subjects = list_all_subjects(109)
 states = ["01","02"]
 #states = ["03","07","11"]
 
-suffix = "x13"
+suffix = "44x"
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)
