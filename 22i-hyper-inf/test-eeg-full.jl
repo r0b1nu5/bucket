@@ -1,23 +1,20 @@
 include("hyper_inf.jl")
 include("eeg-tools.jl")
 
-nz = 7
+nz = 64
 λ = .1
 ρ = .1
 
-suffix = "111"
+suffix = "222"
 
 # Data to be loaded
-#subjects = list_all_subjects(109)
+subjects = list_all_subjects(109)
 #subjects = ["001","002"]
-subjects = ["021",]
-#states = ["01","02"]
-states = ["02",]
+#subjects = ["021",]
+states = ["01","02"]
+#states = ["02",]
 #states = ["03","07","11"]
 #states = ["01","02","03","07","11"]
-
-# Sensor to zone pairing
-s = readdlm("eeg-data/sensors-$nz.csv",',',String)
 
 AA2 = zeros(Int64,nz,nz)
 AA3 = zeros(Int64,nz,nz,nz)
@@ -32,14 +29,14 @@ for subject in subjects
 		# Loading data
 		file = "eeg-data/S"*subject*"R"*state*".edf"
 		s2signal = read_eeg(file)
-		sig = zeros(0,length(s2signal["Af3"]))
+		sig = zeros(0,length(s2signal["Af3."]))
 		for s in sort(collect(keys(s2signal)))
 			sig = [sig; s2signal[s]']
 		end
 		
 		# Finite differences
 		dt = 1/160
-		truncat = findmin(vec(maximum(abs.([asig zeros(nz)]),dims=1)) .> 1e-6)[2] - 1
+		truncat = findmin(vec(maximum(abs.([sig zeros(nz)]),dims=1)) .> 1e-6)[2] - 1
 		
 		X0 = denoise_fourier(sig[:,1:truncat],200)
 		Y0 = (X0[:,2:end]-X0[:,1:end-1])./dt
@@ -52,7 +49,7 @@ for subject in subjects
 
 		# Inference
 		ooi = [2,3]
-		dmax = 2
+		dmax = 3
 		xxx = hyper_inf(X,Y,ooi,dmax,λ,ρ)
 		push!(re,xxx[4])
 		
@@ -62,14 +59,15 @@ for subject in subjects
 
 		writedlm("eeg-data/S"*subject*"R"*state*"-full-A2-"*suffix*".csv",A2,',')
 		writedlm("eeg-data/S"*subject*"R"*state*"-full-A3-"*suffix*".csv",A3,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-full-re-"*suffix*".csv",re,',')
 	end
-	global relerr = [relerr re]
+#	global relerr = [relerr re]
 end
 
-writedlm("eeg-data/relative-error-"*suffix*".csv",relerr,',')
+#writedlm("eeg-data/relative-error-"*suffix*".csv",relerr,',')
 
-figure("Relative error")
-PyPlot.plot(vec(mean(relerr,dims=1)),"x")
+#figure("Relative error")
+#PyPlot.plot(vec(mean(relerr,dims=1)),"x")
 
 
 

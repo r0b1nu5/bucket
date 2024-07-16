@@ -29,7 +29,7 @@ function mySINDy(θ::Matrix{Float64}, Y::Matrix{Float64}, λ::Float64=.1, ρ::Fl
 	m,T = size(θ)
 	energy = sum(Y.^2)
 
-#	@info "SINDy: (pseudo)inverting the matrix."
+	@info "SINDy: (pseudo)inverting the matrix."
 #	Ξ = Y*θ'*pinv(θ*θ' + ρ*Id(m)) # Least square with Tikhonov regularization
 	Ξ = Y*θ'*inv(θ*θ' + ρ*Id(m)) # Least square with Tikhonov regularization
 #	@info "SINDy: matrix (pseudo)inverted."
@@ -47,7 +47,7 @@ function mySINDy(θ::Matrix{Float64}, Y::Matrix{Float64}, λ::Float64=.1, ρ::Fl
 		smallinds = (abs.(Ξ) .< λ)
 		Ξ[smallinds] .= 0.
 		for i in 1:n
-			@info "i/n = $i/$n"
+#			@info "i/n = $i/$n"
 			biginds = .~smallinds[i,:]
 #			Ξ[i,biginds] = Y[[i,],:]*θ[biginds,:]'*pinv(θ[biginds,:]*θ[biginds,:]' + ρ*Id(sum(biginds)))
 			Ξ[i,biginds] = Y[[i,],:]*θ[biginds,:]'*inv(θ[biginds,:]*θ[biginds,:]' + ρ*Id(sum(biginds)))

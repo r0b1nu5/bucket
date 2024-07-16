@@ -34,7 +34,6 @@ AA3 = zeros(n,n,n)
 AAA3 = zeros(n,n,n,length(subjects)*length(states))
 vA2 = Float64[]
 vA3 = Float64[]
-contr_per_subject = zeros(n,0)
 
 c = 0
 for su in subjects
@@ -119,6 +118,7 @@ end
 
 re = readdlm("eeg-data/relative-error-"*suffix*".csv",',')
 
+contr_per_subject = zeros(n,0)
 q0 = zeros(n,0)
 q1 = zeros(n,0)
 q2 = zeros(n,0)
