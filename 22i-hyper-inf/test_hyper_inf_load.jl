@@ -3,12 +3,14 @@ using PyPlot, DelimitedFiles
 include("hyper_inf.jl")
 
 n = 100
-iters = [3000,4000,5000,6000,7000]
+iters = [3000,4000,5000,6000]
+#file = "kuramoto"
+file = "kuramoto-Simplicial-ER"
 
 cmapme = get_cmap("plasma")
 
 for iter in iters
-	A2 = readdlm("data/kuramoto-n$n-iter$iter-A2.csv",',')
+	A2 = readdlm("data/"*file*"-n$n-iter$iter-A2.csv",',')
 	A2l = zeros(0,3)
 	for i in 1:n
 		for j in 1:n
@@ -17,8 +19,8 @@ for iter in iters
 			end
 		end
 	end
-	A2us = readdlm("data/kuramoto-n$n-iter$iter-A2this.csv",',')
-	a3 = readdlm("data/kuramoto-n$n-iter$iter-A3.csv",',')
+	A2us = readdlm("data/"*file*"-n$n-iter$iter-A2this.csv",',')
+	a3 = readdlm("data/"*file*"-n$n-iter$iter-A3.csv",',')
 	A3 = zeros(n,n,n)
 	for i in 1:n^3
 		A3[i] = a3[i]
@@ -33,7 +35,7 @@ for iter in iters
 			end
 		end
 	end
-	A3us = readdlm("data/kuramoto-n$n-iter$iter-A3this.csv",',')
+	A3us = readdlm("data/"*file*"-n$n-iter$iter-A3this.csv",',')
 
 	ξ = 1e-10
 

@@ -49,7 +49,7 @@ for subject in subjects
 
 		# Inference
 		ooi = [2,3]
-		dmax = 3
+		dmax = 2
 		xxx = hyper_inf(X,Y,ooi,dmax,λ,ρ)
 		push!(re,xxx[4])
 		
@@ -60,6 +60,7 @@ for subject in subjects
 		writedlm("eeg-data/S"*subject*"R"*state*"-full-A2-"*suffix*".csv",A2,',')
 		writedlm("eeg-data/S"*subject*"R"*state*"-full-A3-"*suffix*".csv",A3,',')
 		writedlm("eeg-data/S"*subject*"R"*state*"-full-re-"*suffix*".csv",re,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-full-coeff-"*suffix*".csv",xxx[2],',')
 	end
 #	global relerr = [relerr re]
 end

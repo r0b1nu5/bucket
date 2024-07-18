@@ -14,7 +14,7 @@ include("arni-reconstruct-3rd.jl")
 # Generating the hypergraph.
 #n = 7; T = 150; iters = 10:10:150 		# Takes < 1sec
 #n = 30; T = 2500; iters = 500:500:2500 	# Takes ~ 10sec
-#n = 60; T = 6000; iters = 1000:500:2500	# Takes ~ 10min
+#n = 60; T = 2500; iters = 1000:500:2500	# Takes ~ 10min
 n = 100; T = 7000; iters = 7000:7000		# Takes ~ 1h15 for one iter value
 
 save = true
@@ -36,7 +36,7 @@ ntw = "ER"
 p1 = 0.
 p2 = .99
 # =#
-# #=
+ #=
 ntw = "Hyper-ER"
 p1 = n > 30 ? .01 : .05
 p2 = .4
@@ -46,7 +46,7 @@ ntw = "Hyper-ER"
 p1 = .5
 p2 = .8
 # =#
- #=
+# #=
 ntw = "Simplicial-ER"
 p1 = n > 30 ? .01 : .05
 p2 = .4
@@ -162,10 +162,10 @@ for iter in iters
 	A3us = xxx[1][3]
 
 	if save
-		writedlm("data/kuramoto-n$n-iter$iter-A2.csv",A2,',')
-		writedlm("data/kuramoto-n$n-iter$iter-A3.csv",A3,',')
-		writedlm("data/kuramoto-n$n-iter$iter-A2this.csv",A2us,',')
-		writedlm("data/kuramoto-n$n-iter$iter-A3this.csv",A3us,',')
+		writedlm("data/kuramoto-"*ntw*"-n$n-iter$iter-A2.csv",A2,',')
+		writedlm("data/kuramoto-"*ntw*"-n$n-iter$iter-A3.csv",A3,',')
+		writedlm("data/kuramoto-"*ntw*"-n$n-iter$iter-A2this.csv",A2us,',')
+		writedlm("data/kuramoto-"*ntw*"-n$n-iter$iter-A3this.csv",A3us,',')
 	end
  #=
 	A2us_ = zeros(n,n)

@@ -5,7 +5,7 @@ nz = 7
 λ = .1
 ρ = .1
 
-suffix = "x14"
+suffix = "x15"
 
 # Data to be loaded
 subjects = list_all_subjects(109)
@@ -84,6 +84,7 @@ for subject in subjects
 			x = [x A3[:,:,i]]
 		end
 		writedlm("eeg-data/S"*subject*"R"*state*"-avg-A3-"*suffix*".csv",x,',')
+		writedlm("eeg-data/S"*subject*"R"*state*"-avg-coeff-"*suffix*".csv",xxx[2],',')
 	end
 	global relerr = [relerr re]
 end

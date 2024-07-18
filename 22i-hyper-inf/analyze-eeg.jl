@@ -133,7 +133,7 @@ for su in subjects
 	for st in states
 		global ttt += 1
 
-if re[ttt,sss] < .3
+if re[ttt,sss] < .3*10
 
 		@info "Loading S"*su*"R"*st
 

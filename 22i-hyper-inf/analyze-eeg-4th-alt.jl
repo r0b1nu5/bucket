@@ -49,6 +49,8 @@ vA4 = Float64[]
 contr_per_subject = zeros(n,0)
 
 c = 0
+constant_interaction_ratio = Float64[]
+
 for su in subjects
 	for st in states
 		global c += 1
@@ -75,6 +77,7 @@ for su in subjects
 		t4 = norm(a4[:,5],1)
 
 		if !(data_exist)
+			z1 = abs.(readdlm("eeg-data/S"*su*"R"*st*"-avg-coeff-"*suffix*".csv",',')[:,1])
 			writedlm("eeg-data/T-S"*su*"R"*st*"-"*suffix*".csv",T,',')
 			for t in 1:T
 				z2 = zeros(n)
@@ -114,6 +117,8 @@ for su in subjects
 					end
 				end
 				z = z2+z3+z4
+				append!(constant_interaction_ratio,z1./z)
+
 				ρ3 = [z[i] == 0. ? 0 : z3[i]/z[i] for i in 1:n]
 				ρ4 = [z[i] == 0. ? 0 : z4[i]/z[i] for i in 1:n]
 				writedlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",ρ3,',')
@@ -139,6 +144,10 @@ for su in subjects
 	end
 end
 
+PyPlot.hist(constant_interaction_ratio,30)
+xlabel("z1/(z2+z3+z4)")
+ylabel("# occurences (out of 1,526,000)")
+title("Histogram: relative contribution of the constant term")
 
 re = readdlm("eeg-data/relative-error-"*suffix*".csv",',')
 
