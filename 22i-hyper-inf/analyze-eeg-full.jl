@@ -30,9 +30,9 @@ den2 = Float64[]
 den3 = Float64[]
 
 if do_trajectory
-	su = "075"
+	su = "015"
 	st = "01"
-	i0 = 3
+	i0 = 7
 
 	s2signal = read_eeg("eeg-data/S"*su*"R"*st*".edf")
 	sig = zeros(0,length(s2signal["Af3."]))

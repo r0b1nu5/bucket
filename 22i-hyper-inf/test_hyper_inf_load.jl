@@ -3,7 +3,7 @@ using PyPlot, DelimitedFiles
 include("hyper_inf.jl")
 
 n = 100
-iters = [3000,4000,5000,6000]
+iters = [3000,4000,5000,6000,7000]
 #file = "kuramoto"
 file = "kuramoto-Simplicial-ER"
 
