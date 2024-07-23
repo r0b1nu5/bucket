@@ -5,7 +5,7 @@ nz = 64
 λ = .1
 ρ = .1
 
-suffix = "222"
+suffix = "666"
 
 # Data to be loaded
 subjects = list_all_subjects(109)
@@ -49,7 +49,7 @@ for subject in subjects
 
 		# Inference
 		ooi = [2,3]
-		dmax = 2
+		dmax = 3
 		xxx = hyper_inf(X,Y,ooi,dmax,λ,ρ)
 		push!(re,xxx[4])
 		
