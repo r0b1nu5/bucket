@@ -14,7 +14,8 @@ do_main_edges = false
 do_violin = false
 do_relative_error = false
 do_hypergraph_density = false
-do_trajectory = true
+do_trajectory = false
+do_list_bad_inference = true
 
 # Data to be loaded
 subjects = list_all_subjects(109)
@@ -28,6 +29,36 @@ suffix = "222"
 relerr = zeros(length(states),0)
 den2 = Float64[]
 den3 = Float64[]
+
+if do_list_bad_inference
+	thresh = .9
+	c = 0
+	list = String[]
+	rerr = Float64[]
+	for su in subjects
+		for st in states
+			re = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-re-"*suffix*".csv",',')[1]
+			push!(rerr,re)
+			if re > thresh
+				@info "============================="
+				@info "S"*su*"R"*st*": rel-err = $re"
+				coeff = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-coeff-"*suffix*".csv",',')
+				@info "Max. coeff = $(maximum(abs.(coeff)))"
+				figure("S"*su*"R"*st)
+				PyPlot.hist(vec(coeff),50)
+				PyPlot.semilogy()
+				global c += 1
+				push!(list,"S"*su*"R"*st)
+			end
+		end
+	end
+	@info "==========================="
+	@info "Total: $c inferences with relative error higher than $thresh"
+	cumrerr = [sum(rerr .> t) for t in LinRange(0,1,200)]
+	PyPlot.plot(LinRange(0,1,200),cumrerr)
+	xlabel("Relative error, r")
+	ylabel("# of inferences with relative error > r")
+end
 
 if do_trajectory
 	su = "015"
