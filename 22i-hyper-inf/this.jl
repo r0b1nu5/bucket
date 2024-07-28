@@ -20,7 +20,38 @@ function this(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::
 	
 	return coeff, idx_mon, err, relerr
 end
+
+# Version of THIS with restriction on the monomials used.
+# Forbidden pairs of variables are in 'forbid'.
+function this(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, forbid::Matrix{Int64}, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
+	if size(X) != size(Y)
+		@info "Time series' sizes do not match."
+	end
+
+#	@info "THIS: getting the θs."
+	θ,d = get_θ(X,dmax)
+	for i in size(θ)[1]:-1:1
+		if length(intersect(collect(combinations(setdiff(d[i,:],[0,]),2)),forbid)) > 0
+			θ = [θ[1:i-1,:];θ[i+1:end,:]]
+			d = [d[1:i-1,:];d[i+1:end,:]]
+		end
+	end
+	idx_mon = Dict{Int64,Vector{Int64}}()
+	for i in 1:size(d)[1]
+		mon = d[i,:][d[i,:] .!= 0]
+		if length(mon) == length(union(mon))
+			idx_mon[i] = sort(mon)
+		end
+	end
+#	@info "THIS: got the θs."
+
+	coeff,err,relerr = mySINDy(θ,Y,λ,ρ,niter)
 	
+	return coeff, idx_mon, err, relerr
+end
+	
+
+
 
 
 # Adapted from [https://github.com/eurika-kaiser/SINDY-MPC/blob/master/utils/sparsifyDynamics.m]
