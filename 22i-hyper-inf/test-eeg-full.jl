@@ -4,6 +4,7 @@ include("eeg-tools.jl")
 nz = 64
 λ = .1
 ρ = .1
+niter = 10
 
 suffix = "666"
 
@@ -50,7 +51,7 @@ for subject in subjects
 		# Inference
 		ooi = [2,3]
 		dmax = 3
-		xxx = hyper_inf(X,Y,ooi,dmax,λ,ρ)
+		xxx = hyper_inf(X,Y,ooi,dmax,λ,ρ,niter)
 		push!(re,xxx[4])
 		
 		# Retrieve adjacency tensors	

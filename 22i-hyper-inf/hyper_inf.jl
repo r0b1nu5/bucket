@@ -18,7 +18,7 @@ include("this.jl")
 # 'idx_o': dictionary of each monomial index in the matrix coeff. To each order 'o' is associated the list of the indices of monomial of order 'o' involving distinct agents.
 # 'agents_o': dictionary of the agents involved in each monomial of 'idx_o'. Each element of 'idx_o[o]' is the index of a monomial, and each element of 'agents_o[o]' is the list of agents (their indices) involved in this monomial.
 
-function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, λ::Float64=.1, ρ::Float64=1.)
+function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
 	n,T = size(X)
 	zer0 = 1e-10
 
@@ -72,7 +72,7 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 # =#
 
 # #= USES MYSINDY
-	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,λ,ρ)
+	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,λ,ρ,niter)
 # =#
 
 # #=
