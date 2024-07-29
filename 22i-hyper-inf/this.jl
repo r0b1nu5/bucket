@@ -23,7 +23,7 @@ end
 
 # Version of THIS with restriction on the monomials used.
 # Forbidden pairs of variables are in 'forbid'.
-function this(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, forbid::Matrix{Int64}, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
+function this(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, forbid::Vector{Vector{Int64}}, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
 	if size(X) != size(Y)
 		@info "Time series' sizes do not match."
 	end

@@ -71,6 +71,12 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 #	@info "coeff = $coeff"
 # =#
 
+ #= RESTRICT THE MONOMIALS TO LARGE CORRELATION
+	forbid = keep_correlated(X,.5)
+	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,forbid,λ,ρ,niter)
+
+# =#
+
 # #= USES MYSINDY
 	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,λ,ρ,niter)
 # =#
@@ -680,6 +686,18 @@ function my_ROC(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{Float64},
 	return tpr,fpr
 end
 
+# returns the list of pairs of agents whose correlation is smaller than α.
+function keep_correlated(X::Matrix{Float64}, α::Float64=.5)
+	C = cor(X')
+	n = size(C)[1]
+	
+	c = [abs(C[i,j]) for i in 1:n-1 for j in i+1:n]
+	ids = [[i,j] for i in 1:n-1 for j in i+1:n]
+	forbid = ids[c .< α]
 
+	@info "$(n*(n-1)/2 - length(forbid)) pairs kept, $(length(forbid)) pairs discarded."
+
+	return forbid
+end
 
 

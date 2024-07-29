@@ -10,7 +10,7 @@ include("arni-reconstruct.jl")
 include("arni-reconstruct-3rd.jl")
 
 # Generating the hypergraph.
-n = 100
+n = 10
  #=
 ntw = "Hyper-wheel"
 p1 = .3
@@ -30,7 +30,7 @@ p2 = .99
 # =#
 # #=
 ntw = "Hyper-ER"
-p1 = .01
+p1 = .05
 p2 = .4
 # =#
  #= 

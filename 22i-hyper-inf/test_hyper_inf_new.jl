@@ -13,9 +13,9 @@ include("arni-reconstruct-3rd.jl")
 
 # Generating the hypergraph.
 #n = 7; T = 150; iters = 10:10:150 		# Takes < 1sec
-#n = 30; T = 2500; iters = 500:500:2500 	# Takes ~ 10sec
+n = 30; T = 2500; iters = 500:500:2500 	# Takes ~ 10sec
 #n = 60; T = 2500; iters = 1000:500:2500	# Takes ~ 10min
-n = 100; T = 7000; iters = 7000:7000		# Takes ~ 1h15 for one iter value
+#n = 100; T = 7000; iters = 7000:7000		# Takes ~ 1h15 for one iter value
 
 save = true
 
@@ -46,8 +46,13 @@ ntw = "Hyper-ER"
 p1 = .5
 p2 = .8
 # =#
-# #=
+ #=
 ntw = "Simplicial-ER"
+p1 = n > 30 ? .01 : .05
+p2 = .4
+# =#
+# #=
+ntw = "Simplicial-ER-corr"
 p1 = n > 30 ? .01 : .05
 p2 = .4
 # =#
@@ -58,7 +63,7 @@ if ntw in ["Wheel", "Hyper-wheel"]
 elseif ntw in ["ER", "Hyper-ER"]
 	A2,A3,A2l,A3l = gen_hyper_er(n,p1,p2)
 	A4 = zeros(n,n,n,n)
-elseif ntw in ["Simplicial-ER",]
+elseif ntw in ["Simplicial-ER","Simplicial-ER-corr-"]
 	A2,A3,A2l,A3l = gen_simplicial_er(n,p1,p2)
 	A4 = zeros(n,n,n,n)
 end
@@ -86,7 +91,7 @@ amplitude = .1
 X = amplitude*(rand(n,400) .- .5)
 Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + .01*randn(size(X))
 # =#
-# #= ########## PERFECT MEASUREMENTS ###############
+ #= ########## PERFECT MEASUREMENTS ###############
 amplitude = 1.
 ξ0 = 0.0005
 X = amplitude*(rand(n,T) .- .5)
@@ -113,6 +118,7 @@ while size(X)[2] < T
 	global X = [X xx[:,idx]]
 	global Yh = [Yh yyy[:,idx]]
 	global Y = [Y xxx[2][:,idx]]
+	@info "Size of X is $(size(X)[2])/$T."
 end
 @info "Number of time series used: $count"
 # =#
