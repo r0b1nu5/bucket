@@ -30,12 +30,14 @@ function this(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::
 
 #	@info "THIS: getting the θs."
 	θ,d = get_θ(X,dmax)
-	for i in size(θ)[1]:-1:1
-		if length(intersect(collect(combinations(setdiff(d[i,:],[0,]),2)),forbid)) > 0
-			θ = [θ[1:i-1,:];θ[i+1:end,:]]
-			d = [d[1:i-1,:];d[i+1:end,:]]
+	ids = Int64[]
+	for i in 1:size(θ)[1]
+		if length(intersect(collect(combinations(sort(setdiff(d[i,:],[0,])),2)),forbid)) == 0
+			push!(ids,i)
 		end
 	end
+	θ = θ[ids,:]
+	d = d[ids,:]
 	idx_mon = Dict{Int64,Vector{Int64}}()
 	for i in 1:size(d)[1]
 		mon = d[i,:][d[i,:] .!= 0]

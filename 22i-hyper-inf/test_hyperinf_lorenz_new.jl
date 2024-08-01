@@ -25,8 +25,39 @@ for l in 0:n_iter-1
 	ooi = [2,3]
 
 	@info "Inference starts..."
-	xxx = hyper_inf(Xs,Ys,ooi,3,1e-1)
-	
+#	xxx = hyper_inf(Xs,Ys,ooi,3,1e-1)
+	xxx = hyper_inf_filter(Xs,Ys,ooi,3,.8,1e-1)
+
+	a2us = xxx[1][2]
+	a = zeros(n,n)
+	for l in 1:size(a2us)[1]
+		i,j = ceil.(Int64,a2us[l,1:2]./d)
+		a[i,j] = max(a[i,j],abs(a2us[l,3]))
+	end
+	A2us = zeros(0,3)
+	for i in 1:n
+		for j in 1:n
+			if i != j
+				A2us = [A2us;[i j a[i,j]]]
+			end
+		end
+	end
+	a3us = xxx[1][3]
+	a = zeros(n,n,n)
+	for l in 1:size(a3us)[1]
+		i,j,k = ceil.(Int64,a3us[l,1:3]./d)
+		a[i,j,k] = max(a[i,j,k],abs(a3us[l,4]))
+	end
+	A3us = zeros(0,4)
+	for i in 1:n
+		for j in 1:n-1
+			for k in j+1:n
+				if i != j && i != k
+					A3us = [A3us;[i j k a[i,j,k]]]
+				end
+			end
+		end
+	end
 	
 	#A2,AA2 = inferred_adj_2nd(xxx[1][2],n)
 	#A3,AA3 = inferred_adj_3rd(xxx[1][3],n)
@@ -80,23 +111,20 @@ for l in 0:n_iter-1
 		A3l = [A3l;[i j k 1.];[j i k 1.];[k i j 1.]]
 	end
 	
-	
-	A2i,A3i = adj_tensors(xxx[1],n,d)
-	adji = cat_As(A2i,A3i)
-	adj0 = cat_As(A2,A3)
-	
 	ξ = 1e-10
-	roc2 = roc(A2i + ξ*rand(Float64,size(A2i)),A2)
-	roc3 = roc(A3i + ξ*rand(Float64,size(A3i)),A3)
-	roc23 = roc(adji + ξ*rand(Float64,size(adji)),adj0)
 
-	figure("Hypernetwork of Lorenz oscillators",(14,4))
+	tpr,fpr = my_ROC(abs.(A2us),A2l,abs.(A3us),A3l,n)
+	tpr2,fpr2 = my_ROC(abs.(A2us),A2l,n)
+	tpr3,fpr3 = my_ROC(abs.(A3us),A3l,n)
+
+	figure("ROCs-Lorenz-",(15,4))
 	subplot(1,3,1)
-	PyPlot.plot(roc2.FPR,roc2.TPR,color=cm(l/(n_iter-1)))
+	PyPlot.plot(fpr,tpr,color=cm((l+1)/n_iter))
 	subplot(1,3,2)
-	PyPlot.plot(roc3.FPR,roc3.TPR,color=cm(l/(n_iter-1)))
+	PyPlot.plot(fpr2,tpr2,color=cm((l+1)/n_iter))
 	subplot(1,3,3)
-	PyPlot.plot(roc23.FPR,roc23.TPR,color=cm(l/(n_iter-1)))
+	PyPlot.plot(fpr3,tpr3,color=cm((l+1)/n_iter))
+	
 end
 	
 subplot(1,3,1)

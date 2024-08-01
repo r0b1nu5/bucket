@@ -72,7 +72,7 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 # =#
 
  #= RESTRICT THE MONOMIALS TO LARGE CORRELATION
-	forbid = keep_correlated(X,.5)
+	forbid = keep_correlated(X,.9)
 	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,forbid,λ,ρ,niter)
 
 # =#
@@ -140,6 +140,36 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 ##	return Ainf, coeff, idx_o, agents_o
 	return Ainf, coeff, err, relerr
 #	return Ainf, Ainf_, coeff, err, relerr
+end
+
+# Filters the allowed coefficients based on time series correlations
+function hyper_inf_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, α::Float64=.5, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
+	n,T = size(X)
+	zer0 = 1e-10
+
+	if size(X) != size(Y)
+		@info "Dimensions of states and derivatives do not match."
+		return nothing
+	end
+
+# #= RESTRICT THE MONOMIALS TO LARGE CORRELATION
+	forbid = keep_correlated(X,α)
+	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,forbid,λ,ρ,niter)
+
+# =#
+
+# #=
+	Ainf = Dict{Int64,Matrix{Float64}}(o => zeros(0,o+1) for o in 1:dmax+1)
+	for id in keys(idx_mon)
+		js = idx_mon[id]
+		for i in setdiff(1:n,js)
+			Ainf[length(js)+1] = [Ainf[length(js)+1];[i js' coeff[i,id]]]
+		end
+	end
+# =#
+
+	return Ainf, coeff, err, relerr
+
 end
 
 # Same with the tuning of the sparsity parameter λ in SINDy
@@ -638,18 +668,27 @@ function my_ROC(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{Float64},
 
 	max_edges = max_edges1 + max_edges2
 
+# #=
+	a = sortslices([[A01[:,o1+1];A02[:,o2+1]] (1:(size(A01)[1]+size(A02)[1]))],dims=1,rev=true)
+	ids = Int64.(a[:,2])
+	I01 = [A01[i,1:o1] for i in 1:m1]
+	I02 = [A02[i,1:o2] for i in 1:m2]
+	I0 = [I01;I02][ids]
+# =#
+#=
 	a1 = sortslices([A01[:,o1+1] A01[:,1:o1]],dims=1,rev=true)
 	I01 = [a1[i,2:o1+1] for i in 1:m1]
 	V1 = [a1[i,1] for i in 1:m1]
-	I1 = [A1[i,1:o1] for i in 1:mm1]
 
 	a2 = sortslices([A02[:,o2+1] A02[:,1:o2]],dims=1,rev=true)
 	I02 = [a2[i,2:o2+1] for i in 1:m2]
 	V2 = [a2[i,1] for i in 1:m2]
-	I2 = [A2[i,1:o2] for i in 1:mm2]
 
 	I0 = [I01;I02]
 	V = [V1;V2]
+# =#
+	I1 = [A1[i,1:o1] for i in 1:mm1]
+	I2 = [A2[i,1:o2] for i in 1:mm2]
 	I = [I1;I2]
 
 	tp = [0,]
@@ -685,6 +724,66 @@ function my_ROC(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{Float64},
 
 	return tpr,fpr
 end
+
+function my_ROC_extended(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{Float64}, A2::Matrix{Float64}, n::Int64)
+	m1,o1 = size(A01)
+	mm1,o1 = size(A1)
+	o1 -= 1
+	max_edges1 = n*sum(binomial(n-i,o1-i) for i in 1:o1)
+
+	m2,o2 = size(A02)
+	mm2,o2 = size(A2)
+	o2 -= 1
+	max_edges2 = n*sum(binomial(n-i,o2-i) for i in 1:o2)
+
+	max_edges = max_edges1 + max_edges2
+
+	a = sortslices([[A01[:,o1+1];A02[:,o2+1]] (1:(size(A01)[1]+size(A02)[1]))],dims=1,rev=true)
+	ids = Int64.(a[:,2])
+	I01 = [Int64.(A01[i,1:o1]) for i in 1:m1]
+	I02 = [Int64.(A02[i,1:o2]) for i in 1:m2]
+	I0 = [I01;I02][ids]
+	
+	I1 = [Int64.(A1[i,1:o1]) for i in 1:mm1]
+	I2 = [Int64.(A2[i,1:o2]) for i in 1:mm2]
+	I = [I1;I2]
+
+	tp = [0,]
+	fp = [0,]
+	v = [Inf,]
+	k = 0
+
+	for i in I0
+		if i in I
+			push!(tp,tp[end]+1)
+			push!(fp,fp[end])
+		else
+			push!(tp,tp[end])
+			push!(fp,fp[end]+1)
+		end
+		k += 1
+		push!(v,a[k,1])
+	end
+
+	# Completes the inference randomly
+	mtp = length(I) - tp[end]
+	mfp = max_edges-length(I)-fp[end]
+	@info "$mtp, $mfp"
+	t = shuffle([ones(mtp);zeros(mfp)])
+	tt = 1 .- t
+	s = [sum(t[1:i]) for i in 1:length(t)]
+	ss = [sum(tt[1:i]) for i in 1:length(tt)]
+
+	tp = [tp;(tp[end] .+ s)]
+	fp = [fp;(fp[end] .+ ss)]
+	v = [v;-Inf*ones(length(ss))]
+
+	tpr = tp/length(I)
+	fpr = fp/(max_edges-length(I))
+
+	return tpr,fpr,v,I0
+end
+
 
 # returns the list of pairs of agents whose correlation is smaller than α.
 function keep_correlated(X::Matrix{Float64}, α::Float64=.5)
