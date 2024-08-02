@@ -80,15 +80,19 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 # #= USES MYSINDY
 	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,λ,ρ,niter)
 # =#
+@info "THIS completed."
 
 # #=
 	Ainf = Dict{Int64,Matrix{Float64}}(o => zeros(0,o+1) for o in 1:dmax+1)
 	for id in keys(idx_mon)
 		js = idx_mon[id]
-		for i in setdiff(1:n,js)
-			Ainf[length(js)+1] = [Ainf[length(js)+1];[i js' coeff[i,id]]]
-		end
+		o = length(js)+1
+		Ainf[o] = [Ainf[o];[setdiff(1:n,js) repeat(js',n-o+1,1) coeff[setdiff(1:n,js),id]]]
+#		for i in setdiff(1:n,js)
+#			Ainf[length(js)+1] = [Ainf[length(js)+1];[i js' coeff[i,id]]]
+#		end
 	end
+@info "Dictionary of adjacency tensors built."
 # =#
 
  #=
@@ -794,7 +798,7 @@ function keep_correlated(X::Matrix{Float64}, α::Float64=.5)
 	ids = [[i,j] for i in 1:n-1 for j in i+1:n]
 	forbid = ids[c .< α]
 
-	@info "$(n*(n-1)/2 - length(forbid)) pairs kept, $(length(forbid)) pairs discarded."
+	@info "$(Int(n*(n-1)/2 - length(forbid))) pairs kept, $(length(forbid)) pairs discarded."
 
 	return forbid
 end

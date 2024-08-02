@@ -86,9 +86,11 @@ function mySINDy(θ::Matrix{Float64}, Y::Matrix{Float64}, λ::Float64=.1, ρ::Fl
 			Ξ[i,biginds] = Y[[i,],:]*θ[biginds,:]'*inv(θ[biginds,:]*θ[biginds,:]' + ρ*Id(sum(biginds)))
 		end
 	end
+@info "Itertions done"
 
 #	cost = sum((Y - Ξ*θ).^2) + ρ*sum(Ξ.^2)
 	err = sum((Y - Ξ*θ).^2)
+@info "Error computed"
 
 	return Ξ, err, err/energy
 end

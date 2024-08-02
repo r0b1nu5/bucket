@@ -3,13 +3,42 @@ using PyPlot, DelimitedFiles, ROC, Dates
 include("hyper_inf.jl")
 
 cm = get_cmap("cividis")
-l = 1
 n_iter = 1
 
 t = .01
 d = 3
 
+λ = .1 # SINDy's sparsity parameter
+α = .9 # correlation threshold
+
+t_ratio = Float64[]
+
+ #=
+for l in 0:9
+XXs = Matrix(readdlm("data/coupled_lorenz_solution-$l.txt")')
+x = readdlm("data/lorenz-edges-$l.txt",'}')
+T0 = 0
+dT = 150
+T = 300
+n_iter = 10
+# =#
+ #=
+for l in 0:0
 XXs = Matrix(readdlm("data/coupled_lorenz_solution_10.txt")')
+x = readdlm("data/lorenz_edges_10.txt",'}')
+T0 = 100
+dT = 700
+T = 1000
+# =#
+# #=
+for l in 0:0
+XXs = Matrix(readdlm("data/coupled_lorenz_solution_10_20_5.txt")')
+x = readdlm("data/lorenz_edges_10_20_5.txt",'}')
+T0 = 50
+dT = 400
+T = 500
+l = 0
+# =#
 
  #=
 Xs = XXs[:,1:end-1]
@@ -19,8 +48,8 @@ Ys = (XXs[:,2:end]-XXs[:,1:end-1])/t
 Xs = zeros(size(XXs)[1],0)
 Ys = zeros(size(XXs)[1],0)
 for k in 1:10
-	global Xs = [Xs XXs[:,(101:800) .+ (k-1)*1000]]
-	global Ys = [Ys (XXs[:,(102:801) .+ (k-1)*1000] - XXs[:,(101:800) .+ (k-1)*1000])/t]
+	Xs = [Xs XXs[:,T0 .+ (1:dT) .+ (k-1)*T]]
+	Ys = [Ys (XXs[:,T0 .+ (2:dT+1) .+ (k-1)*T] - XXs[:,T0 .+ (1:dT) .+ (k-1)*T])/t]
 end
 # =#
 
@@ -31,12 +60,12 @@ ooi = [2,3]
 
 @info "Inference starts..."
 t0 = time()
-xxx = hyper_inf(Xs,Ys,ooi,3,1e-1)
+xxx = hyper_inf(Xs,Ys,ooi,3,λ)
 t1 = time()
-α = .8
 t2 = time()
-yyy = hyper_inf_filter(Xs,Ys,ooi,3,α,1e-1)
+yyy = hyper_inf_filter(Xs,Ys,ooi,3,α,λ)
 t3 = time()
+push!(t_ratio,(t3-t2)/(t1-t0))
 
 @info "THIS without preprocessing: time = $(t1-t0)'', relative error = $(xxx[4])"
 @info "THIS with preprocessing: time = $(t3-t2)'', relative error = $(yyy[4])"
@@ -59,8 +88,8 @@ B2us = zeros(0,3)
 for i in 1:n
 	for j in 1:n
 		if i != j
-			global A2us = [A2us;[i j a[i,j]]]
-			global B2us = [B2us;[i j b[i,j]]]
+			A2us = [A2us;[i j a[i,j]]]
+			B2us = [B2us;[i j b[i,j]]]
 		end
 	end
 end
@@ -84,8 +113,8 @@ for i in 1:n
 	for j in 1:n-1
 		for k in j+1:n
 			if i != j && i != k
-				global A3us = [A3us;[i j k a[i,j,k]]]
-				global B3us = [B3us;[i j k b[i,j,k]]]
+				A3us = [A3us;[i j k a[i,j,k]]]
+				B3us = [B3us;[i j k b[i,j,k]]]
 			end
 		end
 	end
@@ -96,7 +125,6 @@ end
 
 	
 	
-x = readdlm("data/lorenz_edges_10.txt",'}')
 E2 = Vector{Int64}[]
 for s in x[1,:]
 	global e = Int64[]
@@ -166,16 +194,22 @@ PyPlot.plot(fpr2_,tpr2_,color=cm((l+1)/n_iter))
 subplot(2,3,6)
 PyPlot.plot(fpr3_,tpr3_,color=cm((l+1)/n_iter))
 
+end
+
 subplot(2,3,1)
 title("ROC: 2-edges")
-xlabel("FPR")
 ylabel("TPR")
 subplot(2,3,2)
 title("ROC: 3-edges")
-xlabel("FPR")
 subplot(2,3,3)
 title("ROC: all edges")
+subplot(2,3,4)
 xlabel("FPR")
+subplot(2,3,5)
+xlabel("FPR")
+subplot(2,3,6)
+xlabel("FPR")
+
 
 
 

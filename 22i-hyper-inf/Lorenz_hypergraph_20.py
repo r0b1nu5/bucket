@@ -40,10 +40,10 @@ def coupled_lorenz(t, xyz, sigma, rho, beta, links, triangles, k2, k3):
 
 # Parameters
 N = 10 # Number of oscillators
-M = 10 # Number of different initial conditions
-T = 10 # Simulation length for each initial condition
+M = 20 # Number of different initial conditions
+T = 5 # Simulation length for each initial condition
 #time = np.linspace(0, T, 300) # Record data every 0.01 time unit
-time = np.linspace(0,T,1001)
+time = np.linspace(0,T,501)
 sigma = 10.0
 rho = 28.0
 beta = 8.0 / 3.0
