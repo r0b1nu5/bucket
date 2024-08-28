@@ -2,7 +2,7 @@ using PyPlot, Random, Combinatorics
 
 # Generates a wheel graph with 'n' nodes (including the center which is node 1) where the spokes are removed with proba p2, the tires are removed with proba p3 and triangles are added between spokes with proba p1)
 
-function gen_rand_hyperwheel(n::Int64, p1::Float64, p2::Float64=0., p3::Float64=0., plot::Bool=false)
+function gen_rand_hyperwheel(n::Int64, p1::Float64, p2::Float64=0., p3::Float64=0.; plot::Bool=false)
     A2 = zeros(n,n)
     A2[1,2] = (rand() > p2)
     A2[2,1] = A2[1,2]
@@ -29,6 +29,33 @@ function gen_rand_hyperwheel(n::Int64, p1::Float64, p2::Float64=0., p3::Float64=
     end
 
     return A2, A3
+end
+
+function gen_rand_hyperwheel_list(n::Int64, p1::Float64, p2::Float64=0., p3::Float64=0.)
+	A2l = zeros(0,3)
+	
+	spokes = vec(2:n)[rand(n-1) .> p2]
+	A2l = vcat(A2l,[ones(length(spokes)) spokes ones(length(spokes))])
+	A2l = vcat(A2l,[spokes ones(length(spokes)) ones(length(spokes))])
+	
+	tires = vec(2:n)[rand(n-1) .> p3]
+	cotires = mod.(tires .- 1,n-1) .+ 2
+	A2l = vcat(A2l,[tires cotires ones(length(tires))])
+	A2l = vcat(A2l,[cotires tires ones(length(tires))])
+	
+	A3l = zeros(0,4)
+
+	facets = vec(2:n)[rand(n-1) .< p1]
+	cofacets = mod.(facets .- 1,n-1) .+ 2
+	o = ones(length(facets))
+	A3l = vcat(A3l,[o facets cofacets o])
+	A3l = vcat(A3l,[o cofacets facets o])
+	A3l = vcat(A3l,[facets o cofacets o])
+	A3l = vcat(A3l,[facets cofacets o o])
+	A3l = vcat(A3l,[cofacets o facets o])
+	A3l = vcat(A3l,[cofacets facets o o])
+
+	return A2l,A3l
 end
 
 function plot_hyperwheel(A2,A3,figname::String="Hypergraph")

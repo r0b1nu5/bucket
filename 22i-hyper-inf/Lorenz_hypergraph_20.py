@@ -40,10 +40,10 @@ def coupled_lorenz(t, xyz, sigma, rho, beta, links, triangles, k2, k3):
 
 # Parameters
 N = 10 # Number of oscillators
-M = 20 # Number of different initial conditions
-T = 5 # Simulation length for each initial condition
+M = 500 # Number of different initial conditions
+T = 3 # Simulation length for each initial condition
 #time = np.linspace(0, T, 300) # Record data every 0.01 time unit
-time = np.linspace(0,T,501)
+time = np.linspace(0,T,301)
 sigma = 10.0
 rho = 28.0
 beta = 8.0 / 3.0
@@ -60,7 +60,7 @@ links = H_int.edges.filterby("size", 2).members()
 triangles = H_int.edges.filterby("size", 3).members()
 print(links)
 print(triangles)
-f = open('lorenz_edges_'+str(N)+'.txt','a')
+f = open('lorenz_edges_'+str(N)+'_'+str(M)+'_'+str(T)+'.txt','a')
 f.write(str(links)+'\n')
 f.write(str(triangles)+'\n')
 f.close()
@@ -70,10 +70,10 @@ f.close()
 #pos2 = xgi.pairwise_spring_layout(H)
 #xgi.draw(H, pos2)
 
-if os.path.exists('coupled_lorenz_solution_'+str(N)+'.txt'):
-    os.remove('coupled_lorenz_solution_'+str(N)+'.txt')
+if os.path.exists('coupled_lorenz_solution_'+str(N)+'_'+str(M)+'_'+str(T)+'.txt'):
+    os.remove('coupled_lorenz_solution_'+str(N)+'_'+str(M)+'_'+str(T)+'.txt')
 
-f = open('coupled_lorenz_solution_'+str(N)+'.txt','a')
+f = open('coupled_lorenz_solution_'+str(N)+'_'+str(M)+'_'+str(T)+'.txt','a')
 
 for i in range(M):
     # Initial conditions (may want to control the box size)
@@ -88,6 +88,7 @@ f.close()
 # Plot the last solution
 t = sol.t
 xyz = sol.y
+
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')

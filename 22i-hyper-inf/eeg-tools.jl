@@ -246,7 +246,7 @@ function restrict_box_size(X::Matrix{Float64}, nstep::Int64)
 end
 
 
-function contour_trigon_data(x::Vector{Float64}, y::Vector{Float64}, res::Int64=100, fig::String="trigon", cm::String="plasma", frame::Bool=true)
+function contour_trigon_data(x::Vector{Float64}, y::Vector{Float64}, res::Int64=100, fig::String="trigon", scale::String="lin", cm::String="plasma", frame::Bool=true)
 	N = length(x)
 
 	M = [1 cos(π/3);0 sin(π/3)]
@@ -272,18 +272,26 @@ function contour_trigon_data(x::Vector{Float64}, y::Vector{Float64}, res::Int64=
 
 	figure(fig,(6,5))
 	cmap = get_cmap(cm)
-	PyPlot.contourf(LinRange(0,1,res),LinRange(0,1,res),T,cmap=cmap,res)
+	if scale == "lin"
+		PyPlot.contourf(LinRange(0,1,res),LinRange(0,1,res),T,cmap=cmap,res)
+	elseif scale == "log"
+		PyPlot.contourf(LinRange(0,1,res),LinRange(0,1,res),log.(10,T .+ .1),cmap=cmap,res)
+	end
 	
 	if frame
 		plot_trigon_frame(fig)
-		colorbar()
+		if scale == "lin"
+			colorbar(label="# occurences")
+		elseif scale == "log"
+			colorbar(label="log(# occurences)",ticks=(-1:round(Int64,log(10,maximum(T)))))
+		end
 	end
 
-	return nothing
+	return T
 end
 
-function contour_trigon_data(x::Matrix{Float64}, y::Matrix{Float64}, res::Int64=100, fig::String="trigon", cm::String="plasma", frame::Bool=true)
-	contour_trigon_data(vec(x),vec(y),res,fig,cm,frame)
+function contour_trigon_data(x::Matrix{Float64}, y::Matrix{Float64}, res::Int64=100, fig::String="trigon", scale::String="lin", cm::String="plasma", frame::Bool=true)
+	contour_trigon_data(vec(x),vec(y),res,fig,scale,cm,frame)
 
 	return nothing
 end
@@ -382,6 +390,37 @@ function plot_relerr(col::Any="C0")
 	ylabel("relative error")
 	legend()
 end
+
+
+function get_d(n::Int64, dmax::Int64,i0::Int64=1)
+	d = zeros(Int64,1,dmax)
+	if dmax == 0
+		return d 
+	else
+		for i in 1:n
+			d0 = get_d(n-i+1,dmax-1,i)
+			d = [d; d0 i*ones(Int64,size(d0)[1],1)]
+		end
+		d += (i0-1)*(d .> 0)
+		
+		return d
+	end
+end
+
+function get_idx_mon(n::Int64, dmax::Int64)
+	d = get_d(n,dmax)
+
+	idx_mon = Dict{Int64,Vector{Int64}}()
+	for i in 1:size(d)[1]
+		mon = d[i,:][d[i,:] .!= 0]
+		if length(mon) == length(union(mon))
+			idx_mon[i] = sort(mon)
+		end
+	end
+
+	return idx_mon
+end
+
 
 
 

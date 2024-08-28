@@ -6,7 +6,7 @@ function this(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::
 	end
 
 #	@info "THIS: getting the θs."
-	θ,d = get_θ(X,dmax)
+	θ,d = get_θd(X,dmax)
 	idx_mon = Dict{Int64,Vector{Int64}}()
 	for i in 1:size(d)[1]
 		mon = d[i,:][d[i,:] .!= 0]
@@ -23,35 +23,73 @@ end
 
 # Version of THIS with restriction on the monomials used.
 # Forbidden pairs of variables are in 'forbid'.
-function this(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, forbid::Vector{Vector{Int64}}, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
+function this_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, keep::Vector{Vector{Int64}}, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
 	if size(X) != size(Y)
 		@info "Time series' sizes do not match."
 	end
 
-#	@info "THIS: getting the θs."
-	θ,d = get_θ(X,dmax)
-	ids = Int64[]
-	for i in 1:size(θ)[1]
-		if length(intersect(collect(combinations(sort(setdiff(d[i,:],[0,])),2)),forbid)) == 0
-			push!(ids,i)
-		end
-	end
-	θ = θ[ids,:]
-	d = d[ids,:]
-	idx_mon = Dict{Int64,Vector{Int64}}()
-	for i in 1:size(d)[1]
-		mon = d[i,:][d[i,:] .!= 0]
-		if length(mon) == length(union(mon))
-			idx_mon[i] = sort(mon)
-		end
-	end
-#	@info "THIS: got the θs."
+	n,T = size(X)
 
-	coeff,err,relerr = mySINDy(θ,Y,λ,ρ,niter)
 	
-	return coeff, idx_mon, err, relerr
-end
-	
+#	@info "THIS: getting the θs."
+	d = get_d(n,dmax)
+	d2i = Dict{Vector{Int64},Int64}(sort(d[i,:]) => i for i in 1:size(d)[1])
+
+	i2keep = Dict{Int64,Vector{Int64}}(i => Int64[] for i in 1:n)
+	for k in 1:length(keep)
+		i,j = keep[k]
+		push!(i2keep[i],k)
+		push!(i2keep[j],k)
+	end
+
+
+#=
+	ids = Dict{Int64,Vector{Int64}}(i => Int64[] for i in 1:n) # for each agent index returns the indices of relevant monomials (according to 'keep')
+	θs = Dict{Int64,Matrix{Float64}}(i => zeros(0,T) for i in 1:n) # for each agent index returns the values of the relevant monomials (according to 'keep')
+
+		append!(ids[i],[d2i[v] for v in [sort([j,k]) for k in 0:n]])
+		io = open("data/thetas_$i.csv","a")
+		writedlm(io,reduce(vcat,[prod(X[v,:],dims=1) for v in [setdiff([j,k],[0,]) for k in 0:n]]))
+		close(io)
+#		θs[i] = vcat(θs[i],reduce(vcat,[prod(X[v,:],dims=1) for v in [setdiff([j,k],[0,]) for k in 0:n]]))
+		append!(ids[j],[d2i[v] for v in [sort([i,k]) for k in 0:n]])
+		io = open("data/thetas_$j.csv","a")
+		writedlm(io,reduce(vcat,[prod(X[v,:],dims=1) for v in [setdiff([i,k],[0,]) for k in 0:n]]))
+		close(io)
+#		θs[j] = vcat(θs[j],reduce(vcat,[prod(X[v,:],dims=1) for v in [setdiff([i,k],[0,]) for k in 0:n]]))
+	end
+
+=#	
+
+
+	coeff = Dict{Int64,Matrix{Float64}}()
+	ids = Dict{Int64,Vector{Int64}}(i => Int64[] for i in 1:n) # for each agent index returns the indices of relevant monomials (according to 'keep')
+	for i in 1:n
+		θ = ones(1,T)
+		id = [1,]
+		for k in i2keep[i]
+			j = setdiff(keep[k],[i,])[1]
+			θ = vcat(θ,reduce(vcat,[prod(X[v,:],dims=1) for v in [setdiff([j,l],[0,]) for l in 0:n]]))
+			append!(id,[d2i[v] for v in [sort([j,l]) for l in 0:n]])
+		end
+
+		iii = unique(a -> id[a], eachindex(id))
+		id = id[iii]
+		θ = θ[iii,:]
+
+		@info "============ mySINDy for agent $i =============="
+		if isempty(id)
+			coef = zeros(0,0)
+		else
+			coef,err,relerr = mySINDy(θ,Y[[i,],:],λ,ρ,niter)
+			ids[i] = id
+		end
+
+		coeff[i] = coef
+	end
+
+	return coeff, ids, 1., 1.
+end	
 
 
 
@@ -155,7 +193,7 @@ function get_θ_old(X::Matrix{Float64}, dmax::Int64)
 end
 
 
-function get_θ(X::Matrix{Float64}, dmax::Int64, i0::Int64=1)
+function get_θd(X::Matrix{Float64}, dmax::Int64, i0::Int64=1)
 	n,T = size(X)
 
 	θ = ones(1,T)
@@ -165,7 +203,7 @@ function get_θ(X::Matrix{Float64}, dmax::Int64, i0::Int64=1)
 		return θ,d
 	else
 		for i in 1:n
-			θ0,d0 = get_θ(X[i:n,:],dmax-1,i)
+			θ0,d0 = get_θd(X[i:n,:],dmax-1,i)
 			#d0 += (i-1)*(d0 .> 0)
 			θ = [θ; repeat(X[[i,],:],size(θ0)[1],1).*θ0]
 			d = [d; d0 i*ones(Int64,size(d0)[1],1)]
@@ -177,5 +215,41 @@ function get_θ(X::Matrix{Float64}, dmax::Int64, i0::Int64=1)
 		return θ,d
 	end
 end
+
+function get_θ(X::Matrix{Float64}, dmax::Int64, i0::Int64=1)
+	n,T = size(X)
+
+	θ = ones(1,T)
+
+	if dmax == 0
+		return θ
+	else
+		for i in 1:n
+			θ0 = get_θ(X[i:n,:],dmax-1,i)
+			θ = [θ; repeat(X[[i,],:],size(θ0)[1],1).*θ0]
+		end
+
+		return θ
+	end
+end
+
+function get_d(n::Int64,dmax::Int64, i0::Int64=1)
+	d = zeros(Int64,1,dmax)
+
+	if dmax == 0
+		return d
+	else
+		for i in 1:n
+			d0 = get_d(n-i+1,dmax-1,i)
+			d = [d;d0 i*ones(Int64,size(d0)[1],1)]
+		end
+
+		d += (i0-1)*(d .> 0)
+
+		return d
+	end
+end
+
+
 
 

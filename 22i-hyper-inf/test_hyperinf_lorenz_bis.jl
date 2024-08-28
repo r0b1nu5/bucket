@@ -8,7 +8,7 @@ n_iter = 1
 t = .01
 d = 3
 
-λ = .1 # SINDy's sparsity parameter
+λ = .01 # SINDy's sparsity parameter
 α = .9 # correlation threshold
 
 t_ratio = Float64[]
@@ -32,12 +32,15 @@ T = 1000
 # =#
 # #=
 for l in 0:0
-XXs = Matrix(readdlm("data/coupled_lorenz_solution_10_20_5.txt")')
-x = readdlm("data/lorenz_edges_10_20_5.txt",'}')
+N = 10
+M = 500
+m = 100
+tt = 3
 T0 = 50
-dT = 400
-T = 500
-l = 0
+dT = 150
+T = 300
+XXs = Matrix(readdlm("data/coupled_lorenz_solution_$(N)_$(M)_$(tt).txt")')
+x = readdlm("data/lorenz_edges_$(N)_$(M)_$(tt).txt",'}')
 # =#
 
  #=
@@ -47,7 +50,7 @@ Ys = (XXs[:,2:end]-XXs[:,1:end-1])/t
 # #=
 Xs = zeros(size(XXs)[1],0)
 Ys = zeros(size(XXs)[1],0)
-for k in 1:10
+for k in 1:m
 	Xs = [Xs XXs[:,T0 .+ (1:dT) .+ (k-1)*T]]
 	Ys = [Ys (XXs[:,T0 .+ (2:dT+1) .+ (k-1)*T] - XXs[:,T0 .+ (1:dT) .+ (k-1)*T])/t]
 end

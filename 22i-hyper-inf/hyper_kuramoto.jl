@@ -8,7 +8,7 @@ include("cnoise.jl")
 # ξ0: amplitude of the  noise
 # ϕ2: phase frustration (for Kuramoto-Sakaguchi)
 # ϕ3: phase frustration (for 3rd-order KS)
-function hyper_k(B2::Matrix{Float64}, B3::Matrix{Float64}, ω::Vector{Float64}, θ0::Vector{Float64}, τ0::Float64, ξ0::Float64=1., ϕ2::Float64=0., ϕ3::Float64=0., a2::Union{Float64,Vector{Float64}}=1., a3::Union{Float64,Vector{Float64}}=1., h::Float64=.01, max_iter::Int64=10000, tol::Float64=1e-6)
+function hyper_k_incidence(B2::Matrix{Float64}, B3::Matrix{Float64}, ω::Vector{Float64}, θ0::Vector{Float64}, τ0::Float64, ξ0::Float64=1., ϕ2::Float64=0., ϕ3::Float64=0., a2::Union{Float64,Vector{Float64}}=1., a3::Union{Float64,Vector{Float64}}=1., h::Float64=.01, max_iter::Int64=10000, tol::Float64=1e-6)
 	n = length(θ0)
 
 	B2o = B2.*(B2 .> 0.)
@@ -71,7 +71,7 @@ end
 
 # τ0: correlation time of the nodal noise
 # ξ0: amplitude of the  noise
-function hyper_k(A2:: Array{Float64,2}, A3::Array{Float64,3}, ω::Vector{Float64}, θ0::Vector{Float64}, τ0::Float64=1., ξ0::Float64=0., ϕ2::Float64=0., ϕ3::Float64=0., h::Float64=.01, max_iter::Int64=10000, tol::Float64=1e-6)
+function hyper_k(A2:: Array{Float64,2}, A3::Union{Array{Float64,2},Array{Float64,3}}, ω::Vector{Float64}, θ0::Vector{Float64}, τ0::Float64=1., ξ0::Float64=0., ϕ2::Float64=0., ϕ3::Float64=0., h::Float64=.01, max_iter::Int64=10000, tol::Float64=1e-6)
 	n = length(ω)
 	θs = θ0
 	θ = θ0
@@ -126,10 +126,28 @@ function hyper_k(A2:: Array{Float64,2}, A3::Array{Float64,3}, ω::Vector{Float64
 end
 	
 
+function f_kuramoto_3rd(θ::Vector{Float64}, A2l::Array{Float64,2}, A3l::Array{Float64,2}, P::Vector{Float64}, ϕ2::Float64=0., ϕ3::Float64=0.)
+	n = length(θ)
+	
+	fθ = copy(P)
+	for l in 1:size(A2l)[1]
+		i,j = Int64.(A2l[l,1:2])
+		a = A2l[l,3]
+		fθ[i] -= a*(sin(θ[i]-θ[j]-ϕ2) + sin(ϕ2))
+	end
+	for l in 1:size(A3l)[1]
+		i,j,k = Int64.(A3l[l,1:3])
+		a = A3l[l,4]
+		fθ[i] -= a*(sin(2*θ[i]-θ[j]-θ[k]-ϕ3) + sin(ϕ3))
+	end
+
+	return fθ
+end
 
 
 function f_kuramoto_3rd(θ::Vector{Float64}, A2::Array{Float64,2}, A3::Array{Float64,3}, P::Vector{Float64}, ϕ2::Float64=0., ϕ3::Float64=0.)
 	n = length(θ)
+	
 	fθ = Float64[]
 	for i in 1:n
 		x = P[i]

@@ -4,7 +4,7 @@ include("tools.jl")
 include("lv.jl")
 
 
-# #= 
+ #= 
 S = 21
 Si = 157
 
@@ -21,7 +21,6 @@ A = zeros(S,S)
 np = 0
 λp = Float64[]
 
-#for k in 1:100
 k = 0
 while np < 2 && k < 1000
 	global k += 1
@@ -50,10 +49,21 @@ end
 
 # =#
 
- #= 
-x = readdlm("data/matr-aij-02.dat")
-S = 42
+# #= 
+#x = readdlm("data/matr-aij-02.dat")
+#S = 42
+#Si = 157
+#pα = 1
+
+#x = readdlm("data/Matr-240825.dat")
+#S = 38
+#Si = 157
+#pα = 10
+
+x = readdlm("data/SMatr-240825.dat")
+S = 28
 Si = 157
+pα = 10
 
 A = zeros(S,S)
 for k in 1:size(x)[1]
@@ -96,7 +106,7 @@ end
 figure()
 PyPlot.plot([0,0],maximum(imag.(λs))*[-1.2,1.2],"--k")
 for i in 1:S
-	plot_density(λr[i,:],λi[i,:],"C$(mod(i-1,10))")
+	plot_density(λr[i,:],λi[i,:],"C$(mod(i-1,10))",pα)
 #	PyPlot.plot(λr[i,:],λi[i,:],color="C$(mod(i-1,10))")
 #	PyPlot.plot(λr[i,1],λi[i,1],">",color="C$(mod(i-1,10))")
 	PyPlot.plot(λr[i,end],λi[i,end],"o",color="C$(mod(i-1,10))")

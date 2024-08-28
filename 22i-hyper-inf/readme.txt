@@ -18,3 +18,9 @@ x7x: 7th-order, [001,002], [01,02], lambda = .1, rho = .1
 # n = 64
 111: 3rd-order (deg 2), [all subjects], [01,02], lambda = .1, rho = .1
 222: 3rd-order (deg 2), [all subjects], [01,02], lambda = .1, rho = .1
+
+
+# Kuramoto n=300
+300-01: p1=.3, p2=.2, p3=.2, dt=.01, maxiter=200, nkeep=1000 
+
+

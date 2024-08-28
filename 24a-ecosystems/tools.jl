@@ -73,12 +73,12 @@ end
 
 
 # Plots a curve with increasing color density
-function plot_density(x::Vector{Float64}, y::Vector{Float64}, col::Any)
+function plot_density(x::Vector{Float64}, y::Vector{Float64}, col::Any, pα::Int64=1)
 	n = length(x)
 	αs = LinRange(0,1,n)
 
 	for i in 4:5:n-3
-		PyPlot.plot(x[i-3:i+3],y[i-3:i+3],color=col,alpha=αs[i])
+		PyPlot.plot(x[i-3:i+3],y[i-3:i+3],color=col,alpha=αs[i]^pα)
 	end
 
 	return nothing

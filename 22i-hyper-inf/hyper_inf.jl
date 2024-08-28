@@ -1,4 +1,4 @@
-using DataDrivenDiffEq, ModelingToolkit, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics, Random
+using DataDrivenDiffEq, ModelingToolkit, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics, Random, DelimitedFiles
 
 include("this.jl")
 
@@ -84,14 +84,31 @@ function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, d
 
 # #=
 	Ainf = Dict{Int64,Matrix{Float64}}(o => zeros(0,o+1) for o in 1:dmax+1)
-	for id in keys(idx_mon)
-		js = idx_mon[id]
-		o = length(js)+1
-		Ainf[o] = [Ainf[o];[setdiff(1:n,js) repeat(js',n-o+1,1) coeff[setdiff(1:n,js),id]]]
+	idx_coeff = Dict{Int64,Vector{Int64}}()
+	nz_idx = Int64[]
+	for i in keys(idx_mon)
+		aaa = setdiff((1:n)[abs.(coeff[:,i]) .> 1e-8],idx_mon[i])
+		if !isempty(aaa)
+			push!(nz_idx,i)
+			idx_coeff[i] = aaa
+		end
+	end
+
+	for id in nz_idx
+		ii = idx_coeff[id]
+		jj = idx_mon[id]
+		o = length(jj)+1
+		Ainf[o] = [Ainf[o];[ii repeat(jj',length(ii),1) coeff[ii,id]]]
+	end
+
+#	for id in keys(idx_mon)
+#		js = idx_mon[id]
+#		o = length(js)+1
+#		Ainf[o] = [Ainf[o];[setdiff(1:n,js) repeat(js',n-o+1,1) coeff[setdiff(1:n,js),id]]]
 #		for i in setdiff(1:n,js)
 #			Ainf[length(js)+1] = [Ainf[length(js)+1];[i js' coeff[i,id]]]
 #		end
-	end
+#	end
 @info "Dictionary of adjacency tensors built."
 # =#
 
@@ -157,12 +174,14 @@ function hyper_inf_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{In
 	end
 
 # #= RESTRICT THE MONOMIALS TO LARGE CORRELATION
-	forbid = keep_correlated(X,α)
-	coeff,idx_mon,err,relerr = this(X,Y,ooi,dmax,forbid,λ,ρ,niter)
+	#keep = keep_correlated(X,α)
+	keep = keep_correlated(X,1000)
+
+	coeff,idx_mon,err,relerr = this_filter(X,Y,ooi,dmax,keep,λ,ρ,niter)
 
 # =#
 
-# #=
+ #=
 	Ainf = Dict{Int64,Matrix{Float64}}(o => zeros(0,o+1) for o in 1:dmax+1)
 	for id in keys(idx_mon)
 		js = idx_mon[id]
@@ -172,9 +191,27 @@ function hyper_inf_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{In
 	end
 # =#
 
-	return Ainf, coeff, err, relerr
+	#return Ainf, coeff, err, relerr
+	return coeff, ids, err, relerr
 
 end
+
+function hyper_inf_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, nkeep::Int64, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
+	n,T = size(X)
+	zer0 = 1e-10
+
+	if size(X) != size(Y)
+		@info "Dimensions of states and derivatives do not match."
+		return nothing
+	end
+
+	keep = keep_correlated(X,nkeep)
+
+	coeff,ids,err,relerr = this_filter(X,Y,ooi,dmax,keep,λ,ρ,niter)
+
+	return coeff, ids, err, relerr
+end
+
 
 # Same with the tuning of the sparsity parameter λ in SINDy
 function hyper_inf_sparsity(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1, λ::Float64=1e-1)
@@ -729,6 +766,42 @@ function my_ROC(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{Float64},
 	return tpr,fpr
 end
 
+function my_ROC_extended(A0::Matrix{Float64}, A::Matrix{Float64}, n::Int64)
+	m,o = size(A0)
+	mm,o = size(A)
+	o -= 1
+	max_edges = n*sum(binomial(n-i,o-i) for i in 1:o)
+
+	a = sortslices([A0[:,o+1] (1:m)],dims=1,rev=true)
+	ids = Int64.(a[:,2])
+	I0 = [Int64.(A0[i,1:o]) for i in 1:m]
+	I0 = I0[ids]
+
+	I = [Int64.(A[i,1:o]) for i in 1:mm]
+
+	tp = [0,]
+	fp = [0,]
+	v = [Inf,]
+	k = 0
+
+	for i in I0
+		if i in I
+			push!(tp,tp[end]+1)
+			push!(fp,fp[end])
+		else
+			push!(tp,tp[end])
+			push!(fp,fp[end]+1)
+		end
+		k += 1
+		push!(v,a[k,1])
+	end
+
+	tpr = tp/length(I)
+	fpr = fp/(max_edges-length(I))
+
+	return tpr,fpr,v,I0
+end
+
 function my_ROC_extended(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{Float64}, A2::Matrix{Float64}, n::Int64)
 	m1,o1 = size(A01)
 	mm1,o1 = size(A1)
@@ -742,7 +815,7 @@ function my_ROC_extended(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{
 
 	max_edges = max_edges1 + max_edges2
 
-	a = sortslices([[A01[:,o1+1];A02[:,o2+1]] (1:(size(A01)[1]+size(A02)[1]))],dims=1,rev=true)
+	a = sortslices([[A01[:,o1+1];A02[:,o2+1]] (1:(m1+m2))],dims=1,rev=true)
 	ids = Int64.(a[:,2])
 	I01 = [Int64.(A01[i,1:o1]) for i in 1:m1]
 	I02 = [Int64.(A02[i,1:o2]) for i in 1:m2]
@@ -769,10 +842,13 @@ function my_ROC_extended(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{
 		push!(v,a[k,1])
 	end
 
-	# Completes the inference randomly
+	#=
 	mtp = length(I) - tp[end]
 	mfp = max_edges-length(I)-fp[end]
 	@info "$mtp, $mfp"
+	=#
+
+	 #= Completes the inference randomly
 	t = shuffle([ones(mtp);zeros(mfp)])
 	tt = 1 .- t
 	s = [sum(t[1:i]) for i in 1:length(t)]
@@ -781,7 +857,14 @@ function my_ROC_extended(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{
 	tp = [tp;(tp[end] .+ s)]
 	fp = [fp;(fp[end] .+ ss)]
 	v = [v;-Inf*ones(length(ss))]
-
+	# =#
+	
+	 #= Completes the inference with a 1
+	tp = [tp;tp[end]+mtp]
+	fp = [fp;fp[end]+mfp]
+	v = [v;-Inf]
+	# =#
+	
 	tpr = tp/length(I)
 	fpr = fp/(max_edges-length(I))
 
@@ -796,11 +879,27 @@ function keep_correlated(X::Matrix{Float64}, α::Float64=.5)
 	
 	c = [abs(C[i,j]) for i in 1:n-1 for j in i+1:n]
 	ids = [[i,j] for i in 1:n-1 for j in i+1:n]
-	forbid = ids[c .< α]
+	forbid = ids[c .> α]
 
 	@info "$(Int(n*(n-1)/2 - length(forbid))) pairs kept, $(length(forbid)) pairs discarded."
 
 	return forbid
+end
+
+function keep_correlated(X::Matrix{Float64}, k0::Int64)
+	C = cor(X')
+	n = size(C)[1]
+
+	k = min(k0,Int64(n*(n-1)/2))
+
+	c = [abs(C[i,j]) for i in 1:n-1 for j in i+1:n]
+	ids = [i for i in 1:n-1 for j in i+1:n]
+	jds = [j for i in 1:n-1 for j in i+1:n]
+	forbids = sortslices([c ids jds],dims=1,rev=true)
+
+	keep = [[Int64(forbids[l,2]),Int64(forbids[l,3])] for l in 1:k]
+
+	return keep
 end
 
 
