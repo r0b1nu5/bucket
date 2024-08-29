@@ -15,9 +15,14 @@ include("arni-reconstruct-3rd.jl")
 #n = 7; T = 150; iters = 10:10:150 		# Takes < 1sec
 #n = 30; T = 2500; iters = 500:500:2500 	# Takes ~ 10sec
 #n = 60; T = 2500; iters = 1000:500:2500	# Takes ~ 10min
-n = 100; T = 7000; iters = 7000:7000		# Takes ~ 1h15 for one iter value
+n = 100; T = 2000; iters = 500:500:2000		# Takes ~ 1h15 for one iter value
 
 save = false
+A2 = zeros(n,n)
+A3 = zeros(n,n,n)
+A2l = zeros(0,3)
+A3l = zeros(0,4)
+
 
  #=
 ntw = "Hyper-wheel"
@@ -46,10 +51,17 @@ ntw = "Hyper-ER"
 p1 = .5
 p2 = .8
 # =#
+ #=
+ntw = "Simplicial-ER-py"
+run = "001"
+p1 = .001
+p2 = .01
+# =#
 # #=
-ntw = "Simplicial-ER-2"
-p1 = n > 30 ? .01 : .05
-p2 = .4
+ntw = "Hyper-ER-py"
+run = "002"
+p1 = .001
+p2 = .01
 # =#
  #=
 ntw = "Simplicial-ER-corr"
@@ -66,6 +78,21 @@ elseif ntw in ["ER", "Hyper-ER"]
 elseif ntw in ["Simplicial-ER","Simplicial-ER-2","Simplicial-ER-corr"]
 	A2,A3,A2l,A3l = gen_simplicial_er(n,p1,p2)
 	A4 = zeros(n,n,n,n)
+elseif ntw in ["Simplicial-ER-py","Hyper-ER-py"]
+	el = readdlm("data/edgelist-n$n-"*run*".csv",',')
+	for l in 1:size(el)[1]
+		global i,j,k,A2,A2l,A3,A3l
+		i,j,k = el[l,:]
+		if k == ""
+			i,j = sort([i,j] .+ 1)
+			A2[i,j] = A2[j,i] = 1.
+			A2l = vcat(A2l,[i j 1.;j i 1.])
+		else
+			i,j,k = sort([i,j,k] .+ 1)
+			A3[i,j,k] = A3[i,k,j] = A3[j,i,k] = A3[j,k,i] = A3[k,i,j] = A3[k,j,i] = 1.
+			A3l = vcat(A3l,[i j k 1.;j i k 1.;k i j 1.])
+		end
+	end
 end
 
 

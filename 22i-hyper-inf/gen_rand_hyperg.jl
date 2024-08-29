@@ -94,7 +94,7 @@ function plot_hyperwheel(A2,A3,figname::String="Hypergraph")
 end
 
 
-function gen_hyper_er(n,p1,p2,plot=false)
+function gen_hyper_er_old(n,p1,p2,plot=false)
 	A2 = zeros(n,n)
 	A2l = zeros(0,3)
 	n2 = round(Int64,p2*(n*(n-1)/2))

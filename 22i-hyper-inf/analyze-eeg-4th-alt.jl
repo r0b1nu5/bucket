@@ -6,11 +6,8 @@ include("eeg-tools.jl")
 
 n = 7
 type = "avg" # "avg" or "sub"
-data_exist = false
+data_exist = true
 Tmax = 1000
-thr2 = 1.
-thr3 = 1.
-thr4 = 1.
 
 n_edges = 10 # Number of most prominent edges to keep
 
@@ -26,12 +23,6 @@ suffix = "44x"
 s = readdlm("eeg-data/sensors-$n.csv",',',String)
 z = readdlm("eeg-data/zones-$n.csv",',',Int64)
 s2z = Dict{String,Int64}(s[i] => z[i] for i in 1:length(s))
-
-#if data_exist
-#	ρ3 = readdlm("eeg-data/violin-data-"*type*"-$n.csv",',')
-#else
-	ρ3 = zeros(n,0)
-#end
 
 edge_score2 = Dict{Vector{Int64},Float64}()
 edge_score3 = Dict{Vector{Int64},Float64}()
@@ -119,21 +110,28 @@ for su in subjects
 				z = z2+z3+z4
 				append!(constant_interaction_ratio,z1./z)
 
+				ρ2 = [z[i] == 0. ? 0 : z2[i]/z[i] for i in 1:n]
 				ρ3 = [z[i] == 0. ? 0 : z3[i]/z[i] for i in 1:n]
 				ρ4 = [z[i] == 0. ? 0 : z4[i]/z[i] for i in 1:n]
+				writedlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",ρ2,',')
 				writedlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",ρ3,',')
 				writedlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",ρ4,',')
 			end
+			ρ2 = zeros(n,0)
 			ρ3 = zeros(n,0)
 			ρ4 = zeros(n,0)
 			for t in 1:T
+				ρ2 = [ρ2 vec(readdlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",','))]
+				rm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv")
 				ρ3 = [ρ3 vec(readdlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",','))]
 				rm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv")
 				ρ4 = [ρ4 vec(readdlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",','))]
 				rm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv")
 				if t%1000 == 0
+					writedlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t.csv",ρ3,',')
 					writedlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t.csv",ρ3,',')
 					writedlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t.csv",ρ4,',')
+					ρ2 = zeros(n,0)
 					ρ3 = zeros(n,0)
 					ρ4 = zeros(n,0)
 				end
@@ -151,16 +149,90 @@ title("Histogram: relative contribution of the constant term")
 
 re = readdlm("eeg-data/relative-error-"*suffix*".csv",',')
 
+ρ2 = zeros(n,0)
 ρ3 = zeros(n,0)
 ρ4 = zeros(n,0)
 for su in subjects
 	for st in states
+		global ρ2 = [ρ2 readdlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000.csv",',')]
 		global ρ3 = [ρ3 readdlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000.csv",',')]
 		global ρ4 = [ρ4 readdlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000.csv",',')]
 	end
 end
 contour_trigon_data(vec(ρ3),vec(ρ4),100,"trigon")
 plot_trigon_label("ρ3","ρ4","ρ2")
+
+
+ρ34 = zeros(n,0)
+ρ34vec = Float64[]
+contr_per_subject = zeros(n,0)
+q0 = zeros(n,0)
+q1 = zeros(n,0)
+q2 = zeros(n,0)
+q3 = zeros(n,0)
+q4 = zeros(n,0)
+nams = String[]
+nams_nz = String[]
+for su in subjects
+	for st in states
+		name = "S"*su*"R"*st
+		@info "Loading "*name
+
+		ρ = readdlm("eeg-data/trigon-data3-"*type*"-$n-"*name*"-"*suffix*"-T1000.csv",',') + readdlm("eeg-data/trigon-data4-"*type*"-$n-"*name*"-"*suffix*"-T1000.csv",',')
+		ρi = readdlm("eeg-data/trigon-data2-"*type*"-$n-"*name*"-"*suffix*"-T1000.csv",',')
+		ρ = (ρ+ρi .< .1).*1000. + (ρ+ρi .>= .1).*ρ
+		#global ρ34 = hcat(ρ34,ρ)
+
+		global ρ34 = hcat(ρ34,ρ)
+		global ρ34vec = vcat(ρ34vec,ρ[(ρ+ρi) .< 2.])
+		global ρ2 = hcat(ρ2,ρi)
+		global contr_per_subject = [contr_per_subject mean(ρ,dims=2)]
+		global q0 = [q0 [quantile(ρ[i,:],.00) for i in 1:n]]
+		global q1 = [q1 [quantile(ρ[i,:],.25) for i in 1:n]]
+		global q2 = [q2 [quantile(ρ[i,:],.50) for i in 1:n]]
+		global q3 = [q3 [quantile(ρ[i,:],.75) for i in 1:n]]
+		global q4 = [q4 [quantile(ρ[i,:],1.0) for i in 1:n]]
+		push!(nams,name)
+		if .1 < minimum([maximum(ρ[i,:]+ρi[i,:]) for i in 1:n]) < 1.1
+			push!(nams_nz,name)
+		end
+	end
+end
+
+figure("Violins-ter",(10,4))
+ζ = [ρ34vec,]
+#	ζ = [vec(ρ2),] # Does the same violins for the ratio of pairwise interactions
+qs = quantile(vec(q2),[.05,.35,.65,.95])
+m1,i1 = findmin(abs.(q2 .- qs[1]))
+m2,i2 = findmin(abs.(q2 .- qs[2]))
+m3,i3 = findmin(abs.(q2 .- qs[3]))
+m4,i4 = findmin(abs.(q2 .- qs[4]))
+for i in [i1,i2,i3,i4]
+	push!(ζ,ρ34[i[1],(i[2]-1)*Tmax .+ (1:Tmax)])
+end
+fig = plt.violinplot(ζ,showextrema=false)
+cmap = get_cmap("magma")
+cols = [cmap(r) for r in [.1,.5,.6,.7,.8,.9]]
+c = 0
+for pc in fig["bodies"]
+	global c += 1
+	pc.set_facecolor(cols[c])
+	pc.set_edgecolor("black")
+	pc.set_alpha(.8)
+end
+cc = ["gray","black","black","black","black","black"]
+for i in 1:length(ζ)
+	PyPlot.plot([i,i],[minimum(ζ[i]),maximum(ζ[i])],color=cc[i])
+	PyPlot.plot([i,i],quantile(ζ[i],[.25,.75]),color=cc[i],linewidth=5)
+	PyPlot.plot(i,median(ζ[i]),"o",color=cc[i],markersize=10)
+end
+#xticks([1,2,3,4,5,6],["All","1%","25%","50%","75%","99%"])
+#xticks([1,2,3,4,5,6],["All","0%","25%","50%","75%","100%"])
+#xticks([1,2,3,4,5],["All","20%","40%","60%","80%"])
+xticks([1,2,3,4,5],["All","5%","35%","65%","95%"])
+xlabel("Percentile")
+ylabel("ρ(s,t)")
+
 
 
 

@@ -68,7 +68,7 @@ end
 @info "============ STARTING INFERENCE ==========="
 ooi = [2,3]
 dmax = 2
-nkeep = 3000
+nkeep = 2000
 coeff,ids,e,ee = hyper_inf_filter(X,Y,ooi,dmax,nkeep,.01,.1)
 
 A2this = zeros(0,3)
