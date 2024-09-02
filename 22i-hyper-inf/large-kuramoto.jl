@@ -1,10 +1,13 @@
-using PyPlot
+using PyPlot, Distributed, Dates
 
 include("hyper_kuramoto.jl")
 include("hyper_inf.jl")
 include("gen_rand_hyperg.jl")
 
-n = 300
+
+n = 30
+run = "003"
+nkeep = 200
 
  #= ################ ER Hypergraph ######################
 p2 = .4
@@ -44,7 +47,7 @@ end
 @info "Triadic done."
 # =#
 
-# #= ############### Wheel Hypergraph ##########################
+ #= ############### Wheel Hypergraph ##########################
 p1 = .3
 p2 = .2
 p3 = .2
@@ -52,11 +55,34 @@ A2l, A3l = gen_rand_hyperwheel_list(n,p1,p2,p3)
 A3gt = A3l[[(A3l[i,2] .< A3l[i,3]) for i in 1:size(A3l)[1]],:]
 # =#
 
+# #= Hypergraph from py ####################
+A2 = zeros(n,n)
+A2l = zeros(0,3)
+A3 = zeros(n,n,n)
+A3l = zeros(0,4)
+
+el = readdlm("data/edgelist-n$n-"*run*".csv",',')
+for l in 1:size(el)[1]
+	global i,j,k,A2,A2l,A3,A3l
+	i,j,k = el[l,:]
+	if k == ""
+		i,j = sort([i,j] .+ 1)
+		A2[i,j] = A2[j,i] = 1.
+		A2l = vcat(A2l,[i j 1.;j i 1.])
+	else
+		i,j,k = sort([i,j,k] .+ 1)
+		A3[i,j,k] = A3[i,k,j] = A3[j,i,k] = A3[j,k,i] = A3[k,i,j] = A3[k,j,i] = 1.
+		A3l = vcat(A3l,[i j k 1.;j i k 1.;k i j 1.])
+	end
+end
+# =#
+
+
 X = zeros(n,0)
 Y = zeros(n,0)
 
 δt = .01
-maxiter = 200
+maxiter = 20
 for i in 1:100
 	x,y = hyper_k(A2l,A3l,zeros(n),.1*rand(n),1.,0.,π/4,π/4,δt,maxiter,1e-6)
 global 	X = [X x]
@@ -64,12 +90,10 @@ global 	Y = [Y y]
 end
 @info "Simulations done."
 
-
 @info "============ STARTING INFERENCE ==========="
 ooi = [2,3]
 dmax = 2
-nkeep = 2000
-coeff,ids,e,ee = hyper_inf_filter(X,Y,ooi,dmax,nkeep,.01,.1)
+coeff,ids = hyper_inf_par_filter(X,Y,ooi,dmax,nkeep,.01,.1)
 
 A2this = zeros(0,3)
 A3this = zeros(0,4)
@@ -92,8 +116,16 @@ for i in 1:n
 end
 
 tpr2,fpr2,v,I0 = my_ROC_extended(abs.(A2this),A2l,n)
-tpr3,fpr3,v,I0 = my_ROC_extended(abs.(A3this),A3gt,n)
-tpr,fpr,v,I0 = my_ROC_extended(abs.(A2this),A2l,abs.(A3this),A3gt,n)
+tpr3,fpr3,v,I0 = my_ROC_extended(abs.(A3this),A3l,n)
+tpr,fpr,v,I0 = my_ROC_extended(abs.(A2this),A2l,abs.(A3this),A3l,n)
+
+writedlm("data/rok-"*run*"-tpr2.csv",tpr2,',')
+writedlm("data/rok-"*run*"-fpr2.csv",fpr2,',')
+writedlm("data/rok-"*run*"-tpr3.csv",tpr3,',')
+writedlm("data/rok-"*run*"-fpr3.csv",fpr3,',')
+writedlm("data/rok-"*run*"-tpr.csv",tpr,',')
+writedlm("data/rok-"*run*"-fpr.csv",fpr,',')
+
 
 figure("ROK",(15,4))
 subplot(1,3,1)
@@ -113,6 +145,7 @@ PyPlot.plot(fpr3,tpr3)
 xlabel("FPR")
 title("ROC: triadic")
 
+PyPlot.savefig("rok-"*run*"-$(now()).pdf",format="pdf")
 
 
 

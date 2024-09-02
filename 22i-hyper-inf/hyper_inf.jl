@@ -212,6 +212,24 @@ function hyper_inf_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{In
 	return coeff, ids, err, relerr
 end
 
+# Parallel version
+function hyper_inf_par_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, nkeep::Int64, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
+	n,T = size(X)
+	zer0 = 1e-10
+
+	if size(X) != size(Y)
+		@info "Dimensions of states and derivatives do not match."
+		return nothing
+	end
+
+	keep = keep_correlated(X,nkeep)
+
+# Computation of the relative error is not yet implemented in the parallel version...
+	coeff,ids = this_par_filter(X,Y,ooi,dmax,keep,λ,ρ,niter)
+
+	return coeff, ids
+end
+
 
 # Same with the tuning of the sparsity parameter λ in SINDy
 function hyper_inf_sparsity(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1, λ::Float64=1e-1)
@@ -871,6 +889,9 @@ function my_ROC_extended(A01::Matrix{Float64}, A1::Matrix{Float64}, A02::Matrix{
 	return tpr,fpr,v,I0
 end
 
+function get_auc(tpr::Vector{Float64}, fpr::Vector{Float64})
+	return sum(tpr[2:end].*(fpr[2:end]-fpr[1:end-1]))
+end
 
 # returns the list of pairs of agents whose correlation is smaller than α.
 function keep_correlated(X::Matrix{Float64}, α::Float64=.5)

@@ -51,6 +51,47 @@ function adj2As(adj::Union{BitMatrix,Matrix{Float64}})
 end
 
 
+function get_re(θ::Matrix{Float64}, Y::Matrix{Float64}, coeff::Matrix{Float64})
+	n,T = size(X)
+	nbis,nd = size(coeff)
+	ndbis,dmax = size(d)
+
+	#=
+	if n != nbis
+		@info "There is a mismatch between 'X' and 'coeff'."
+	elseif nd != ndbis
+		@info "There is a mismatch between 'coeff' and 'd'."
+	end
+
+	Yh = zeros(n,T)
+	
+	for l in 1:nd
+		ids = setdiff(d[l,:],[0,])
+		if length(ids) == 0
+			Yh += coeff[:,l]*ones(1,T)
+		elseif length(ids) == 1
+			i = ids[1]
+
+
+	for l in 1:m2
+		i,j = Int64.(A2[l,1:2])
+		a = A2[l,3]
+		Yh[i,:] += a*X[j,:]
+	end
+	for l in 1:m3
+		i,j,k = Int64.(A3[l,1:3])
+		a = A3[l,4]
+		Yh[i,:] += a*X[j,:].*X[k,:]
+	end
+
+	=#
+
+	Yh = coeff*θ
+
+	return sum(abs.(Y-Yh))/sum(abs.(Y))
+end
+
+
 
 
 

@@ -1,9 +1,9 @@
 import xgi
 
-run = '002'
+run = '007'
 
-n = 100
-ps = [.01,.001]
+n = 30
+ps = [.05,.005]
 
 H = xgi.random_hypergraph(n,ps)
 while not xgi.is_connected(H):

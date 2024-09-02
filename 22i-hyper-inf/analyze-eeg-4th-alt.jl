@@ -42,6 +42,9 @@ contr_per_subject = zeros(n,0)
 c = 0
 constant_interaction_ratio = Float64[]
 
+nthresh = 100
+ths = LinRange(20,0,nthresh)
+
 for su in subjects
 	for st in states
 		global c += 1
@@ -72,7 +75,10 @@ for su in subjects
 			writedlm("eeg-data/T-S"*su*"R"*st*"-"*suffix*".csv",T,',')
 			for t in 1:T
 				z2 = zeros(n)
-				for l in 1:size(a2)[1]
+				z3 = zeros(n)
+				z4 = zeros(n)
+			for p in 2:nthresh
+				for l in (1:size(a2)[1])[ths[p] .< abs.(a2[:,3]) .< ths[p-1]]
 					i,j = Int64.(a2[l,1:2])
 					e = [i,j]
 					a = a2[l,3]
@@ -83,8 +89,7 @@ for su in subjects
 						edge_score2[e] = abs(a)/t2
 					end
 				end
-				z3 = zeros(n)
-				for l in 1:size(a3)[1]
+				for l in (1:size(a3)[1])[ths[p] .< abs.(a3[:,4]) .< ths[p-1]]
 					i,j,k = Int64.(a3[l,1:3])
 					e = [i,j,k]
 					a = a3[l,4]
@@ -95,8 +100,7 @@ for su in subjects
 						edge_score3[e] = abs(a)/t3
 					end
 				end
-				z4 = zeros(n)
-				for l in 1:size(a4)[1]
+				for l in (1:size(a4)[1])[ths[p] .< abs.(a4[:,5]) .< ths[p-1]]
 					i,j,k,kk = Int64.(a4[l,1:4])
 					e = [i,j,k,kk]
 					a = a4[l,5]
@@ -113,56 +117,128 @@ for su in subjects
 				ρ2 = [z[i] == 0. ? 0 : z2[i]/z[i] for i in 1:n]
 				ρ3 = [z[i] == 0. ? 0 : z3[i]/z[i] for i in 1:n]
 				ρ4 = [z[i] == 0. ? 0 : z4[i]/z[i] for i in 1:n]
-				writedlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",ρ2,',')
-				writedlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",ρ3,',')
-				writedlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",ρ4,',')
+				writedlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv",ρ2,',')
+				writedlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv",ρ3,',')
+				writedlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv",ρ4,',')
+			end
 			end
 			ρ2 = zeros(n,0)
 			ρ3 = zeros(n,0)
 			ρ4 = zeros(n,0)
+			for p in 2:nthresh
 			for t in 1:T
-				ρ2 = [ρ2 vec(readdlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",','))]
-				rm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv")
-				ρ3 = [ρ3 vec(readdlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",','))]
-				rm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv")
-				ρ4 = [ρ4 vec(readdlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv",','))]
-				rm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t.csv")
+				ρ2 = hcat(ρ2,vec(readdlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv",',')))
+				rm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv")
+				ρ3 = hcat(ρ3,vec(readdlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv",',')))
+				rm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv")
+				ρ4 = hcat(ρ4,vec(readdlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv",',')))
+				rm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-$t-th$p.csv")
 				if t%1000 == 0
-					writedlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t.csv",ρ3,',')
-					writedlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t.csv",ρ3,',')
-					writedlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t.csv",ρ4,',')
+					writedlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t-th$p.csv",ρ2,',')
+					writedlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t-th$p.csv",ρ3,',')
+					writedlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T$t-th$p.csv",ρ4,',')
 					ρ2 = zeros(n,0)
 					ρ3 = zeros(n,0)
 					ρ4 = zeros(n,0)
 				end
 			end
-
+			end
 		end
 
 	end
 end
 
+ #=
 PyPlot.hist(constant_interaction_ratio,30)
 xlabel("z1/(z2+z3+z4)")
 ylabel("# occurences (out of 1,526,000)")
 title("Histogram: relative contribution of the constant term")
 
 re = readdlm("eeg-data/relative-error-"*suffix*".csv",',')
+# =#
 
-ρ2 = zeros(n,0)
-ρ3 = zeros(n,0)
-ρ4 = zeros(n,0)
+q20 = Float64[]
+q21 = Float64[]
+q22 = Float64[]
+q23 = Float64[]
+q24 = Float64[]
+q30 = Float64[]
+q31 = Float64[]
+q32 = Float64[]
+q33 = Float64[]
+q34 = Float64[]
+q40 = Float64[]
+q41 = Float64[]
+q42 = Float64[]
+q43 = Float64[]
+q44 = Float64[]
+discard = Int64[]
+
+for p in 80:nthresh
+global ρ2 = zeros(n,0)
+global ρ3 = zeros(n,0)
+global ρ4 = zeros(n,0)
 for su in subjects
 	for st in states
-		global ρ2 = [ρ2 readdlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000.csv",',')]
-		global ρ3 = [ρ3 readdlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000.csv",',')]
-		global ρ4 = [ρ4 readdlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000.csv",',')]
+		@info "Load: S"*su*"R"*st
+		global ρ2 = hcat(ρ2,readdlm("eeg-data/trigon-data2-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000-th$p.csv",','))
+		global ρ3 = hcat(ρ3,readdlm("eeg-data/trigon-data3-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000-th$p.csv",','))
+		global ρ4 = hcat(ρ4,readdlm("eeg-data/trigon-data4-"*type*"-$n-S"*su*"R"*st*"-"*suffix*"-T1000-th$p.csv",','))
 	end
 end
+v2 = vec(ρ2)
+v3 = vec(ρ3)
+v4 = vec(ρ4)
+t = (v2+v3+v4 .> 1e-4)
+r2 = v2[t]
+r3 = v3[t]
+r4 = v4[t]
+
+if length(r2) > 100
+push!(q20,quantile(r2,.10))
+push!(q21,quantile(r2,.25))
+push!(q22,quantile(r2,.50))
+push!(q23,quantile(r2,.75))
+push!(q24,quantile(r2,.90))
+push!(q30,quantile(r3,.10))
+push!(q31,quantile(r3,.25))
+push!(q32,quantile(r3,.50))
+push!(q33,quantile(r3,.75))
+push!(q34,quantile(r3,.90))
+push!(q40,quantile(r4,.10))
+push!(q41,quantile(r4,.25))
+push!(q42,quantile(r4,.50))
+push!(q43,quantile(r4,.75))
+push!(q44,quantile(r4,.90))
+else
+push!(discard,p)
+end
+end
+
 contour_trigon_data(vec(ρ3),vec(ρ4),100,"trigon")
 plot_trigon_label("ρ3","ρ4","ρ2")
 
+card = setdiff(80:nthresh,discard)
 
+figure("Contribution vs threshold",(5,8))
+subplot(3,1,1)
+PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q20;q24[end:-1:1]],color="C0",alpha=.3)
+PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q21;q23[end:-1:1]],color="C0",alpha=.5)
+PyPlot.plot(ths[card],q22,color="C0")
+ylabel("ρ2")
+subplot(3,1,2)
+PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q30;q34[end:-1:1]],color="C1",alpha=.3)
+PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q31;q33[end:-1:1]],color="C1",alpha=.5)
+PyPlot.plot(ths[card],q32,color="C1")
+ylabel("ρ3")
+subplot(3,1,3)
+PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q40;q44[end:-1:1]],color="C2",alpha=.3)
+PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q41;q43[end:-1:1]],color="C2",alpha=.5)
+PyPlot.plot(ths[card],q42,color="C2")
+xlabel("Threshold")
+ylabel("ρ4")
+
+ #=
 ρ34 = zeros(n,0)
 ρ34vec = Float64[]
 contr_per_subject = zeros(n,0)
@@ -274,3 +350,12 @@ for i in 1:n_edges
 end
 
 #@info ""; @info ""; @info "The $n_edges most prominent k-edges are:"; @info ""; @info "| k |   2    |    3      |     4        |"; @info "-----------------------------------------"; for i in 1:n_edges; @info "|   | $(E2[i]) | $(E3[i]) | $(E4[i]) |"; end
+
+
+
+# =#
+
+
+
+
+
