@@ -176,15 +176,12 @@ function mySINDy_par(arg::Tuple{Int64,Vector{Int64},Vector{Vector{Int64}},Matrix
 		coeff = zeros(0,0)
 	else
 		k = 1
-		@info "Y: $(size(Y)), θ: $(size(θ))"
 		Ξ = Y*θ'*inv(θ*θ' + ρ*Id(m))
-		@info "Ξ: $(size(Ξ))"
 		while k < niter
 			k += 1
 			smallinds = (abs.(Ξ) .< λ)
 			Ξ[smallinds] .= 0.
 			biginds = (.~smallinds)[1,:]
-			@info "$(size(smallinds)), $(size(biginds))"
 			Ξ[1,biginds] = Y*θ[biginds,:]'*inv(θ[biginds,:]*θ[biginds,:]' + ρ*Id(sum(biginds)))
 		end
 	end

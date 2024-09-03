@@ -1,59 +1,15 @@
 using PyPlot, Distributed, Dates
 
-include("hyper_kuramoto.jl")
-include("hyper_inf.jl")
-include("gen_rand_hyperg.jl")
 
+n = 30; run = "003"
 
-n = 30
-run = "003"
 nkeep = 200
+np = 2
 
- #= ################ ER Hypergraph ######################
-p2 = .4
-m2 = round(Int64,n*(n-1)/2*p2 + .05*n*p2*randn())
-m3 = 200
+addprocs(np)
 
-A2 = zeros(n,n)
-A2l = zeros(0,3)
-E2 = rand(1:n,m2,2)
-for l in 1:size(E2)[1]
-	i,j = sort(E2[l,:])
-	if i != j && A2[i,j] == 0.
-		A2[i,j] = 1.
-		A2[j,i] = 1.
-global 		A2l = [A2l;[i j 1.];[j i 1.]]
-	end
-end
-@info "Pairwise done."
-
-A3 = zeros(n,n,n)
-A3l = zeros(0,4)
-A3gt = zeros(0,4)
-E3 = rand(1:n,m3,3)
-for l in 1:size(E3)[1]
-	i,j,k = sort(E3[l,:])
-	if i != j && i != k && j != k && A3[i,j,k] == 0.
-		A3[i,j,k] = 1.
-		A3[i,k,j] = 1.
-		A3[j,i,k] = 1.
-		A3[j,k,i] = 1.
-		A3[k,i,j] = 1.
-		A3[k,j,i] = 1.
-global		A3l = [A3l;[i j k 1.];[i k j 1.];[j i k 1.];[j k i 1.];[k i j 1.];[k j i 1.]]
-global		A3gt = [A3gt;[i j k 1.];[j i k 1.];[k i j 1.]]
-	end
-end
-@info "Triadic done."
-# =#
-
- #= ############### Wheel Hypergraph ##########################
-p1 = .3
-p2 = .2
-p3 = .2
-A2l, A3l = gen_rand_hyperwheel_list(n,p1,p2,p3)
-A3gt = A3l[[(A3l[i,2] .< A3l[i,3]) for i in 1:size(A3l)[1]],:]
-# =#
+@everywhere include("hyper_kuramoto.jl")
+@everywhere include("hyper_inf.jl")
 
 # #= Hypergraph from py ####################
 A2 = zeros(n,n)

@@ -18,6 +18,7 @@ states = ["01","02"]
 #states = ["03","07","11"]
 
 suffix = "44x"
+λ = .1
 
 # Sensor to zone pairing
 s = readdlm("eeg-data/sensors-$n.csv",',',String)
@@ -42,9 +43,8 @@ contr_per_subject = zeros(n,0)
 c = 0
 constant_interaction_ratio = Float64[]
 
-nthresh = 100
-ths = LinRange(20,0,nthresh)
-
+nthresh = 21
+ths = [Inf;LinRange(.5,0,nthresh-1)]
 for su in subjects
 	for st in states
 		global c += 1
@@ -174,7 +174,7 @@ q43 = Float64[]
 q44 = Float64[]
 discard = Int64[]
 
-for p in 80:nthresh
+for p in 3:nthresh
 global ρ2 = zeros(n,0)
 global ρ3 = zeros(n,0)
 global ρ4 = zeros(n,0)
@@ -218,23 +218,26 @@ end
 contour_trigon_data(vec(ρ3),vec(ρ4),100,"trigon")
 plot_trigon_label("ρ3","ρ4","ρ2")
 
-card = setdiff(80:nthresh,discard)
+card = setdiff(3:nthresh,discard)
 
 figure("Contribution vs threshold",(5,8))
 subplot(3,1,1)
 PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q20;q24[end:-1:1]],color="C0",alpha=.3)
 PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q21;q23[end:-1:1]],color="C0",alpha=.5)
 PyPlot.plot(ths[card],q22,color="C0")
+PyPlot.plot([λ,λ],[0,1],"--k")
 ylabel("ρ2")
 subplot(3,1,2)
 PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q30;q34[end:-1:1]],color="C1",alpha=.3)
 PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q31;q33[end:-1:1]],color="C1",alpha=.5)
 PyPlot.plot(ths[card],q32,color="C1")
+PyPlot.plot([λ,λ],[0,1],"--k")
 ylabel("ρ3")
 subplot(3,1,3)
 PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q40;q44[end:-1:1]],color="C2",alpha=.3)
 PyPlot.fill([ths[card];ths[card[end:-1:1]]],[q41;q43[end:-1:1]],color="C2",alpha=.5)
 PyPlot.plot(ths[card],q42,color="C2")
+PyPlot.plot([λ,λ],[0,1],"--k")
 xlabel("Threshold")
 ylabel("ρ4")
 

@@ -1,9 +1,9 @@
 import xgi
 
-run = '002'
+run = '012'
 
-n = 100
-ps = [.01,.001]
+n = 500
+ps = [.001,.0002]
 
 H = xgi.random_simplicial_complex(n,ps)
 while not xgi.is_connected(H):
