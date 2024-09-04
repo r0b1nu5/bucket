@@ -6,7 +6,7 @@ include("eeg-tools.jl")
 
 n = 7
 type = "avg" # "avg" or "sub"
-data_exist = true
+data_exist = false
 Tmax = 1000
 
 n_edges = 10 # Number of most prominent edges to keep
@@ -28,6 +28,9 @@ s2z = Dict{String,Int64}(s[i] => z[i] for i in 1:length(s))
 edge_score2 = Dict{Vector{Int64},Float64}()
 edge_score3 = Dict{Vector{Int64},Float64}()
 edge_score4 = Dict{Vector{Int64},Float64}()
+edge_count2 = Dict{Vector{Int64},Int64}()
+edge_count3 = Dict{Vector{Int64},Int64}()
+edge_count4 = Dict{Vector{Int64},Int64}()
 
 AA2 = zeros(n,n)
 AAA2 = zeros(n,n,length(subjects)*length(states))
@@ -45,6 +48,14 @@ constant_interaction_ratio = Float64[]
 
 nthresh = 21
 ths = [Inf;LinRange(.5,0,nthresh-1)]
+nthresh = 2
+ths = [Inf,0.0]
+
+t10_3 = Dict{Vector{Int64},Int64}()
+t20_3 = Dict{Vector{Int64},Int64}()
+t50_3 = Dict{Vector{Int64},Int64}()
+t100_3 = Dict{Vector{Int64},Int64}()
+
 for su in subjects
 	for st in states
 		global c += 1
@@ -65,10 +76,58 @@ for su in subjects
 
 		a2 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A2-"*suffix*".csv",',')
 		t2 = norm(a2[:,3],1)
+		#s2 = sortslices([a2[:,3] a2[:,1:2]],rev=true,dims=1)
 		a3 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A3-"*suffix*".csv",',')
 		t3 = norm(a3[:,4],1)
+		s3 = sortslices([a3[:,4] a3[:,1:3]],rev=true,dims=1)
 		a4 = readdlm("eeg-data/S"*su*"R"*st*"-"*type*"-A4-"*suffix*".csv",',')
 		t4 = norm(a4[:,5],1)
+		#s4 = sortslices([a4[:,5] a4[:,1:4]],rev=true,dims=1)
+		for i in 1:10
+			v3 = s3[i,2:4]
+			if haskey(t10_3,v3)
+				t10_3[v3] += 1
+				t20_3[v3] += 1
+				t50_3[v3] += 1
+				t100_3[v3] += 1
+			else
+				t10_3[v3] = 1
+				t20_3[v3] = 1
+				t50_3[v3] = 1
+				t100_3[v3] = 1
+			end
+		end
+		for i in 11:20
+			v3 = s3[i,2:4]
+			if haskey(t20_3,v3)
+				t20_3[v3] += 1
+				t50_3[v3] += 1
+				t100_3[v3] += 1
+			else
+				t20_3[v3] = 1
+				t50_3[v3] = 1
+				t100_3[v3] = 1
+			end
+		end
+		for i in 21:50
+			v3 = s3[i,2:4]
+			if haskey(t50_3,v3)
+				t50_3[v3] += 1
+				t100_3[v3] += 1
+			else
+				t50_3[v3] = 1
+				t100_3[v3] = 1
+			end
+		end
+		for i in 51:100
+			v3 = s3[i,2:4]
+			if haskey(t100_3,v3)
+				t100_3[v3] += 1
+			else
+				t100_3[v3] = 1
+			end
+		end
+
 
 		if !(data_exist)
 			z1 = abs.(readdlm("eeg-data/S"*su*"R"*st*"-avg-coeff-"*suffix*".csv",',')[:,1])
@@ -83,10 +142,14 @@ for su in subjects
 					e = [i,j]
 					a = a2[l,3]
 					z2[i] += abs(a*X[j,t])
+					if t == 1
 					if haskey(edge_score2,e)
 						edge_score2[e] += abs(a)/t2
+						edge_count2[e] += 1
 					else
 						edge_score2[e] = abs(a)/t2
+						edge_count2[e] = 1
+					end
 					end
 				end
 				for l in (1:size(a3)[1])[ths[p] .< abs.(a3[:,4]) .< ths[p-1]]
@@ -94,10 +157,14 @@ for su in subjects
 					e = [i,j,k]
 					a = a3[l,4]
 					z3[i] += abs(a*X[j,t]*X[k,t])
+					if t == 1
 					if haskey(edge_score3,e)
 						edge_score3[e] += abs(a)/t3
+						edge_count3[e] += 1
 					else
 						edge_score3[e] = abs(a)/t3
+						edge_count3[e] = 1
+					end
 					end
 				end
 				for l in (1:size(a4)[1])[ths[p] .< abs.(a4[:,5]) .< ths[p-1]]
@@ -105,10 +172,14 @@ for su in subjects
 					e = [i,j,k,kk]
 					a = a4[l,5]
 					z4[i] += abs(a*X[j,t]*X[k,t]*X[kk,t])
+					if t == 1
 					if haskey(edge_score4,e)
 						edge_score4[e] += abs(a)/t4
+						edge_count4[e] += 1
 					else
 						edge_score4[e] = abs(a)/t4
+						edge_count4[e] = 1
+					end
 					end
 				end
 				z = z2+z3+z4
@@ -157,6 +228,12 @@ title("Histogram: relative contribution of the constant term")
 re = readdlm("eeg-data/relative-error-"*suffix*".csv",',')
 # =#
 
+
+
+
+
+
+ #=
 q20 = Float64[]
 q21 = Float64[]
 q22 = Float64[]
@@ -241,6 +318,12 @@ PyPlot.plot([λ,λ],[0,1],"--k")
 xlabel("Threshold")
 ylabel("ρ4")
 
+# =#
+
+
+
+
+
  #=
 ρ34 = zeros(n,0)
 ρ34vec = Float64[]
@@ -312,9 +395,11 @@ xticks([1,2,3,4,5],["All","5%","35%","65%","95%"])
 xlabel("Percentile")
 ylabel("ρ(s,t)")
 
+# =#
 
 
 
+# #=
 E2 = Vector{Int64}[]
 S2 = Float64[]
 for i in 1:min(n_edges,length(edge_score2))
