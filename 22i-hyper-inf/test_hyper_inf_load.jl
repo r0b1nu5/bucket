@@ -4,8 +4,10 @@ include("hyper_inf.jl")
 
 n = 100
 iters = [3000,4000,5000,6000,7000]
-#file = "kuramoto"
-file = "kuramoto-Simplicial-ER"
+file = "kuramoto"
+#file = "kuramoto-Simplicial-ER"
+file = "kuramoto-Hyper-ER-py"
+file = "kuramoto-Simplicial-ER-py"
 
 cmapme = get_cmap("plasma")
 
@@ -43,7 +45,7 @@ for iter in iters
 	tpr2,fpr2 = my_ROC(abs.(A2us),A2l,n)
 	tpr3,fpr3 = my_ROC(abs.(A3us),A3l,n)
 
-	figure("ROCs-$n",(15,4))
+	figure("ROCs-$n",(13.5,4))
 	subplot(1,3,1)
 	PyPlot.plot(fpr,tpr,color=cmapme((iter-minimum(iters))/max(1,(maximum(iters)-minimum(iters)))))
 	subplot(1,3,2)
@@ -53,7 +55,7 @@ for iter in iters
 end
 
 
-figure("ROCs-$n",(15,10))
+figure("ROCs-$n")
 subplot(1,3,1)
 xlabel("FPR")
 ylabel("TPR")

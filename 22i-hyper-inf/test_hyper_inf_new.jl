@@ -15,9 +15,9 @@ include("arni-reconstruct-3rd.jl")
 #n = 7; T = 150; iters = 10:10:150 		# Takes < 1sec
 #n = 30; T = 2500; iters = 500:500:2500 	# Takes ~ 10sec
 #n = 60; T = 2500; iters = 1000:500:2500	# Takes ~ 10min
-n = 100; T = 2000; iters = 500:500:2000		# Takes ~ 1h15 for one iter value
+n = 100; T = 2000; iters = 500:500:2000		
 
-save = false
+save = true
 A2 = zeros(n,n)
 A3 = zeros(n,n,n)
 A2l = zeros(0,3)
@@ -51,13 +51,13 @@ ntw = "Hyper-ER"
 p1 = .5
 p2 = .8
 # =#
- #=
+# #=
 ntw = "Simplicial-ER-py"
 run = "001"
 p1 = .001
 p2 = .01
 # =#
-# #=
+ #=
 ntw = "Hyper-ER-py"
 run = "002"
 p1 = .001
@@ -234,7 +234,7 @@ for iter in iters
 	tpr2,fpr2 = my_ROC(abs.(A2us),A2l,n)
 	tpr3,fpr3 = my_ROC(abs.(A3us),A3l,n)
 
-	figure("ROCs-"*ntw*"-$n",(15,4))
+	figure("ROCs-"*ntw*"-$n",(13.5,4))
 	subplot(1,3,1)
 	PyPlot.plot(fpr,tpr,color=cmapme((iter-minimum(iters))/max(1,(maximum(iters)-minimum(iters)))))
 	subplot(1,3,2)
@@ -261,18 +261,17 @@ end
 
 
 
-figure("ROCs-"*ntw*"-$n",(15,10))
+figure("ROCs-"*ntw*"-$n",)
 subplot(1,3,1)
 xlabel("FPR")
 ylabel("TPR")
-title("ROC adj, THIS")
+title("THIS")
 subplot(1,3,2)
 xlabel("FPR")
-title("ROC A2, THIS")
+title("THIS, pairwise")
 subplot(1,3,3)
-title("ROC A3, THIS")
+title("THIS, triadic")
 xlabel("FPR")
-ylabel("TPR")
 
 @info "############# FINISHED: $(now())"
 

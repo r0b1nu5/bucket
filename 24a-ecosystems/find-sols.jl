@@ -25,7 +25,7 @@ np = 0
 
 #for k in 1:100
 k = 0
-while np < 4
+while np < 2
 	global k += 1
 	global N0 = -ones(S)
 	global A = zeros(S,S)

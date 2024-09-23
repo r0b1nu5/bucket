@@ -19,6 +19,27 @@ function gen_wER(n::Int64, p::Float64)
 	return M
 end
 
+function gen_A_correl(n::Int64, γ::Float64)
+	sγ = sign(γ)
+	aγ = abs(γ)
+
+	A = zeros(n,n)
+	if aγ < 1
+		β = sqrt(aγ/(1-aγ))*sγ
+		for i in 1:n
+			for j in i+1:n
+				x = 2*sqrt(3)*(rand() - .5)
+				y = 2*sqrt(3)*(rand() - .5)
+				z = 2*sqrt(3)*(rand() - .5)
+				A[i,j] = (x + β*z)/sqrt(1+β^2)
+				A[j,i] = (x + abs(β)*z)/sqrt(1+β^2)
+			end
+			A[i,i] = 2*sqrt(3)*(rand() - .5)
+		end
+	end
+
+	return A
+end
 
 function jac_lv_bunin(N::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μsS::Float64=5., σsS::Float64=2.7)
 	J = diagm(0 => N)*(-σsS*A .- μsS)

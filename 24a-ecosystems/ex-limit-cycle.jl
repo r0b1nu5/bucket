@@ -19,7 +19,11 @@ A = readdlm("data/ex-limit-cycle-"*ex*"-A.csv",',')
 σ = 2.7
 
 n_iter = 200_000
-N = lv_bunin(N0,A,κ,μ/S,σ/sqrt(S),n_iter,n_iter,1e-3)
+for i in 1:10
+	@info "i=$i"
+	global N = lv_bunin(N0,A,κ,μ/S,σ/sqrt(S),n_iter,n_iter,1e-3)
+	global N0 = N[:,end]
+end
 surv = vec(1:S)[N[:,end] .> zer0]
 
 figure()
