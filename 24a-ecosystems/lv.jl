@@ -41,8 +41,10 @@ end
 
 # From "notes-pj-240417.pdf"
 # Runs the LV dynamics from PJ's notes, with inital conditions N0, interaction matrix A, parameters κ, μ, and σ for at least min_iter iterations and at most max_iter iterations, with a time step of h. Simulation stops if the number of species remains the same for min_iter consecutive iterations.
-function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, zer0::Float64=1e-15)
+function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, H::Float64=0.1, zer0::Float64=1e-20)
 	S = length(N0)
+
+	rt = round(Int64,H/h)
 
 	N = N0
 	Ns = N0
@@ -66,7 +68,7 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 		if (iter-1)%10000 == 0
 			@info "iter: $iter"
 			c += 1
-			writedlm("data/Ns-$c.csv",Ns[:,1:end-1],',')
+			writedlm("data/Ns-$c.csv",Ns[:,1:rt:end-1],',')
 			Ns = N
 		end
 	end
@@ -93,7 +95,7 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 			if (iter-1)%10000 == 0
 				@info "iter: $iter"
 				c += 1
-				writedlm("data/Ns-$c.csv",Ns[:,1:end-1],',')
+				writedlm("data/Ns-$c.csv",Ns[:,1:rt:end-1],',')
 				Ns = N
 			end
 		end
@@ -102,7 +104,7 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 	end
 
 	c += 1
-	writedlm("data/Ns-$c.csv",Ns,',')
+	writedlm("data/Ns-$c.csv",Ns[:,1:rt:end],',')
 
 	Ns = zeros(length(N),0)
 	for i in 1:c
@@ -113,8 +115,8 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, 
 	return Ns
 end
 
-function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Float64=1., μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, zer0::Float64=1e-15)
-	return lv_bunin(N0,A,κ*ones(length(N0)),μ,σ,min_iter,max_iter,h,zer0)
+function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Float64=1., μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, H::Float64=.1, zer0::Float64=1e-20)
+	return lv_bunin(N0,A,κ*ones(length(N0)),μ,σ,min_iter,max_iter,h,H,zer0)
 end
 
 function f_lv_bunin(N::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μsS::Float64, σsS::Float64)
