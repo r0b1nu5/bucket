@@ -3,7 +3,16 @@ using PyPlot, DelimitedFiles
 #T = 1_000_000 - 100_000
 #δt = 1e-3
 
-T = 19999-1999
+#pj3
+#T = 19999-1999
+#δt = .1
+
+#pj4
+#T = 99999 - 1999
+#δt = .1
+
+#pj5
+T = 19999 - 1999
 δt = .1
 
 ωs = (0:T-1)*2π/(T*δt)
@@ -28,9 +37,14 @@ end
 #ex = "pj2"
 ##nσ = 9
 #σs = [2.,2.32,2.35,2.384,2.417,2.45,2.7,2.776,2.857]
-ex = "pj3"
-nσ = 14
-σs = [2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.65,2.7,2.75,2.8,2.85,2.9,3.0]
+#ex = "pj3"
+#ex = "pj4"
+#nσ = 20
+#σs = [2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.65,2.7,2.75,2.8,2.85,2.9,3.0,3.1,3.2,3.3,3.4,3.5,3.6]
+
+ex = "pj5"
+nσ = 5
+σs = [2.2,2.4,2.6,2.8,3.0]
 
 for i in 1:nσ
 	f = readdlm("data/ex-limit-cycle-"*ex*"-s$i-fft.csv",',')[2:400]'
@@ -61,9 +75,11 @@ PyPlot.surf(ωs[2:400],σs,F,cmap=get_cmap("viridis"))
 figure()
 for i in 1:nσ
 	n = vec(readdlm("data/ex-limit-cycle-"*ex*"-s$i-N1.csv",','))
-	subplot(3,ceil(Int64,nσ/3),i)
-	PyPlot.plot((1:length(n))*δt,n)
-	title("σ = $(σs[i])")
+	subplot(ceil(Int64,nσ/3),3,i)
+	PyPlot.plot((1:length(n))*δt,n,label="σ = $(round(σs[i],digits=2))")
+	legend()
+	xlabel("t")
+	ylabel("N1")
 end
 
 #=

@@ -119,6 +119,69 @@ function lv_bunin(N0::Vector{Float64}, A::Matrix{Float64}, κ::Float64=1., μ::F
 	return lv_bunin(N0,A,κ*ones(length(N0)),μ,σ,min_iter,max_iter,h,H,zer0)
 end
 
+function lv_bunin_euler(N0::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, H::Float64=0.1, zer0::Float64=1e-20)
+	S = length(N0)
+
+	rt = round(Int64,H/h)
+
+	N = N0
+	Ns = N0
+	iter = 1
+	c = 0
+	err = 1000.
+
+	while iter < min_iter
+		for i in 1:10000
+			iter += 1
+
+			N += h*f_lv_bunin(N,A,κ,μ,σ)
+			N .*= (N .> zer0)
+			Ns = [Ns N]
+		end
+		@info "iter: $iter"
+		c += 1
+		writedlm("data/Ns-$c.csv",Ns[:,1:rt:end-1],',')
+		Ns = N
+	end
+
+	Ss = sum(N .> zer0)
+	S0 = length(N)+1
+
+	while Ss != S0 && iter < max_iter
+		S0 = sum(N .> zer0)
+
+		for i in 1:10000
+			iter += 1
+
+			N += h*f_lv_bunin(N,A,κ,μ,σ)
+			N .*= (N .> zer0)
+			Ns = [Ns N]
+		end
+
+		@info "iter: $iter"
+		c += 1
+		writedlm("data/Ns-$c.csv",Ns[:,1:rt:end-1],',')
+		Ns = N
+
+		Ss = sum(N .> zer0)
+	end
+
+	c += 1
+	writedlm("data/Ns-$c.csv",Ns[:,1:rt:end],',')
+
+	Ns = zeros(length(N),0)
+	for i in 1:c
+		Ns = [Ns readdlm("data/Ns-$i.csv",',')]
+		rm("data/Ns-$i.csv")
+	end
+
+	return Ns
+end
+
+function lv_bunin_euler(N0::Vector{Float64}, A::Matrix{Float64}, κ::Float64=1., μ::Float64=5., σ::Float64=2.7, min_iter::Int64=1000, max_iter::Int64=10000, h::Float64=.001, H::Float64=.1, zer0::Float64=1e-20)
+	return lv_bunin_euler(N0,A,κ*ones(length(N0)),μ,σ,min_iter,max_iter,h,H,zer0)
+end
+
 function f_lv_bunin(N::Vector{Float64}, A::Matrix{Float64}, κ::Vector{Float64}, μsS::Float64, σsS::Float64)
 	return N.*(κ - N .- μsS*sum(N) - σsS*A*N)
 end
