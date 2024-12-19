@@ -4,9 +4,9 @@ The documantation is incomplete and will stay so.
 
 ## Hyper-Kuramoto
 The function `hyper_k` (line `74` in [`hyper_kuramoto.jl`](https://github.com/r0b1nu5/bucket/blob/master/22i-hyper-inf/hyper_kuramoto.jl)) simulates the dynamics of a set of $N$ coupled Kuramoto oscillators on an hypergraph of order 3, following the dynamics 
-$$
+\[
  \dot{\theta}_i = \omega_i - \sum_{j=1}^N a^{(2)}_{ij}\sin(\theta_i-\theta_j-\phi_2) - \sum_{j,k=1}^Na^{(3)}_{ijk}\sin(2\theta_i-\theta_j-\theta_k-\phi_3)\, ,
-$$
+\]
 using a 4th-order Runge-Kutta scheme. 
 Additive noise can be added, which is space-uncorrelated and can be time-correlated. 
 
