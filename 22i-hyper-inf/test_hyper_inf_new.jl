@@ -2,12 +2,8 @@ using Random, Dates, DelimitedFiles
 
 include("hyper_inf.jl")
 include("hyper_kuramoto.jl")
-include("hyper_ktanh.jl")
 include("gen_rand_hyperg.jl")
 include("tools_hyper.jl")
-
-include("arni-reconstruct.jl")
-include("arni-reconstruct-3rd.jl")
 
 @info "############# START: $(now())"
 
@@ -17,7 +13,7 @@ include("arni-reconstruct-3rd.jl")
 #n = 60; T = 2500; iters = 1000:500:2500	# Takes ~ 10min
 n = 100; T = 2000; iters = 500:500:2000		
 
-save = true
+save = true # Saving the inference and the ground truth?
 A2 = zeros(n,n)
 A3 = zeros(n,n,n)
 A2l = zeros(0,3)
@@ -96,14 +92,6 @@ elseif ntw in ["Simplicial-ER-py","Hyper-ER-py"]
 end
 
 
-cmapme = get_cmap("RdPu")
-cmaparni = get_cmap("GnBu")
-cmapdiff = get_cmap("Greys")
-cmapme = get_cmap("plasma")
-cmaparni = get_cmap("plasma")
-#cmapdiff = get_cmap("plasma")
-c0 = 0.
-c1 = 1.
 
 #adj = get_adj_3rd(A2,A3)[1]
 adj = cat_As(A2,A3)
@@ -188,11 +176,10 @@ for iter in iters
 	global c += 1
 	@info "Run $c/$(length(iters))"
 
+	# Run THIS
 	xxx = hyper_inf(X[:,1:iter],Y[:,1:iter],ooi,dmax,1e-1)
-#	A2us = inferred_adj_2nd(xxx[1][2],n)[1]
-	A2us = xxx[1][2]
-#	A3us = inferred_adj_3rd(xxx[1][3],n)[1]
-	A3us = xxx[1][3]
+	A2us = xxx[1][2] # Pairwise interactions
+	A3us = xxx[1][3] # Triadic interactions
 
 	if save
 		writedlm("data/kuramoto-"*ntw*"-n$n-iter$iter-A2.csv",A2,',')
@@ -234,6 +221,8 @@ for iter in iters
 	tpr2,fpr2 = my_ROC(abs.(A2us),A2l,n)
 	tpr3,fpr3 = my_ROC(abs.(A3us),A3l,n)
 
+	cmapme = get_cmap("RdPu")
+	
 	figure("ROCs-"*ntw*"-$n",(13.5,4))
 	subplot(1,3,1)
 	PyPlot.plot(fpr,tpr,color=cmapme((iter-minimum(iters))/max(1,(maximum(iters)-minimum(iters)))))

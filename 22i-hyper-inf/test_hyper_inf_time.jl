@@ -16,6 +16,9 @@ n = 64; T = 1500
 n = 128; T = 2000
 n = 256; T = 2000
 
+ns = [4,8,16,32,64,128,256]
+Ts = [250,500,1000,1500,2000]
+
 save = true
 A2 = zeros(n,n)
 A3 = zeros(n,n,n)
@@ -40,6 +43,9 @@ p1 = n > 30 ? .01 : .05
 p2 = .4
 # =#
 
+T = 2000
+for n in [8,16,32,64,128]
+for run in ["995","996","997","998","999"]
 el = readdlm("data/edgelist-n$n-"*run*".csv",',')
 for l in 1:size(el)[1]
 	global i,j,k,A2,A2l,A3,A3l
@@ -56,6 +62,7 @@ for l in 1:size(el)[1]
 end
 
 
+for rep in 1:1
 adj = cat_As(A2,A3)
 amplitude = 1.
 ξ0 = 0.0005
@@ -65,27 +72,31 @@ Y = f_kuramoto_3rd(X,A2,A3,zeros(n),π/4,π/4) + ξ0*randn(size(X))
 ooi = [2,3]
 dmax = 2
 c = 0
-nkeep = min(n^2,10,ceil(Int64,n^2*0.05))
+nkeep = max(min(n^2,10),ceil(Int64,n^2*0.05))
 
 t0 = time()
-xxx = hyper_inf_filter(X[:,1:iter],Y[:,1:iter],ooi,dmax,nkeep,1e-1) 
+xxx = hyper_inf_filter(X,Y,ooi,dmax,nkeep,1e-1) 
 A2us = xxx[1][2]
 A3us = xxx[1][3]
 t1 = time()
 
 if save
-	writedlm("data/kuramoto-"*ntw*"-n$n-timetest-A2.csv",A2,',')
-	writedlm("data/kuramoto-"*ntw*"-n$n-timetest-A3.csv",A3,',')
-	writedlm("data/kuramoto-"*ntw*"-n$n-timetest-A2this.csv",A2us,',')
-	writedlm("data/kuramoto-"*ntw*"-n$n-timetest-A3this.csv",A3us,',')
-	writedlm("data/kuramoto-"*ntw*"-n$n-timetest.csv",t1-t0,',')
+	writedlm("data/kuramoto-"*run*"-n$n-time$T-$rep-A2.csv",A2,',')
+	writedlm("data/kuramoto-"*run*"-n$n-time$T-$rep-A3.csv",A3,',')
+	writedlm("data/kuramoto-"*run*"-n$n-time$T-$rep-A2this.csv",A2us,',')
+	writedlm("data/kuramoto-"*run*"-n$n-time$T-$rep-A3this.csv",A3us,',')
+	writedlm("data/kuramoto-"*run*"-n$n-time$T-$rep.csv",t1-t0,',')
 end
 
 @info "============= WE ARE DONE: $(now()) ================"
-
+#=
 tpr,fpr = my_ROC(abs.(A2us),A2l,abs.(A3us),A3l,n)
 tpr2,fpr2 = my_ROC(abs.(A2us),A2l,n)
 tpr3,fpr3 = my_ROC(abs.(A3us),A3l,n)
+=#
+end
+end
+end
 
 @info "############# FINISHED: $(now())"
 

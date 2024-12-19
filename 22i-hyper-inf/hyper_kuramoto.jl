@@ -1,4 +1,4 @@
-using PyPlot, LinearAlgebra, DelimitedFiles, Distributions
+using LinearAlgebra, DelimitedFiles, Distributions
 
 include("cnoise.jl")
 
@@ -71,7 +71,7 @@ end
 
 # τ0: correlation time of the nodal noise
 # ξ0: amplitude of the  noise
-function hyper_k(A2:: Array{Float64,2}, A3::Union{Array{Float64,2},Array{Float64,3}}, ω::Vector{Float64}, θ0::Vector{Float64}, τ0::Float64=1., ξ0::Float64=0., ϕ2::Float64=0., ϕ3::Float64=0., h::Float64=.01, max_iter::Int64=10000, tol::Float64=1e-6)
+function hyper_k(A2::Array{Float64,2}, A3::Union{Array{Float64,2},Array{Float64,3}}, ω::Vector{Float64}, θ0::Vector{Float64}, τ0::Float64=1., ξ0::Float64=0., ϕ2::Float64=0., ϕ3::Float64=0., h::Float64=.01, max_iter::Int64=10000, tol::Float64=1e-6)
 	n = length(ω)
 	θs = θ0
 	θ = θ0
