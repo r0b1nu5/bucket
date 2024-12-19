@@ -107,7 +107,7 @@ For length of time series in `iters`:
 `220-232`: Compute and plot the ROC curves. 
 
 ### Hyper-Lorenz
-The latest tests of THIS for Lorenz oscillators were run in [`test_hyperinf_lorenz_bis.jl](https://github.com/r0b1nu5/bucket/blob/master/22i-hyper-inf/test_hyperinf_lorenz_bis.jl). 
+The latest tests of THIS for Lorenz oscillators were run in [`test_hyperinf_lorenz_bis.jl`](https://github.com/r0b1nu5/bucket/blob/master/22i-hyper-inf/test_hyperinf_lorenz_bis.jl). 
 I give here a rough description of what each section does. 
 
 **Lines:** 
