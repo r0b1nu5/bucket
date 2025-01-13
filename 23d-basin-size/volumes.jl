@@ -1,4 +1,4 @@
-
+using SpecialFunctions
 
 # Computes the volume of the qf-basin, conditioned on the initial winding number to be qi and assuming the distribtion is normal (Wiley et al. 2006).
 function vol_qf_normal(qf::Int64, qi::Int64, n::Int64, mfi::Float64, sfi::Float64, mif::Float64, sif::Float64)

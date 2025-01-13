@@ -264,7 +264,8 @@ function get_stat_f(Qs)
 		qs = Int64[]
 		for i in 1:length(qfs)
 			q = qfs[i]
-			qs = [qs;q*ones(Int64,Ns[i])]
+			qs = [qs;q*ones(Int64,Ns[i]*(Ns[i] > 10))]
+#			qs = [qs;q*ones(Int64,Ns[i])]
 		end
 
 		push!(Mf,mean(qs))
@@ -290,7 +291,8 @@ function get_stat_i(Qs)
 		qs = Int64[]
 		for i in 1:length(qis)
 			q = qis[i]
-			qs = [qs;q*ones(Int64,Ns[i])]
+			qs = [qs;q*ones(Int64,Ns[i]*(Ns[i] > 10))]
+#			qs = [qs;q*ones(Int64,Ns[i])]
 		end
 		
 		push!(Mi,mean(qs))

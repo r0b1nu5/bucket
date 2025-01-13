@@ -94,13 +94,17 @@ end
 
 
 # Plots a curve with increasing color density
-function plot_density(x::Vector{Float64}, y::Vector{Float64}, col::Any, pα::Int64=1)
+function plot_density(x::Vector{Float64}, y::Vector{Float64}, col::Any, pα::Union{Float64,Int64}=1)
 	n = length(x)
 	αs = LinRange(0,1,n)
+#	chex = ["1f77b4","ff7f0e","2ca02c","d62728","9467bd","8c564b","e377c2","7f7f7f","bcbd22","17becf"]
+#	C = Dict{Int64,Vector{Float64}}((i-1) => parse.(Int64,[chex[i][1:2],chex[i][3:4],chex[i][5:6]],base=16)./255 for i in 1:length(chex))
 
 	for i in 4:5:n-3
-		PyPlot.plot(x[i-3:i+3],y[i-3:i+3],color=col,alpha=αs[i]^pα)
+		PyPlot.plot(x[i-3:i+2],y[i-3:i+2],color=col,alpha=αs[i]^pα)
 	end
+	PyPlot.plot(x[n-3:n],y[n-3:n],color=col)
+
 
 	return nothing
 end
