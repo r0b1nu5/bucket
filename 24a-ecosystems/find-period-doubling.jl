@@ -57,7 +57,7 @@ N0 = vec(readdlm("data/ex-limit-cycle-"*ex*"-N0.csv",','))
 nσ = 23 
 σs = [2.2,2.3,2.4,2.5,2.55,2.6,2.62,2.64,2.66,2.68,2.7,2.72,2.74,2.76,2.78,2.8,2.82,2.84,2.86,2.88,2.9,2.95,3.0]
 # =#
-# #=
+ #=
 ex = "pj8"
 i1 = 3
 S = 42
@@ -70,6 +70,20 @@ else
 end
 nσ = 41
 σs = LinRange(2.64,2.84,41)
+# =#
+# #=
+ex = "pj9"
+i1 = 1
+S = 89
+Si = 157
+A = readdlm("data/ex-limit-cycle-"*ex*"-A.csv",',')
+if i1 == 1
+	N0 = vec(readdlm("data/ex-limit-cycle-"*ex*"-N0.csv",','))
+else
+	N0 = vec(readdlm("data/ex-limit-cycle-"*ex*"-s$i1-N0.csv",','))
+end
+nσ = 4
+σs = [2.7,2.9,3.,3.2]
 # =#
 
 κ = 1.

@@ -60,23 +60,30 @@ end
 #Si = 157
 #pα = 10
 
-x = readdlm("data/SMatr-240825.dat")
-S = 28
-Si = 157
-pα = 10
+#x = readdlm("data/SMatr-240825.dat")
+#S = 28
+#Si = 157
+#pα = 10
 
+ #=
 A = zeros(S,S)
 for k in 1:size(x)[1]
 	i = Int64(x[k,1])
 	j = Int64(x[k,2])
 	A[i,j] = x[k,3]
 end
+# =#
+
+A = readdlm("data/ex-limit-cycle-pj9-A.csv",',')
+S = 89
+Si = 157
+pα = 10
 
 zer0 = 1e-15
 
 κ = 1.
 μ = 5.
-σ = 2.7
+σ = 2.6
 Id = diagm(0 => ones(S))
 
 
