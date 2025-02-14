@@ -62,13 +62,21 @@ T = 99999 - 1999
 nσ = 23 
 σs = [2.2,2.3,2.4,2.5,2.55,2.6,2.62,2.64,2.66,2.68,2.7,2.72,2.74,2.76,2.78,2.8,2.82,2.84,2.86,2.88,2.9,2.95,3.0]
 # =#
-# #=
+ #=
 ex = "pj8"
 T = 99999 - 1999
 δt = .1
 ωs = (0:T-1)*2π/(T*δt)
 nσ = 41
 σs = LinRange(2.64,2.84,41)
+# =#
+# #=
+ex = "pj9"
+T = 9999 - 1999
+δt = .1
+ωs = (0:T-1)*2π/(T*δt)
+nσ = 16
+σs = [2.7,2.72,2.74,2.76,2.78,2.8,2.82,2.84,2.86,2.88,2.9,2.92,2.94,2.96,2.98,3.]
 # =#
 
 for i in 1:nσ
@@ -96,15 +104,15 @@ xlabel("ω [rad/s]")
 ylabel("σ")
 colorbar(label="log|fft|")
 
-figure()
-PyPlot.surf(ωs[2:400],σs,F,cmap=get_cmap("viridis"))
+#figure()
+#PyPlot.surf(ωs[2:400],σs,F,cmap=get_cmap("viridis"))
 
 figure()
 for i in 1:nσ
 	n = vec(readdlm("data/ex-limit-cycle-"*ex*"-s$i-N1.csv",','))
 	subplot(ceil(Int64,nσ/3),3,i)
-	#PyPlot.plot((1:length(n))*δt,n,label="σ = $(round(σs[i],digits=2))")
-	PyPlot.plot((1:1000)*δt,n[1:1000],label="σ = $(round(σs[i],digits=2))")
+	PyPlot.plot((1:length(n))*δt,n,label="σ = $(round(σs[i],digits=2))")
+	#PyPlot.plot((1:1000)*δt,n[1:1000],label="σ = $(round(σs[i],digits=2))")
 	legend()
 	xlabel("t")
 	ylabel("N1")

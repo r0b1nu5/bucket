@@ -73,8 +73,8 @@ nσ = 41
 # =#
 # #=
 ex = "pj9"
-i1 = 1
-S = 89
+i1 = 9
+S = 88
 Si = 157
 A = readdlm("data/ex-limit-cycle-"*ex*"-A.csv",',')
 if i1 == 1
@@ -82,8 +82,8 @@ if i1 == 1
 else
 	N0 = vec(readdlm("data/ex-limit-cycle-"*ex*"-s$i1-N0.csv",','))
 end
-nσ = 4
-σs = [2.7,2.9,3.,3.2]
+nσ = 16
+σs = [2.7,2.72,2.74,2.76,2.78,2.8,2.82,2.84,2.86,2.88,2.9,2.92,2.94,2.96,2.98,3.]
 # =#
 
 κ = 1.
@@ -98,8 +98,8 @@ nσ = 4
 Id = diagm(0 => ones(S))
 
 
-n_iter = 10_000_000
-δt = 1e-4
+n_iter = 2_000_000
+δt = 1e-3
 Δt = 1e-1
 n_step = round(Int64,n_iter*δt/Δt)
 
