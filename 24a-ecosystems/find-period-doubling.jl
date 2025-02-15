@@ -73,7 +73,7 @@ nσ = 41
 # =#
 # #=
 ex = "pj9"
-i1 = 9
+i1 = 16
 S = 88
 Si = 157
 A = readdlm("data/ex-limit-cycle-"*ex*"-A.csv",',')
@@ -82,8 +82,8 @@ if i1 == 1
 else
 	N0 = vec(readdlm("data/ex-limit-cycle-"*ex*"-s$i1-N0.csv",','))
 end
-nσ = 16
-σs = [2.7,2.72,2.74,2.76,2.78,2.8,2.82,2.84,2.86,2.88,2.9,2.92,2.94,2.96,2.98,3.]
+nσ = 26
+σs = collect(2.7:.02:3.2)
 # =#
 
 κ = 1.
