@@ -74,16 +74,26 @@ for k in 1:size(x)[1]
 end
 # =#
 
+ #=
 A = readdlm("data/ex-limit-cycle-pj9-A.csv",',')
 S = 89
 Si = 157
 pα = 10
+# =#
 
-zer0 = 1e-15
+# #= Fig. 1
+zer0 = 1e-14
+A = readdlm("data-pj/fig1/A.csv",',')
+Si = 157
+surv = Int64.(readdlm("data-pj/fig1/survivingspecies_abundancies.dat")[3:end,1])[x[3:end,2] .> zer0]
+S = length(surv)
+A = A[surv,surv]
+pα = 10
+# =#
 
 κ = 1.
 μ = 5.
-σ = 2.6
+σ = 2.7
 Id = diagm(0 => ones(S))
 
 

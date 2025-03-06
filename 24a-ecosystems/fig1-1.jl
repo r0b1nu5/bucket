@@ -7,30 +7,36 @@ figure("fig1", figsize=(12,4))
 # =====================================================
 subplot(1,2,1)
 
-nums = [45,104,109,113,134,173,177,178,187,223,253]
+nums = [107,110,113,117,122,133,141,142,146,153,154,157,162,166,174,176,190,198,206,213,220,225,227,235,239,243,250,254]
 for n in nums
-	local x = readdlm("data-pj/fig1/fort.$n")
-	PyPlot.plot(x[:,1]*1e-5,x[:,2])
+	local x = readdlm("data-pj/fort.$n")
+	PyPlot.plot(x[:,1],x[:,2])
 end
 
-axis([0,393,0,6])
+axis([0,100,0,16])
 xlabel("t [a.u.]")
 ylabel("population")
 
 
 # =====================================================
 subplot(1,2,2)
-zer0 = 1e-15
-A = readdlm("data-pj/fig1/A.csv",',')
+x = readdlm("data/SMatr-240825.dat")
+S = 28
 Si = 157
-surv = Int64.(readdlm("data-pj/fig1/survivingspecies_abundancies.dat")[3:end,1])[x[3:end,2] .> zer0]
-S = length(surv)
-A = A[surv,surv]
 pα = 10
+
+A = zeros(S,S)
+for k in 1:size(x)[1]
+	i = Int64(x[k,1])
+	j = Int64(x[k,2])
+	A[i,j] = x[k,3]
+end
+
+zer0 = 1e-15
 
 κ = 1.
 μ = 5.
-σ = 2.5
+σ = 2.7
 Id = diagm(0 => ones(S))
 
 σs = LinRange(0,σ,1000)
