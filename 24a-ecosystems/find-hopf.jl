@@ -81,7 +81,7 @@ Si = 157
 pα = 10
 # =#
 
-# #= Fig. 1
+ #= Fig. 1
 zer0 = 1e-14
 A = readdlm("data-pj/fig1/A.csv",',')
 Si = 157
@@ -91,9 +91,36 @@ A = A[surv,surv]
 pα = 10
 # =#
 
+# #=
+file2σ = Dict{String,Tuple{Float64,Int64}}("matr2n" => (4.2,3),
+					   "matr5n" => (4.02,3),
+					   "matr7n" => (3.34,4),
+					   "matr8n" => (3.14,3),
+					   "matr10n" => (2.49,4),
+					   "matr11n" => (3.04,4),
+					   "matr14f" => (4.24,5))
+file = "matr7n"
+zer0 = 1e-12
+Si = 157
+x = readdlm("data-pj/fig1/"*file*"/matr.dat")
+A = zeros(Si,Si)
+for l in 1:size(x)[1]
+	i = Int64(x[l,1])
+	j = Int64(x[l,2])
+	A[i,j] = x[l,3]
+end
+y = readdlm("data-pj/fig1/"*file*"/survivingspecies_abundancies.dat")
+k = file2σ[file][2]
+surv = Int64.(y[k:end,1])[y[k:end,2] .> zer0]
+A = A[surv,surv]
+S = length(surv)
+pα = 10
+# =#
+
 κ = 1.
 μ = 5.
 σ = 2.7
+σ = file2σ[file][1]
 Id = diagm(0 => ones(S))
 
 
@@ -120,7 +147,7 @@ for σ0 in σs
 end
 λs = λs[:,2:end]
 
-figure()
+figure("fig1-"*file)
 PyPlot.plot([0,0],maximum(imag.(λs))*[-1.2,1.2],"--k")
 for i in 1:S
 	plot_density(λr[i,:],λi[i,:],"C$(mod(i-1,10))",pα)

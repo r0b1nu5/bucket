@@ -23,14 +23,15 @@ subplot(1,2,2)
 zer0 = 1e-15
 A = readdlm("data-pj/fig1/A.csv",',')
 Si = 157
-surv = Int64.(readdlm("data-pj/fig1/survivingspecies_abundancies.dat")[3:end,1])[x[3:end,2] .> zer0]
-S = length(surv)
-A = A[surv,surv]
+#surv = Int64.(readdlm("data-pj/fig1/survivingspecies_abundancies.dat")[3:end,1])[x[3:end,2] .> zer0]
+#S = length(surv)
+#A = A[surv,surv]
+S = size(A)[1]
 pα = 10
 
 κ = 1.
 μ = 5.
-σ = 2.5
+σ = 2.7
 Id = diagm(0 => ones(S))
 
 σs = LinRange(0,σ,1000)
