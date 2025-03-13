@@ -99,7 +99,7 @@ file2σ = Dict{String,Tuple{Float64,Int64}}("matr2n" => (4.2,3),
 					   "matr10n" => (2.49,4),
 					   "matr11n" => (3.04,4),
 					   "matr14f" => (4.24,5))
-file = "matr7n"
+file = "matr2n"
 zer0 = 1e-12
 Si = 157
 x = readdlm("data-pj/fig1/"*file*"/matr.dat")
