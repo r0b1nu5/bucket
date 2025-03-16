@@ -29,10 +29,10 @@ k = 3
 ax = [0,100,-.2,3]
 # =#
 
-figure("fig1", figsize=(12,4))
+figure("fig1", figsize=(4,6))
 
 # =====================================================
-subplot(1,2,1)
+subplot(2,1,1)
 
 for n in nums
 	local x = readdlm("data-pj/fig1/"*file*"fig/fort.$n")
@@ -40,12 +40,14 @@ for n in nums
 end
 
 axis(ax)
-xlabel("t [a.u.]")
-ylabel("N(t)")
+xticks(fontname="serif")
+yticks(fontname="serif")
+xlabel("t [a.u.]",fontname="serif")
+ylabel("N(t)",fontname="serif")
 
 
 # =====================================================
-subplot(1,2,2)
+subplot(2,1,2)
 zer0 = 1e-12
 Si = 157
 x = readdlm("data-pj/fig1/"*file*"matr.dat")
@@ -85,6 +87,8 @@ for i in 1:S
 	plot_density(λr[i,:],λi[i,:],"C$(mod(i-1,10))",pα)
 	PyPlot.plot(λr[i,end],λi[i,end],"o",color="C$(mod(i-1,10))")
 end
-xlabel("Re(ϵ)")
-ylabel("Im(ϵ)")
+xticks(fontname="serif")
+yticks(fontname="serif")
+xlabel("Re(ϵ)",fontname="serif")
+ylabel("Im(ϵ)",fontname="serif")
 
