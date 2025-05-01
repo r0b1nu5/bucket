@@ -8,10 +8,10 @@ include("tools_hyper.jl")
 @info "############# START: $(now())"
 
 # Generating the hypergraph.
-#n = 7; T = 150; iters = 10:10:150 		# Takes < 1sec
+n = 7; T = 150; iters = 10:10:150 		# Takes < 1sec
 #n = 30; T = 2500; iters = 500:500:2500 	# Takes ~ 10sec
 #n = 60; T = 2500; iters = 1000:500:2500	# Takes ~ 10min
-n = 100; T = 2000; iters = 500:500:2000		
+#n = 100; T = 2000; iters = 500:500:2000		
 
 save = true # Saving the inference and the ground truth?
 A2 = zeros(n,n)
@@ -37,7 +37,7 @@ ntw = "ER"
 p1 = 0.
 p2 = .99
 # =#
- #=
+# #=
 ntw = "Hyper-ER"
 p1 = n > 30 ? .01 : .05
 p2 = .4
@@ -47,7 +47,7 @@ ntw = "Hyper-ER"
 p1 = .5
 p2 = .8
 # =#
-# #=
+ #=
 ntw = "Simplicial-ER-py"
 run = "001"
 p1 = .001
@@ -69,7 +69,7 @@ if ntw in ["Wheel", "Hyper-wheel"]
 	A2,A3 = gen_rand_hyperwheel(n,p1,p2,p3)
 	A4 = zeros(n,n,n,n)
 elseif ntw in ["ER", "Hyper-ER"]
-	A2,A3,A2l,A3l = gen_hyper_er(n,p1,p2)
+	A2,A3,A2l,A3l = gen_hyper_er_old(n,p1,p2)
 	A4 = zeros(n,n,n,n)
 elseif ntw in ["Simplicial-ER","Simplicial-ER-2","Simplicial-ER-corr"]
 	A2,A3,A2l,A3l = gen_simplicial_er(n,p1,p2)
