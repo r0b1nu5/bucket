@@ -4,7 +4,7 @@ import numpy as np
 import os
 import csv
 
-net = pp.from_json("network.json")
+net = pp.from_json("data-marc/network.json")
 
 mup = pd.read_csv("data-marc/mup.csv",header=None)
 sigp = pd.read_csv("data-marc/sigp.csv",header=None)
@@ -26,7 +26,10 @@ with open("data-robin/V.csv", 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(head)
 
-for i in range(100):
+for i in range(86400):
+    if np.mod(i,100) == 0:
+        print(i)
+
     time = times.loc[i].values[0]
     ps = [time,]
     qs = [time,]
