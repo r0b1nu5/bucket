@@ -1,4 +1,4 @@
-from partition_v2 import get_partition  # Assumes get_partition is defined in partition_v2.py
+from partition_v3 import get_partition  # Assumes get_partition is defined in partition_v2.py
 
 list_meter = ["e_1", "e_2", "e_3", "e_4", "e_5", "e_6", "e_7", "e_8", "e_9"]
 list_pe = [
