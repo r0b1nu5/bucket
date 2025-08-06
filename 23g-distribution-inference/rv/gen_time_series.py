@@ -26,6 +26,8 @@ with open("data-robin/V.csv", 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(head)
 
+rho = 1.1
+
 for i in range(86400):
     if np.mod(i,100) == 0:
         print(i)
@@ -36,8 +38,8 @@ for i in range(86400):
     vs = [time,]
 
     for i in range(len(mup)):
-        p = np.random.normal(loc=mup.loc[i].values[0], scale=sigp.loc[i].values[0])
-        q = np.random.normal(loc=muq.loc[i].values[0], scale=sigq.loc[i].values[0])
+        p = np.random.normal(loc=mup.loc[i].values[0], scale=sigp.loc[i].values[0]*rho)
+        q = np.random.normal(loc=muq.loc[i].values[0], scale=sigq.loc[i].values[0]*rho)
 
         net.load.p_mw.at[i] = 1e-6*p
         ps.append(p)
@@ -49,13 +51,13 @@ for i in range(86400):
     for l in net.load.bus:
         vs.append(net.res_bus.vm_pu.loc[l])
 
-    with open("data-robin/P.csv", 'a', newline='') as csvfile:
+    with open(f"data-robin/P_{rho}.csv", 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(ps)
-    with open("data-robin/Q.csv", 'a', newline='') as csvfile:
+    with open(f"data-robin/Q_{rho}.csv", 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(qs)
-    with open("data-robin/V.csv", 'a', newline='') as csvfile:
+    with open(f"data-robin/V_{rho}.csv", 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(vs)
 
