@@ -29,7 +29,7 @@ for r in rs:
         writer = csv.writer(csvfile)
         writer.writerow(head)
 
-    for i in range(86400):
+    for i in range(10000):
         if np.mod(i,100) == 0:
             print(i)
 
