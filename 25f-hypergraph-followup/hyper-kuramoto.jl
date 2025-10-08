@@ -36,7 +36,7 @@ function hyper_k(A2::Array{Float64,2},
 		θs = [θs θ]
 		dθs = [dθs dθ]
 
-		err = maximum(abs.(dθ))
+		err = abs(maximum(dθ)-minimum(dθ))
 		
 		if iter%100 == 0
 			@info "iter: $iter"
@@ -71,11 +71,14 @@ function f_kuramoto_3rd(θ::Vector{Float64}, A2l::Array{Float64,2}, A3l::Array{F
 		i,j = Int64.(A2l[l,1:2])
 		a = A2l[l,3]
 		fθ[i] -= a*(sin(θ[i]-θ[j]-ϕ2) + sin(ϕ2))
+		fθ[j] -= a*(sin(θ[j]-θ[i]-ϕ2) + sin(ϕ2))
 	end
 	for l in 1:size(A3l)[1]
 		i,j,k = Int64.(A3l[l,1:3])
 		a = A3l[l,4]
 		fθ[i] -= a*(sin(2*θ[i]-θ[j]-θ[k]-ϕ3) + sin(ϕ3))
+		fθ[j] -= a*(sin(2*θ[j]-θ[i]-θ[k]-ϕ3) + sin(ϕ3))
+		fθ[k] -= a*(sin(2*θ[k]-θ[i]-θ[j]-ϕ3) + sin(ϕ3))
 	end
 
 	return fθ

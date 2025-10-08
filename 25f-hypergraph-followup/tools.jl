@@ -14,7 +14,7 @@ function get_jac(θ::Vector{Float64},
 		ijk = Int64.(A[l,1:3])
 		a = A[l,4]
 		
-		J[ijk,ijk] += a*b*diagm(0 => cos.(b*θ[ijk]))
+		J[ijk,ijk] -= a*b*diagm(0 => cos.(b*θ[ijk]))
 	end
 
 	return J
