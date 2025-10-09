@@ -11,7 +11,8 @@ function hyper_k(A2::Array{Float64,2},
 		 ϕ3::Float64=0., 
 		 h::Float64=.01, 
 		 max_iter::Int64=10000, 
-		 tol::Float64=1e-6)
+		 tol::Float64=1e-6,
+		 verb::Bool = false)
 
 	n = length(ω)
 	θs = θ0
@@ -39,7 +40,9 @@ function hyper_k(A2::Array{Float64,2},
 		err = abs(maximum(dθ)-minimum(dθ))
 		
 		if iter%100 == 0
-			@info "iter: $iter"
+			if verb
+				@info "iter: $iter"
+			end
 			c += 1
 			writedlm("temp/ths_$c.csv",θs[:,1:end-1],',')
 			θs = θs[:,end]
@@ -47,6 +50,7 @@ function hyper_k(A2::Array{Float64,2},
 			dθs = zeros(n,0)
 		end
 	end
+	@info "Total iter: $iter"
 
 	Θs = zeros(n,0)
 	dΘs = zeros(n,0)
