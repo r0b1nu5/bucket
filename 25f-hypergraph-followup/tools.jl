@@ -1,9 +1,7 @@
 using LinearAlgebra
 
-function adj2inc(A::Matrix{Float64})
-    @info "$(size(A))"
-    l,w = size(A)
-    @info "$(size(A))"
+function adj2inc(AA::Matrix{Float64})
+    l,w = size(AA)
     if l != w
         @info "Matrix not square! ($l,$w)"
     end
@@ -13,10 +11,10 @@ function adj2inc(A::Matrix{Float64})
 
     for i in 1:l-1
         for j in i+1:l
-            if A[i,j] > 1e-4
+            if AA[i,j] > 1e-4
                 x = can_bas(i,l) - can_bas(j,l)
                 B = [B x]
-                push!(w,A[i,j])
+                push!(w,AA[i,j])
             end
         end
     end
@@ -60,8 +58,6 @@ function hyper2edge(A::Matrix{Float64})
     n = Int64(maximum(A[:,1:end-1]))
 
     a = zeros(n,n)
-    @info "$(size(a))"
-    @info "$(size(A))"
 
     for l in 1:m
         i,j,k = Int64.(A[l,1:end-1])
@@ -74,7 +70,6 @@ function hyper2edge(A::Matrix{Float64})
         a[k,j] += v
     end
 
-    @info "$(size(a))"
     b = adj2inc(a)
 
     return b

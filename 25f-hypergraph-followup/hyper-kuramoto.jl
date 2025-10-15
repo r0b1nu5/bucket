@@ -50,7 +50,7 @@ function hyper_k(A2::Array{Float64,2},
 			dθs = zeros(n,0)
 		end
 	end
-	@info "Total iter: $iter"
+#	@info "Total iter: $iter"
 
 	Θs = zeros(n,0)
 	dΘs = zeros(n,0)
@@ -63,7 +63,7 @@ function hyper_k(A2::Array{Float64,2},
 	Θs = [Θs θs[:,1:end-1]]
 	dΘs = [dΘs dθs]
 
-	return Θs, dΘs
+	return Θs, dΘs, iter
 end
 	
 

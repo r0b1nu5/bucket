@@ -15,6 +15,7 @@ function rand_3_graph(n::Int64, p::Float64)
 	A = zeros(0,4)
 	E = Vector{Int64}[]
 	B = zeros(n,0)
+	B2 = zeros(n,0)
 	connected = false
 	c0 = 0
 	while !connected && c0 < 1000
@@ -24,6 +25,7 @@ function rand_3_graph(n::Int64, p::Float64)
 		a = zeros(n,n)
 		E = Vector{Int64}[]
 		B = zeros(n,0)
+		B2 = zeros(n,0)
 		for l in 1:m
 			le = 0
 			c1 = 0
@@ -45,6 +47,7 @@ function rand_3_graph(n::Int64, p::Float64)
 				A = [A;[i j k 1.]]
 				a[i,j]=a[i,k]=a[j,i]=a[j,k]=a[k,i]=a[k,j] = 1.
 				B = [B can_bas(i,n) can_bas(j,n) can_bas(k,n)]
+				B2 = [B2 tri(i,j,k,n) tri(j,i,k,n) tri(k,i,j,n)]
 			end
 		end
 		l = adj2lap(a)
@@ -58,7 +61,17 @@ function rand_3_graph(n::Int64, p::Float64)
 		@info "WARNING: Hypergraph is not connected!"
 	end
 
-	return A,B,E
+	return A,B,B2,E
 end
+
+function tri(i::Int64, j::Int64, k::Int64, n::Int64)
+	v = zeros(n)
+	v[i] = 2
+	v[j] = -1
+	v[k] = -1
+
+	return v
+end
+
 
 
