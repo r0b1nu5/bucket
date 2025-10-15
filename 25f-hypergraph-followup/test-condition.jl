@@ -11,7 +11,6 @@ n_α = 50
 α_max = 20
 
 figure("Condition")
-figure("Condition")
 PyPlot.plot([0,1.05],[0,0],"--k")
 xlabel("α/α_star")
 ylabel("λ2")
@@ -30,8 +29,14 @@ for i in 1:n_iter
 	A,B,E = rand_3_graph(n,p)
 	W = diagm(0 => repeat(A[:,4],inner=3))
 	ω = rand(n); ω .-= mean(ω)
+
+        a = hyper2edge(A)
+        matshow(a)
+        b = adj2inc(a)
 	
 	α_star = 1/maximum(inv(W)*pinv(B)*ω)
+        α_bis = 1/maximum(abs.(b'*pinv(b*b')*ω))
+
 	@info "α* = $(α_star)"
 	global αs = LinRange(0,α_star*1.01,n_α)
 
@@ -78,7 +83,8 @@ for i in 1:n_iter
 
 	figure("Condition")
 #	PyPlot.plot(αs./α_star,Λ1[:,end],":k")
-	PyPlot.plot(αs./α_star,Λ2[:,end],"--o")
+	PyPlot.plot(αs./α_star,Λ2[:,end],"--o",color="C$i")
+        PyPlot.plot(α_bis/α_star*[1,1],[-10,10],"--",color="C$i")
 	global xmin = minimum([xmin;αs./α_star])
 	global xmax = maximum([xmax;αs./α_star])
 	global ymin = minimum([ymin;λ2])

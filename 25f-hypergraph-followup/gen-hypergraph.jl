@@ -1,5 +1,7 @@
 using LinearAlgebra, Random
 
+include("tools.jl")
+
 # Returns the adjacency tensor
 # Only 3-edges
 # n nodes
@@ -57,16 +59,6 @@ function rand_3_graph(n::Int64, p::Float64)
 	end
 
 	return A,B,E
-end
-
-function can_bas(i::Int64, n::Int64)
-	v = zeros(n)
-	v[i] = 1
-	return v
-end
-
-function adj2lap(A::Matrix{Float64})
-	return diagm(0 => sum(A,dims=2)[:,1]) - A
 end
 
 

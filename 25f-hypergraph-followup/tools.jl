@@ -1,5 +1,39 @@
 using LinearAlgebra
 
+function adj2inc(A::Matrix{Float64})
+    @info "$(size(A))"
+    l,w = size(A)
+    @info "$(size(A))"
+    if l != w
+        @info "Matrix not square! ($l,$w)"
+    end
+
+    B = zeros(l,0)
+    w = Float64[]
+
+    for i in 1:l-1
+        for j in i+1:l
+            if A[i,j] > 1e-4
+                x = can_bas(i,l) - can_bas(j,l)
+                B = [B x]
+                push!(w,A[i,j])
+            end
+        end
+    end
+
+    return B
+end
+
+function adj2lap(A::Matrix{Float64})
+	return diagm(0 => sum(A,dims=2)[:,1]) - A
+end
+
+function can_bas(i::Int64, n::Int64)
+	v = zeros(n)
+	v[i] = 1
+	return v
+end
+
 function get_jac(θ::Vector{Float64},
 		 A::Matrix{Float64})
 	n = length(θ)
@@ -19,6 +53,33 @@ function get_jac(θ::Vector{Float64},
 
 	return J
 end
+
+
+function hyper2edge(A::Matrix{Float64})
+    m = size(A)[2]
+    n = Int64(maximum(A[:,1:end-1]))
+
+    a = zeros(n,n)
+    @info "$(size(a))"
+    @info "$(size(A))"
+
+    for l in 1:m
+        i,j,k = Int64.(A[l,1:end-1])
+        v = A[l,end]
+        a[i,j] += v
+        a[j,i] += v
+        a[i,k] += v
+        a[k,i] += v
+        a[j,k] += v
+        a[k,j] += v
+    end
+
+    @info "$(size(a))"
+    b = adj2inc(a)
+
+    return b
+end
+
 
 
 
