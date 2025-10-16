@@ -6,7 +6,7 @@ include("tools.jl")
 
 n = 10
 p = .2
-n_iter = 20
+n_iter = 2
 n_α = 50
 α_max = 20
 
