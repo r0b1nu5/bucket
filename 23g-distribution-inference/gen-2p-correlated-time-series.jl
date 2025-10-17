@@ -1,56 +1,42 @@
 using DelimitedFiles, PowerModels, PyPlot
 
-bus = readdlm("rv/data-marc/bus.csv",',')
-load = readdlm("rv/data-marc/load.csv",',')
-line = readdlm("rv/data-marc/line.csv",',')
+include("tools.jl")
 
-network_data = Dict{String,Any}("name" => "tapis-testcase-1",
-				"bus" => Dict{String,Any}(),
-				"gen" => Dict{String,Any}(),
-				"branch" => Dict{String,Any}(),
-				"load" => Dict{String,Any}(),
-				"per_unit" => true
-				)
+function gen_2p_correlated_time_series(i1::Int64, i2::Int64, r::Float64=0., l::Int64=86400)
+	# Loading network data
+	network_data = load_testcase_1()
 
-for i in 2:size(bus)[1]
-	network_data["bus"]["$(bus[i,1])"] = Dict{String,Any}("number" => bus[i,1],
-							      "bus_i" => bus[i,1],
-							      "bus_type" => 1,
-							      "vmin" => .9,
-							      "vmax" => 1.1,
-							      "index" => bus[i,1],
-							      "va" => 0.,
-							      "vm" => 1.,
-							      "base_kv" => bus[i,3]
-							      )
+	# Generating power time series
+	μp = vec(readdlm("rv/data-marc/mup.csv",','))
+	σp = vec(readdlm("rv/data-marc/sigp.csv",','))
+	μq = vec(readdlm("rv/data-marc/muq.csv",','))
+	σq = vec(readdlm("rv/data-marc/sigq.csv",','))
+	times = vec(readdlm("rv/data-marc/times.csv",','))[1:l]
+
+	head = ["Times" (1:55)']
+
+	n = length(μp)
+	R = zeros(1,n); R[1,i1] = R[1,i2] = r
+
+	x0 = randn(l) # Reference time series
+	p = μp' .+ σp'.*(randn(l,55).*(1 .- R) + x0*R)
+	q = μq' .+ σq'.*(randn(l,55).*(1 .- R) + x0*R)
+	
+	v = zeros(0,n)
+	for i in 1:l
+		t = times[i]
+#		vi = set_pq_and_solve(p[i,:],q[i,:],network_data)
+		vi = set_pq_and_solve(Dict{String,Float64}("$k" => p[i,k] for k in 1:55), 
+				      Dict{String,Float64}("$k" => q[i,k] for k in 1:55),
+				      network_data
+				      )
+		v = [v; vi']
+	end
+
+	return p,q,v
 end
 
-for i in 2:size(load)[1]
-	network_data["load"]["$(load[i,1]+1)"] = Dict{String,Any}("load_bus" => load[i,3],
-								  "status" => 1,
-								  "pd" => load[i,4],
-								  "qd" => load[i,5],
-								  "index" => load[i,1]+1
-								  )
-end
-
-for i in 2:size(line)[1]
-	network_data["branch"]["$(line[i,1]+1)"] = Dict{String,Any}("name" => line[i,2],
-								    "f_bus" => line[i,4],
-								    "t_bus" => line[i,5],
-								    "br_r" => line[i,6]*line[i,7],
-								    "br_x" => line[i,6]*line[i,8],
-								    "angmin" => -π/6,
-								    "angmax" => π/6,
-								    "transformer" => false,
-								    "tap" => 1.,
-								    "index" => line[i,1]+1,
-								    "br_status" => 1
-								    )
-end
-
-
-
+p,q,v = gen_2p_correlated_time_series(30,32,.5)
 
 
 
