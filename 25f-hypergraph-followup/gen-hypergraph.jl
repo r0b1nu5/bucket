@@ -45,6 +45,8 @@ function rand_3_graph(n::Int64, p::Float64)
 				push!(E,ijk)
 				i,j,k = ijk
 				A = [A;[i j k 1.]]
+				A = [A;[j i k 1.]]
+				A = [A;[k i j 1.]]
 				a[i,j]=a[i,k]=a[j,i]=a[j,k]=a[k,i]=a[k,j] = 1.
 				B = [B can_bas(i,n) can_bas(j,n) can_bas(k,n)]
 				B2 = [B2 tri(i,j,k,n) tri(j,i,k,n) tri(k,i,j,n)]
@@ -63,6 +65,64 @@ function rand_3_graph(n::Int64, p::Float64)
 
 	return A,B,B2,E
 end
+
+function rand_3_digraph(n::Int64, p::Float64)
+	m_max = binomial(n,3)
+	m = sum(rand(m_max) .< p)
+	
+	A = zeros(0,4)
+	E = Vector{Int64}[]
+	B = zeros(n,0)
+	B2 = zeros(n,0)
+	c0 = 0
+	while c0 < 1
+		c0 += 1
+
+		A = zeros(0,4)
+		a = zeros(n,n)
+		E = Vector{Int64}[]
+		B = zeros(n,0)
+		B2 = zeros(n,0)
+		for l in 1:m
+			le = 0
+			c1 = 0
+			i,j,k = 0,0,0
+			ijk = 0
+			te = true
+			while te && c1 < 1000
+				c1 += 1
+				ijk = randperm(n)[1:3]
+				if !(ijk in E)
+					te = false
+				end
+			end
+			if c1 == 1000
+				@info "Not enough edges."
+			else
+				push!(E,ijk)
+				i,j,k = ijk
+				A = [A;[i j k 1.]]
+				a[i,j]=a[i,k]=a[j,i]=a[j,k]=a[k,i]=a[k,j] = 1.
+				B = [B can_bas(i,n)]
+				B2 = [B2 tri(i,j,k,n)]
+			end
+		end
+#=
+		l = adj2lap(a)
+		λ2 = eigvals(l)[2]
+		if abs(λ2) > 1e-4
+			connected = true
+		end
+=#
+	end
+
+	if c0 == 1000
+		@info "WARNING: Hypergraph is not connected!"
+	end
+
+	return A,B,B2,E
+end
+
 
 function tri(i::Int64, j::Int64, k::Int64, n::Int64)
 	v = zeros(n)

@@ -52,6 +52,13 @@ function get_jac(θ::Vector{Float64},
 	return J
 end
 
+function get_loose_ends(A2l::Matrix{Float64}, A3l::Matrix{Float64})
+	n = Int64(maximum(A3l[:,1:3]))
+
+	le = setdiff(collect(1:n),union(Int64.(A2l[:,1]),Int64.(A3l[:,1])))
+
+	return le
+end
 
 function hyper2edge(A::Matrix{Float64})
     m = size(A)[2]
