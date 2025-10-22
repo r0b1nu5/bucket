@@ -1,4 +1,5 @@
-using DataDrivenDiffEq, ModelingToolkit, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics, Random, DelimitedFiles
+#using DataDrivenDiffEq, ModelingToolkit, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics, Random, DelimitedFiles
+using LinearAlgebra, PyPlot, Combinatorics, Statistics, Random, DelimitedFiles, Symbolics
 
 include("this.jl")
 
@@ -231,6 +232,7 @@ function hyper_inf_par_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vecto
 end
 
 
+#=
 # Same with the tuning of the sparsity parameter λ in SINDy
 function hyper_inf_sparsity(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, thr_glob::Float64=.1, λ::Float64=1e-1)
 	n,T = size(X)
@@ -287,6 +289,7 @@ function hyper_inf_sparsity(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{
 #	return Ainf, coeff, idx_o, agents_o
 	return Ainf, coeff, res.residuals
 end
+=#
 
 # In case we want to infer only one order of hyperedge.
 function hyper_inf(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Int64, dmax::Int64, thr_glob::Float64=1.)

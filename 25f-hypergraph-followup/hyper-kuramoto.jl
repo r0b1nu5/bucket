@@ -32,7 +32,7 @@ function hyper_k(A2::Array{Float64,2},
 		k4 = f_kuramoto_3rd(θ+h*k3,A2,A3,ω,ϕ2,ϕ3)
 
 		dθ = (k1 + 2*k2 + 2*k3 + k4)/6
-		θ += h*dθ
+                θ += h*dθ
 
 		θs = [θs θ]
 		dθs = [dθs dθ]
@@ -71,6 +71,7 @@ function hyper_k_gaussian_noise(A2::Array{Float64,2},
 				ω::Vector{Float64}, 
 				θ0::Vector{Float64}, 
 				ξ0::Float64,
+                                δt::Float64, # Time between two random shocks
 				ϕ2::Float64=0., 
 				ϕ3::Float64=0., 
 				h::Float64=.01, 
@@ -82,6 +83,7 @@ function hyper_k_gaussian_noise(A2::Array{Float64,2},
 	θs = θ0
 	θ = θ0
 	dθs = zeros(n,0)
+        Δ = floor(Int64,δt/h)
 
 	err = 1000.
 	iter = 0
@@ -95,8 +97,8 @@ function hyper_k_gaussian_noise(A2::Array{Float64,2},
 		k3 = f_kuramoto_3rd(θ+h/2*k2,A2,A3,ω,ϕ2,ϕ3)
 		k4 = f_kuramoto_3rd(θ+h*k3,A2,A3,ω,ϕ2,ϕ3)
 
-		dθ = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)
-		θ += h*dθ
+                dθ = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0)
+                θ += h*dθ
 
 		θs = [θs θ]
 		dθs = [dθs dθ]
@@ -137,6 +139,7 @@ function hyper_k_drooped_gaussian_noise(A2::Array{Float64,2},
 				      b::Vector{Float64},
 				      θstar::Vector{Float64},
 				      ξ0::Float64,
+                                      δt::Float64,
 				      ϕ2::Float64=0., 
 				      ϕ3::Float64=0., 
 				      h::Float64=.01, 
@@ -148,6 +151,7 @@ function hyper_k_drooped_gaussian_noise(A2::Array{Float64,2},
 	θs = θ0
 	θ = θ0
 	dθs = zeros(n,0)
+        Δ = floor(Int64,δt/h)
 
 	err = 1000.
 	iter = 0
@@ -161,8 +165,9 @@ function hyper_k_drooped_gaussian_noise(A2::Array{Float64,2},
 		k3 = f_kuramoto_3rd_droop(θ+h/2*k2,A2,A3,ω,b,θstar,ϕ2,ϕ3)
 		k4 = f_kuramoto_3rd_droop(θ+h*k3,A2,A3,ω,b,θstar,ϕ2,ϕ3)
 
-		dθ = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)
-		θ += h*dθ
+		dθ = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0)
+
+                θ += h*dθ
 
 		θs = [θs θ]
 		dθs = [dθs dθ]

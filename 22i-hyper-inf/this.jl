@@ -1,4 +1,5 @@
-using DataDrivenDiffEq, ModelingToolkit, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics, Distributed
+#using DataDrivenDiffEq, ModelingToolkit, DataDrivenSparse, LinearAlgebra, PyPlot, Combinatorics, Statistics, Distributed
+using LinearAlgebra, PyPlot, Combinatorics, Statistics, Distributed
 
 function this(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64}, dmax::Int64, λ::Float64=.1, ρ::Float64=1., niter::Int64=10)
 	if size(X) != size(Y)
@@ -284,6 +285,7 @@ function Id(n::Int64)
 	return diagm(0 => ones(n))
 end
 
+#=
 function get_θ_oldold(X::Matrix{Float64}, dmax::Int64)
 	n,T = size(X)
 
@@ -338,7 +340,7 @@ function get_θ_old(X::Matrix{Float64}, dmax::Int64)
 
 	return θ, idx_mon
 end
-
+=#
 
 function get_θd(X::Matrix{Float64}, dmax::Int64, i0::Int64=1)
 	n,T = size(X)
