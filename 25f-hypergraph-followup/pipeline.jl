@@ -11,7 +11,7 @@ p = .1
 ω0 = .0
 ξ0 = 5.
 ρ = 5.
-λ = .01
+λ = .005
 
 h = .01
 nstep = 5
@@ -20,7 +20,7 @@ niter1 = 10000
 #niter2 = 5000; niter3 = 5000
 #niter2 = 2000; niter3 = 8000
 niter2 = 1000; niter3 = 2000
-niter2 = 500; niter3 = 1500
+niter2 = 500; niter2bis = 50; niter3 = 1450
 
 cm1 = get_cmap("Greens")
 cm2 = get_cmap("Purples")
@@ -50,16 +50,16 @@ connected = (length(idx_ref) == 0)
 
 # 1. Run the system without control
 ω2 = ω1 .- mean(dΘ1[:,end])
-Θ2,dΘ2,iter2 = hyper_k_gaussian_noise(A2,A3,ω2,Θ1[:,end],ξ0,δt,ϕ2,ϕ3,h,niter2+niter3,-1.)
+Θ2,dΘ2,iter2 = hyper_k_gaussian_noise(A2,A3,ω2,Θ1[:,end],ξ0,δt,ϕ2,ϕ3,h,niter2+niter2bis+niter3,-1.)
 
 figure("fig",(12,4))
 subplot(2,1,1)
 for i in 1:n
-        PyPlot.plot(h*(1:(niter2+niter3)),Θ2[i,:],color=cm1((i+n/2)/(1.5*n)))
+        PyPlot.plot(h*(1:(niter2+niter2bis+niter3)),Θ2[i,:],color=cm1((i+n/2)/(1.5*n)))
 end
 subplot(2,1,2)
 for i in 1:n
-        PyPlot.plot(h*(1:niter2),Θ2[i,1:niter2],color=cm1((i+n/2)/(1.5*n)))
+	PyPlot.plot(h*(1:(niter2+niter2bis)),Θ2[i,1:(niter2+niter2bis)],color=cm1((i+n/2)/(1.5*n)))
 end
 #=
 figure("fig (mod 2π)")
@@ -105,15 +105,15 @@ else
 end
 
 # 3. Run the damped system
-Θ3,dΘ3,iter3 = hyper_k_drooped_gaussian_noise(A2,A3,ω2,Θ2[:,niter2],ρ*b,θstar,ξ0,δt,ϕ2,ϕ3,h,niter3,-1.)
+Θ3,dΘ3,iter3 = hyper_k_drooped_gaussian_noise(A2,A3,ω2,Θ2[:,niter2+niter2bis],ρ*b,θstar,ξ0,δt,ϕ2,ϕ3,h,niter3,-1.)
 #Θ3,dΘ3,iter3 = hyper_k_damped_gaussian_noise(A2,A3,ω2,Θ2[:,end],d,ξ0,ϕ2,ϕ3,h,1000,-1.)
 
 figure("fig")
 subplot(2,1,2)
 for i in 1:n-1
-        PyPlot.plot(h*(niter2 .+ (1:niter3)),Θ3[i,:],color=cm2((i+n/2)/(1.5*n)))
+        PyPlot.plot(h*(niter2+niter2bis .+ (1:niter3)),Θ3[i,:],color=cm2((i+n/2)/(1.5*n)))
 end
-PyPlot.plot(h*(niter2 .+ (1:niter3)),Θ3[n,:],color=cm2((n+n/2)/(1.5*n)),label="$(Int64(sum(b))) controlled nodes")
+PyPlot.plot(h*(niter2+niter2bis .+ (1:niter3)),Θ3[n,:],color=cm2((n+n/2)/(1.5*n)),label="$(Int64(sum(b))) controlled nodes")
 #=
 figure("fig (mod 2π)")
 subplot(2,1,1)
@@ -166,11 +166,62 @@ axis([xmin,xmax,ymin-.05*dy,ymax+.05*dy])
 #legend()
 subplot(2,1,2)
 PyPlot.plot([h*niter2,h*niter2],[ymin-.05*dy,ymax+.05*dy],"--k")
+PyPlot.plot([h*(niter2+niter2bis),h*(niter2+niter2bis)],[ymin-.05*dy,ymax+.05*dy],"--k")
 xlabel("t [a.u.]")
 ylabel("x - x*")
 axis([xmin,xmax,ymin-.05*dy,ymax+.05*dy])
 legend()
 
+ainf2 = Vector{Float64}[]
+if length(Ainf[2]) > 0
+	ainf2 = [Ainf[2][i,1:2] for i in 1:length(Ainf[2][:,1])]
+end
+a2 = Vector{Float64}[]
+if length(A2) > 0
+	a2 = [A2[i,1:2] for i in 1:length(A2[:,1])]
+end
+ainf3 = Vector{Float64}[]
+if length(Ainf[3]) > 0
+	ainf3 = [Ainf[3][i,1:3] for i in 1:length(Ainf[3][:,1])]
+end
+a3 = Vector{Float64}[]
+if length(A3) > 0
+	a3 = [A3[i,1:3] for i in 1:length(A3[:,1])]
+end
+
+tp_2 = 0
+fp_2 = 0
+for e in ainf2
+	if e in a2
+		global tp_2 += 1
+	else
+		global fp_2 += 1
+	end
+end
+tpr_2 = tp_2/max(1,length(a2))
+fpr_2 = fp_2/max(1,n*(n-1) - length(a2))
+@info "Order 2: TPR = $(tpr_2), FPR = $(fpr_2)"
+
+tp_3 = 0
+fp_3 = 0
+for e in ainf3
+	if e in a3
+		global tp_3 += 1
+	else
+		global fp_3 += 1
+	end
+end
+tpr_3 = tp_3/max(1,length(a3))
+fpr_3 = fp_3/max(1,n*(n-1)*(n-2) - length(a3))
+@info "Order 3: TPR = $(tpr_3), FPR = $(fpr_3)"
+
+tpr_b = sum((b.*b_ref))/sum(b_ref)
+fpr_b = sum(b.*(1 .- b_ref))/(n - sum(b_ref))
+@info "Controlled nodes: TPR = $(tpr_b), FPR = $(fpr_b)"
+
+figure("fig")
+subplot(2,1,1)
+title("TPR_2 = $(round(tpr_2,digits=2)), FPR_2 = $(round(fpr_2,digits=2)), TPR_3 = $(round(tpr_3,digits=2)), FPR_3 = $(round(fpr_3,digits=2)), TPR_b = $(round(tpr_b,digits=2)), FPR_b = $(round(fpr_b,digits=2))")
 
 
 
