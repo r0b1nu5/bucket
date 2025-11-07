@@ -47,13 +47,22 @@ end
 
 
 function f_sivo(s,x,v,o,A,B,γ,ρ)
-    κ = (1 .+ 2*o)./(1 .- 2*o)
+    κ = (1 .- 2*o)./(1 .+ 2*o)
     fs = γ*x - s.*(B*x + ρ*(1 .- v./κ))
     fx = s.*(B*x) .- γ*x
     fv = ρ*(1 .- v./κ).*s
     fo = (x - o .- .5) + A*o
 
     return fs,fx,fv,fo
+end
+
+
+function get_Jxx(s,x,v,o,A,B,γ)
+    n = length(x)
+
+    κ = (1 .- 2*o)./(1 .+ 2*o)
+
+    return ((diagm(0 => ones(n)) - diagm(0 => κ) - diagm(0 => x))*B - diagm(0 => (B*x)) - γ*diagm(0 => ones(n)))
 end
 
 
