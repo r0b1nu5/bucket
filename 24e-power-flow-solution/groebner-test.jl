@@ -1,0 +1,12 @@
+using AbstractAlgebra, Groebner
+
+R, (w1,w2,w3) = polynomial_ring(QQ, ["w1","w2","w3"], internal_ordering=:lex)
+
+polys = [-4*w3 + 1808//145*w3^2 - 368//145*w3*w1 - 1216//145*w3*w2 - 20765//918889*w3 + 4//29*w1^2 + 128//145*w1*w2 + 504//235625*w1 + 208//145*w2^2 + 3322//453125*w2 + 4//364489, 
+	 -4*w3*w1 + 4*w1^2 + 307//6250*w1 + 118//654131,
+	 -4*w3*w2 + 4*w2^2 + 1//130*w2 + 1//245283]
+
+basis = groebner(polys,ordering=Lex())
+
+
+
