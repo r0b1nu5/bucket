@@ -67,6 +67,7 @@ function plot_hypergraph(A::Union{Matrix{Float64}, Matrix{Int64}, SparseMatrixCS
         for i in 1:size(AA)[1]
             js = Int64.(AA[i,1:end-1])
             PyPlot.fill(u2[js],u3[js],"-",color="C0",alpha=.5)
+	    PyPlot.plot(u2[js],u3[js],"-",color="C0",lw=2)
         end
     end
 

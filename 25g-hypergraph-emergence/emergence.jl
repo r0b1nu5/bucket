@@ -38,7 +38,7 @@ plot_hypergraph(A,Ainf)
 
 # Coarse graining
 k = 4
-g,X2,Y2 = coarse_grain(A,k,X,Y)
+g,X2,Y2,A2 = coarse_grain(A,k,X,Y)
 Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax)
 figure()
 plot_hypergraph(A,Ainf2)
