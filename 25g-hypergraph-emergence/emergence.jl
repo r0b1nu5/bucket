@@ -1,34 +1,51 @@
 using Random, Dates, DelimitedFiles
 
-include("hyper_kuramoto.jl")
+include("kuramoto.jl")
 include("this.jl")
+include("graph-tools.jl")
+include("coarse-grain.jl")
 
 @info "############# START: $(now())"
 
 # Generating the hypergraph.
-n = 7; T = 150; iters = 10:10:150 		# Takes < 1sec
+n = 8; T = 150; iters = 10:10:150 		# Takes < 1sec
 #n = 30; T = 2500; iters = 500:500:2500 	# Takes ~ 10sec
 #n = 60; T = 2500; iters = 1000:500:2500	# Takes ~ 10min
 #n = 100; T = 2000; iters = 500:500:2000		
 
 save = true # Saving the inference and the ground truth?
 
-p = .2
+p = .4
 A,B = gen_rand_graph(n,p)
 
+plot_graph(A)
 # ========================================================================
 
 amplitude = 1.
 ξ0 = 0.0005
 X = amplitude*(rand(n,T) .- .5)
-Y = f_kuramoto(X,B,zeros(n),π/4) + ξ0*randn(size(X))
+Y = f_kuramoto(X,zeros(n),B,1.,π/4)
 
 
 #################### INFERENCE ###################################
-#
-# CONTINUE HERE.....
+
 ooi = [2,3]
 dmax = 2
+
+Ainf,coeff,relerr = this(X,Y,ooi,dmax)
+figure()
+plot_hypergraph(A,Ainf)
+
+# Coarse graining
+k = 4
+g,X2,Y2 = coarse_grain(A,k,X,Y)
+Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax)
+figure()
+plot_hypergraph(A,Ainf2)
+
+
+
+ #=
 c = 0
 for iter in iters
 	global c += 1
@@ -121,4 +138,4 @@ title("THIS, triadic")
 xlabel("FPR")
 
 @info "############# FINISHED: $(now())"
-
+# =#

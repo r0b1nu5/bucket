@@ -37,9 +37,9 @@ function f_kuramoto(θ::Vector{Float64}, ω::Vector{Float64}, B::SparseMatrixCSC
 end
 
 function f_kuramoto(θ::Vector{Float64}, ω::Vector{Float64}, B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, K::Float64, ϕ::Float64)
-	n = length(θ)
+        n,m = size(B)
 	
-	return f_kuramoto(θ,ω,B,K*ones(n),ϕ*ones(n))
+	return f_kuramoto(θ,ω,B,K*ones(m),ϕ*ones(m))
 end
 
 function f_kuramoto(θ::Matrix{Float64}, ω::Vector{Float64}, B::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, K::Union{Float64,Vector{Float64}}, ϕ::Union{Float64,Vector{Float64}})

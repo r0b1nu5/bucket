@@ -1,7 +1,5 @@
 using LinearAlgebra, DelimitedFiles, Distributions
 
-include("cnoise.jl")
-
 # B2: directed node-edge incidence matrix (with 1's and -1's)
 # B3: directed node-facet incidence matrix (with 2's and -1's)
 # τ0: correlation time of the nodal noise
