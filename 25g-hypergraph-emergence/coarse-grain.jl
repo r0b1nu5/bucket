@@ -13,17 +13,19 @@ function coarse_grain(A::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, 
 
 	g = Vector{Vector{Int64}}()
 
-	while length(r) > 1
+	while length(r) > k
 		i = findmin(d)[2]
-		j = findmax(Atemp[r[i],r])[2]
-		push!(g,[r[i],r[j]])
-		popat!(d,max(i,j))
-		popat!(d,min(i,j))
-		popat!(r,max(i,j))
-		popat!(r,min(i,j))
+                a = sortslices([Atemp[r[i],r] 1:length(r)],dims=1,rev=true)
+                j = Int64.(a[1:k,2])
+                push!(g,r[[i;j]])
+                js = setdiff(1:length(r),[i;j])
+                r = r[js]
+                d = d[js]
 	end
 	if length(r) == 1
 		push!(g,[r[1],])
+        elseif length(r) > 1
+                push!(g,r)
 	end
 
 	AA = zeros(length(g),length(g))

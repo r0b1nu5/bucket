@@ -8,14 +8,14 @@ include("coarse-grain.jl")
 @info "############# START: $(now())"
 
 # Generating the hypergraph.
-n = 8; T = 150; iters = 10:10:150 		# Takes < 1sec
+n = 30; T = 2500; iters = 10:10:150 		# Takes < 1sec
 #n = 30; T = 2500; iters = 500:500:2500 	# Takes ~ 10sec
 #n = 60; T = 2500; iters = 1000:500:2500	# Takes ~ 10min
 #n = 100; T = 2000; iters = 500:500:2000		
 
 save = true # Saving the inference and the ground truth?
 
-p = .4
+p = .2
 A,B = gen_rand_graph(n,p)
 
 plot_graph(A)
@@ -37,7 +37,7 @@ figure()
 plot_hypergraph(A,Ainf)
 
 # Coarse graining
-k = 4
+k = 3
 g,X2,Y2,A2 = coarse_grain(A,k,X,Y)
 Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax)
 figure()
