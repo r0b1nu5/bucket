@@ -36,13 +36,69 @@ Ainf,coeff,relerr = this(X,Y,ooi,dmax)
 figure()
 plot_hypergraph(A,Ainf)
 
-# Coarse graining
+ #=
+# Coarse graining, one shot
 k = 3
 g,X2,Y2,A2 = coarse_grain(A,k,X,Y)
 Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax)
 figure()
 plot_hypergraph(A,Ainf2)
+# =#
 
+# #=
+# Coarse graining, step by step
+n,m = size(B)
+ids = randperm(m)
+ks = 3:3:21
+for k in ks
+	X2 = copy(X)
+	Y2 = copy(Y)
+	clusters = [[i,] for i in 1:n]
+
+	id = sort(ids[1:k])
+	for i in 1:n
+		for e in id
+			if abs(B[i,e]) > .1
+				j = findmax(abs([B[1:i-1,e];0;B[i+1:n,e]]))[2]
+				push!(clusters[i],j)
+			end
+		end
+	end
+
+	final_clusters = Vector{Int64}[]
+	for i in n:-1:1
+		x = clusters[i]
+		j = i
+		test = true
+		while test && j > 1
+			j -= 1
+			if length(intersect(x,clusters[j])) > 0
+				clusters[j] = union(x,clusters[j])
+				test = false
+			end
+		end
+		if test
+			push!(final_clusters,x)
+		end
+	end
+
+	X2 = zeros(0,T)
+	Y2 = zeros(0,T)
+
+	for c in final_clusters
+		X2 = [X2;sum(X[c,:],dims=1)./length(c)]
+		Y2 = [Y2;sum(Y[c,:],dims=1)./length(c)]
+	end
+
+	### DO THE INFERENCE HERE...
+end
+
+		
+
+		
+
+
+# =#
 
 
  #=
