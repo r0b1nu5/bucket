@@ -72,6 +72,8 @@ for i in 1:size(Ainf[3])[1]
 end
 contribution3 = [median(mag3),]
 
+distances = Vector{Int64}[]
+
 for k in ks
 	@info "k/kmax = $k/$(maximum(ks))"
 
@@ -132,6 +134,38 @@ for k in ks
 		mag3 += abs.(Ainf2[3][i,4]*(X2[a,:].*X2[b,:]))
 	end
 	push!(contribution3,median(mag3))
+	
+	# Tracking where 3-edges come from
+	D = fill(Inf,nc,nc)
+	D[nc,nc] = 0.
+	for i in 1:nc-1
+		D[i,i] = 0.
+		for j in i+1:nc
+			if maximum(A[final_clusters[i],final_clusters[j]]) > zer0
+				D[i,j] = 1.
+				D[j,i] = 1.
+			end
+		end
+	end
+
+	# Floyd-Warshall algorithm (gets pairwise distances)
+	for k in 1:nc
+		for i in 1:nc
+			for j in 1:nc
+				if D[i,k] + D[k,j] < D[i,j]
+					D[i,j] = D[i,k] + D[k,j]
+				end
+			end
+		end
+	end
+
+	cluster_id = (1:nc)[length.(final_clusters) .> 1]
+	dist = Int64[]
+	for l in 1:size(Ainf2[3])[1]
+		ids = Int64.(Ainf2[3][l,1:3])
+		push!(dist,sum(minimum(D[ids,cluster_id],dims=2)))
+	end
+	push!(distances,dist)
 
  #=
 	figure()
@@ -140,6 +174,8 @@ for k in ks
 # =#
 end
 
+
+# Plot number of edges (normalized)
 fig1, ax11 = subplots()
 
 ax11.plot([0;ks], m2, color="C0")
@@ -157,6 +193,7 @@ ax12.tick_params(axis="y", labelcolor="C1")
 tight_layout()
 show()
 
+# Plot contribution of edges
 fig2, ax21 = subplots()
 
 ax21.plot([0;ks], contribution2, color="C0")
@@ -173,6 +210,15 @@ ax22.tick_params(axis="y", labelcolor="C1")
 
 tight_layout()
 show()
+
+# Plot distance from inferred 3-edges to clusters of nodes
+figure()
+PyPlot.bar(ks,ones(length(ks)),color="C4")
+PyPlot.bar(ks,[sum(distances[i] .<= 3) for i in 1:length(distances)]./(m3[2:end]*n*(n-1)*(n-2)),color="C3")
+PyPlot.bar(ks,[sum(distances[i] .<= 2) for i in 1:length(distances)]./(m3[2:end]*n*(n-1)*(n-2)),color="C2")
+PyPlot.bar(ks,[sum(distances[i] .<= 1) for i in 1:length(distances)]./(m3[2:end]*n*(n-1)*(n-2)),color="C1")
+PyPlot.bar(ks,[sum(distances[i] .<= 0) for i in 1:length(distances)]./(m3[2:end]*n*(n-1)*(n-2)),color="C0")
+xlabel("k")
 
 # =#
 
