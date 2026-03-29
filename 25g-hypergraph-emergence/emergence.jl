@@ -17,6 +17,7 @@ save = true # Saving the inference and the ground truth?
 
 p = .2
 A,B = gen_rand_graph(n,p)
+m = Int64(nnz(A)/2)
 
 plot_graph(A)
 # ========================================================================
@@ -31,10 +32,12 @@ Y = f_kuramoto(X,zeros(n),B,1.,π/4)
 
 ooi = [2,3]
 dmax = 2
+zer0 = 1e-4
 
 Ainf,coeff,relerr = this(X,Y,ooi,dmax)
 figure()
 plot_hypergraph(A,Ainf)
+title("k = 0")
 
  #=
 # Coarse graining, one shot
@@ -49,17 +52,36 @@ plot_hypergraph(A,Ainf2)
 # Coarse graining, step by step
 n,m = size(B)
 ids = randperm(m)
-ks = 3:3:21
+ks = 1:1:15
+m2 = [sum(abs.(Ainf[2][:,3]) .> zer0)/(n*(n-1)),]
+m3 = [sum(abs.(Ainf[3][:,4]) .> zer0)/(n*(n-1)*(n-2)),]
+ 
+# Contribution of 2-edges to the dynamics
+mag2 = zeros(size(X)[2])
+for i in 1:size(Ainf[2])[1]
+	a = Int64(Ainf[2][i,2])
+	global mag2 += abs.(Ainf[2][i,3]*X[a,:])
+end
+contribution2 = [median(mag2),]
+# Contribution of 3-edges to the dynamics
+mag3 = zeros(size(X)[2])
+for i in 1:size(Ainf[3])[1]
+	a = Int64(Ainf[3][i,2])
+	b = Int64(Ainf[3][i,3])
+	global mag3 += abs.(Ainf[3][i,4]*(X[a,:].*X[b,:]))
+end
+contribution3 = [median(mag3),]
+
 for k in ks
-	X2 = copy(X)
-	Y2 = copy(Y)
+	@info "k/kmax = $k/$(maximum(ks))"
+
 	clusters = [[i,] for i in 1:n]
 
 	id = sort(ids[1:k])
 	for i in 1:n
 		for e in id
 			if abs(B[i,e]) > .1
-				j = findmax(abs([B[1:i-1,e];0;B[i+1:n,e]]))[2]
+				j = findmax(abs.([B[1:i-1,e];0;B[i+1:n,e]]))[2]
 				push!(clusters[i],j)
 			end
 		end
@@ -84,19 +106,73 @@ for k in ks
 
 	X2 = zeros(0,T)
 	Y2 = zeros(0,T)
+	nc = length(final_clusters)
 
 	for c in final_clusters
 		X2 = [X2;sum(X[c,:],dims=1)./length(c)]
 		Y2 = [Y2;sum(Y[c,:],dims=1)./length(c)]
 	end
 
-	### DO THE INFERENCE HERE...
+	Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax)
+	push!(m2,sum(abs.(Ainf2[2][:,3]) .> zer0)/(nc*(nc-1)))
+	push!(m3,sum(abs.(Ainf2[3][:,4]) .> zer0)/(nc*(nc-1)*(nc-2)))
+
+	# Contribution of 2-edges to the dynamics
+	mag2 = zeros(size(X2)[2])
+	for i in 1:size(Ainf2[2])[1]
+		a = Int64(Ainf2[2][i,2])
+		mag2 += abs.(Ainf2[2][i,3]*X2[a,:])
+	end
+	push!(contribution2,median(mag2))
+	# Contribution of 3-edges to the dynamics
+	mag3 = zeros(size(X2)[2])
+	for i in 1:size(Ainf2[3])[1]
+		a = Int64(Ainf2[3][i,2])
+		b = Int64(Ainf2[3][i,3])
+		mag3 += abs.(Ainf2[3][i,4]*(X2[a,:].*X2[b,:]))
+	end
+	push!(contribution3,median(mag3))
+
+ #=
+	figure()
+	plot_hypergraph(A,Ainf2)
+	title("k = $k")
+# =#
 end
 
-		
+fig1, ax11 = subplots()
 
-		
+ax11.plot([0;ks], m2, color="C0")
+ax11.set_xlabel("k")
+ax11.set_ylabel("#2-edges", color="C0")
+ax11.set_ylim(-maximum(m2)*0.05,maximum(m2)*1.05)
+ax11.tick_params(axis="y", labelcolor="C0")
 
+ax12 = ax11.twinx()   # Share the same X-axis
+ax12.plot([0;ks], m3, color="C1")
+ax12.set_ylabel("#3-edges", color="C1")
+ax12.set_ylim(-maximum(m3)*0.05,maximum(m3)*1.05)
+ax12.tick_params(axis="y", labelcolor="C1")
+
+tight_layout()
+show()
+
+fig2, ax21 = subplots()
+
+ax21.plot([0;ks], contribution2, color="C0")
+ax21.set_xlabel("k")
+ax21.set_ylabel("2-edges contribution", color="C0")
+ax21.set_ylim(-maximum(contribution2)*0.05,maximum(contribution2)*1.05)
+ax21.tick_params(axis="y", labelcolor="C0")
+
+ax22 = ax21.twinx()
+ax22.plot([0;ks], contribution3, color="C1")
+ax22.set_ylabel("3-edges contribution", color="C1")
+ax22.set_ylim(-maximum(contribution3)*0.05,maximum(contribution3)*1.05)
+ax22.tick_params(axis="y", labelcolor="C1")
+
+tight_layout()
+show()
 
 # =#
 
