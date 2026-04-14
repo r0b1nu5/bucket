@@ -53,8 +53,13 @@ plot_hypergraph(A,Ainf2)
 n,m = size(B)
 ids = randperm(m)
 ks = 1:1:15
-m2 = [sum(abs.(Ainf[2][:,3]) .> zer0)/(n*(n-1)),]
-m3 = [sum(abs.(Ainf[3][:,4]) .> zer0)/(n*(n-1)*(n-2)),]
+
+m2max = 1.
+m3max = 1.
+#m2max = (n*(n-1))
+#m3max = (n*(n-1)*(n-2))
+m2 = [sum(abs.(Ainf[2][:,3]) .> zer0)/m2max,]
+m3 = [sum(abs.(Ainf[3][:,4]) .> zer0)/m3max,]
  
 # Contribution of 2-edges to the dynamics
 mag2 = zeros(size(X)[2])
@@ -116,8 +121,11 @@ for k in ks
 	end
 
 	Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax)
-	push!(m2,sum(abs.(Ainf2[2][:,3]) .> zer0)/(nc*(nc-1)))
-	push!(m3,sum(abs.(Ainf2[3][:,4]) .> zer0)/(nc*(nc-1)*(nc-2)))
+
+	push!(m2,sum(abs.(Ainf2[2][:,3]) .> zer0))
+	push!(m3,sum(abs.(Ainf2[3][:,4]) .> zer0))
+	#push!(m2,sum(abs.(Ainf2[2][:,3]) .> zer0)/(nc*(nc-1)))
+	#push!(m3,sum(abs.(Ainf2[3][:,4]) .> zer0)/(nc*(nc-1)*(nc-2)))
 
 	# Contribution of 2-edges to the dynamics
 	mag2 = zeros(size(X2)[2])
@@ -214,10 +222,10 @@ show()
 # Plot distance from inferred 3-edges to clusters of nodes
 figure()
 PyPlot.bar(ks,ones(length(ks)),color="C4")
-PyPlot.bar(ks,[sum(distances[i] .<= 3) for i in 1:length(distances)]./(m3[2:end]*n*(n-1)*(n-2)),color="C3")
-PyPlot.bar(ks,[sum(distances[i] .<= 2) for i in 1:length(distances)]./(m3[2:end]*n*(n-1)*(n-2)),color="C2")
-PyPlot.bar(ks,[sum(distances[i] .<= 1) for i in 1:length(distances)]./(m3[2:end]*n*(n-1)*(n-2)),color="C1")
-PyPlot.bar(ks,[sum(distances[i] .<= 0) for i in 1:length(distances)]./(m3[2:end]*n*(n-1)*(n-2)),color="C0")
+PyPlot.bar(ks,[sum(distances[i] .<= 3) for i in 1:length(distances)]./(m3[2:end]),color="C3")
+PyPlot.bar(ks,[sum(distances[i] .<= 2) for i in 1:length(distances)]./(m3[2:end]),color="C2")
+PyPlot.bar(ks,[sum(distances[i] .<= 1) for i in 1:length(distances)]./(m3[2:end]),color="C1")
+PyPlot.bar(ks,[sum(distances[i] .<= 0) for i in 1:length(distances)]./(m3[2:end]),color="C0")
 xlabel("k")
 
 # =#
