@@ -33,8 +33,9 @@ Y = f_kuramoto(X,zeros(n),B,1.,π/4)
 ooi = [2,3]
 dmax = 2
 zer0 = 1e-4
+λ = 0.15
 
-Ainf,coeff,relerr = this(X,Y,ooi,dmax)
+Ainf,coeff,relerr = this(X,Y,ooi,dmax,λ)
 figure()
 plot_hypergraph(A,Ainf)
 title("k = 0")
@@ -120,7 +121,7 @@ for k in ks
 		Y2 = [Y2;sum(Y[c,:],dims=1)./length(c)]
 	end
 
-	Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax)
+	Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax,λ)
 
 	push!(m2,sum(abs.(Ainf2[2][:,3]) .> zer0))
 	push!(m3,sum(abs.(Ainf2[3][:,4]) .> zer0))
@@ -184,7 +185,7 @@ end
 
 
 # Plot number of edges (normalized)
-fig1, ax11 = subplots()
+fig1, (ax11,ax21) = subplots(1,2,figsize=(15,5))
 
 ax11.plot([0;ks], m2, color="C0")
 ax11.set_xlabel("k")
@@ -198,11 +199,13 @@ ax12.set_ylabel("#3-edges", color="C1")
 ax12.set_ylim(-maximum(m3)*0.05,maximum(m3)*1.05)
 ax12.tick_params(axis="y", labelcolor="C1")
 
+title("λ = $λ")
+
 tight_layout()
 show()
 
 # Plot contribution of edges
-fig2, ax21 = subplots()
+#fig2, ax21 = subplots(1,2,2)
 
 ax21.plot([0;ks], contribution2, color="C0")
 ax21.set_xlabel("k")
