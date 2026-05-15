@@ -27,8 +27,10 @@ amplitude = 1.
 X = amplitude*(rand(n,T) .- .5)
 Y = f_kuramoto(X,zeros(n),B,1.,π/4)
 
+ids = randperm(m)
 
 #################### INFERENCE ###################################
+#for λ in [.1,.15,.2,.25,.3,.35]
 
 ooi = [2,3]
 dmax = 2
@@ -52,7 +54,7 @@ plot_hypergraph(A,Ainf2)
 # #=
 # Coarse graining, step by step
 n,m = size(B)
-ids = randperm(m)
+#ids = randperm(m)
 ks = 1:1:15
 
 m2max = 1.
@@ -63,14 +65,14 @@ m2 = [sum(abs.(Ainf[2][:,3]) .> zer0)/m2max,]
 m3 = [sum(abs.(Ainf[3][:,4]) .> zer0)/m3max,]
  
 # Contribution of 2-edges to the dynamics
-mag2 = zeros(size(X)[2])
+global mag2 = zeros(size(X)[2])
 for i in 1:size(Ainf[2])[1]
 	a = Int64(Ainf[2][i,2])
 	global mag2 += abs.(Ainf[2][i,3]*X[a,:])
 end
 contribution2 = [median(mag2),]
 # Contribution of 3-edges to the dynamics
-mag3 = zeros(size(X)[2])
+global mag3 = zeros(size(X)[2])
 for i in 1:size(Ainf[3])[1]
 	a = Int64(Ainf[3][i,2])
 	b = Int64(Ainf[3][i,3])
@@ -328,3 +330,7 @@ xlabel("FPR")
 
 @info "############# FINISHED: $(now())"
 # =#
+#end
+
+
+

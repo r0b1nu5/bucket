@@ -1,6 +1,7 @@
 using LinearAlgebra
 
 include("kmeans.jl")
+include("gen-lattice.jl")
 
 function coarse_grain(A::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}, k::Int64, X::Matrix{Float64}, Y::Matrix{Float64})
 	d = vec(sum(A,dims=1))
@@ -76,3 +77,34 @@ function coarse_grain_1(A::Union{Matrix{Float64},SparseMatrixCSC{Float64,Int64}}
         
         return g,X2,Y2
 end
+
+function coarse_grain_sqlat_4(n::Int64, m::Int64, X::Matrix{Float64})
+	if mod(n,2) == 1 || mod(m,2) == 1
+		@info "Odd number of row or columns. Aborting!"
+		return nothing
+	else
+		n2 = Int64(n/2)
+		m2 = Int64(m/2)
+
+		A,B = gen_square_lattice(n2,m2)
+
+		X2 = zeros(0,size(X)[2])
+		for j in 1:m2
+			for i in 1:n2
+				ids = [2*(j-1)*n + 2*(i-1) + 1,
+				       2*(j-1)*n + 2*(i-1) + 2,
+				       2*(j-1)*n+n + 2*(i-1) + 1, 
+				       2*(j-1)*n+n + 2*(i-1) + 2]
+				X2 = [X2;mean(X[ids,:],dims=1)]
+			end
+		end
+
+		return A, B, X2
+	end
+end
+
+function coarse_grain_sqlat_4(n::Int64, X::Matrix{Float64})
+	return coarse_grain_sqlat_4(n,n,X)
+end
+
+
