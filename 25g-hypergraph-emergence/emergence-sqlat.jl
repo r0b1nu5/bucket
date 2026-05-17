@@ -9,6 +9,7 @@ include("gen-lattice.jl")
 @info "############# START: $(now())"
 
 n = 16
+T = 500
 ks = [1,2]
 
 save = true # Saving the inference and the ground truth?
@@ -28,9 +29,12 @@ Y = f_kuramoto(X,zeros(n^2),B,1.,π/4)
 ooi = [2,3]
 dmax = 2
 zer0 = 1e-4
-λ = 0.1
+λ = 0.15
 
-Ainf,coeff,relerr = this(X,Y,ooi,dmax,λ)
+#Ainf,coeff,relerr = this(X,Y,ooi,dmax,λ)
+
+nkeep = 2000
+Ainf,coeff,relerr = this_filter(X,Y,ooi,dmax,nkeep,λ)
 
 m2max = 1.
 m3max = 1.
@@ -60,10 +64,14 @@ distances = Vector{Int64}[]
 for k in ks
 	@info "k/kmax = $k/$(maximum(ks))"
 	
-	A2,B2,X2 = coarse_grain_sqlat_4(n,X)
-	A2,B2,Y2 = coarse_grain_sqlat_4(n,Y)
+	global A2,B2,X = coarse_grain_sqlat_4(n,X)
+	global A2,B2,Y = coarse_grain_sqlat_4(n,Y)
+	X2 = X
+	Y2 = Y
+	global n = Int64(n/2)
 
-	Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax,λ)
+#	Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax,λ)
+	Ainf2,coeff2,relerr2 = this_filter(X2,Y2,ooi,dmax,nkeep,λ)
 
 	push!(m2,sum(abs.(Ainf2[2][:,3]) .> zer0))
 	push!(m3,sum(abs.(Ainf2[3][:,4]) .> zer0))

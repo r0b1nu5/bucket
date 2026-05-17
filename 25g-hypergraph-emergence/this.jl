@@ -108,11 +108,12 @@ function this_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int64},
 	idx_mon = Dict{Int64,Vector{Int64}}()
 	for i in 1:size(d)[1]
 		mon = d[i,:][d[i,:] .!= 0]
-		if length(mon) == length(union(mon))
+#		if length(mon) == length(union(mon))
 			idx_mon[i] = sort(mon)
-		end
+#		end
 	end
 	d2i = Dict{Vector{Int64},Int64}(sort(d[i,:]) => i for i in 1:size(d)[1]) # Returns the index of each element of 'd'.
+#	d2i = Dict{Vector{Int64},Int64}(idx_mon[k] => k for k in keys(idx_mon)) # Returns the index of each element of 'd'.
 
 	i2keep = Dict{Int64,Vector{Int64}}(i => Int64[] for i in 1:n) 
 	for k in 1:length(keep)
