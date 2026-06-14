@@ -16,7 +16,9 @@ function gen_square_lattice(n::Int64, m::Int64)
 	L = B*B'
 	A = spdiagm(diag(L)) - L
 	
-	return A,B
+	coord = [repeat(1:m, inner=n) repeat(-(1:n), outer=m)]
+
+	return A,B,coord
 end
 
 function gen_square_lattice(n::Int64)

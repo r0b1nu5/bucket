@@ -2,6 +2,7 @@ using Random, Dates, DelimitedFiles
 
 include("kuramoto.jl")
 include("this.jl")
+include("this-filter-distance.jl")
 include("graph-tools.jl")
 include("coarse-grain.jl")
 include("gen-lattice.jl")
@@ -14,7 +15,7 @@ ks = [1,2]
 
 save = true # Saving the inference and the ground truth?
 
-A,B = gen_square_lattice(n)
+A,B,coord = gen_square_lattice(n)
 m = Int64(nnz(A)/2)
 
 # ========================================================================
@@ -33,8 +34,8 @@ zer0 = 1e-4
 
 #Ainf,coeff,relerr = this(X,Y,ooi,dmax,λ)
 
-nkeep = 2000
-Ainf,coeff,relerr = this_filter(X,Y,ooi,dmax,nkeep,λ)
+dist_keep = 2.1
+Ainf,coeff,relerr = this_filter_distance(X,Y,ooi,dmax,dist_keep,coord,λ)
 
 m2max = 1.
 m3max = 1.
@@ -70,8 +71,9 @@ for k in ks
 	Y2 = Y
 	global n = Int64(n/2)
 
+	A,B,coord = gen_square_lattice(n)
 #	Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax,λ)
-	Ainf2,coeff2,relerr2 = this_filter(X2,Y2,ooi,dmax,nkeep,λ)
+	Ainf2,coeff2,relerr2 = this_filter_distance(X2,Y2,ooi,dmax,dist_keep,coord,λ)
 
 	push!(m2,sum(abs.(Ainf2[2][:,3]) .> zer0))
 	push!(m3,sum(abs.(Ainf2[3][:,4]) .> zer0))
