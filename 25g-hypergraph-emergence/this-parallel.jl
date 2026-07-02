@@ -128,6 +128,7 @@ function this_par_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int
 	for k in 1:length(keep)
 		i,j = keep[k]
 		push!(i2keep[i],k)
+		push!(i2keep[j],k)
 	end
 
 	coeff = Dict{Int64,Matrix{Float64}}()
@@ -157,8 +158,10 @@ function this_par_filter(X::Matrix{Float64}, Y::Matrix{Float64}, ooi::Vector{Int
 		for j in 1:length(ids[i])
 			id = ids[i][j]
 			jj = idx_mon[id]
-			o = length(jj)+1
-			Ainf[o] = vcat(Ainf[o],[i jj' coeff[i][j]])
+			if !(i in jj) && length(jj) == length(unique(jj))
+				o = length(jj)+1
+				Ainf[o] = vcat(Ainf[o],[i jj' coeff[i][j]])
+			end
 		end
 	end
 
@@ -234,11 +237,13 @@ function mySINDy_par_filter(arg::Tuple{Int64,Matrix{Float64},Matrix{Float64},Vec
 	i,X,Y,i2keepi,keep,d2i,λ,ρ,niter = arg
 
 	n,T = size(X)
-	θ = ones(1,T)
-	id = [1,]
+	θ = [ones(1,T);
+	     X[[i,],:];
+	     X[[i,],:].*X[[i,],:]]
+	id = [1,d2i[[0,i]],d2i[[i,i]]]
 	for k in i2keepi
 		j = setdiff(keep[k],[i,])[1]
-		θ = vcat(θ,reduce(vcat,[prod(X[v,:],dims=1) for v in [setdiff([j,l],[0,]) for l in 0:n]]))
+		θ = vcat(θ,reduce(vcat,[prod(X[v,:],dims=1) for v in [filter(!=(0),[j,l]) for l in 0:n]]))
 		append!(id,[d2i[v] for v in [sort([j,l]) for l in 0:n]])
 	end
 
