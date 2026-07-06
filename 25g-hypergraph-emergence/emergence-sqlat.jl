@@ -9,7 +9,7 @@ include("gen-lattice.jl")
 
 @info "############# START: $(now())"
 
-n = 16
+n = 8
 T = 500
 ks = [1,2]
 

@@ -10,7 +10,8 @@ dt = .01
 t = 0.
 ts = [t,]
 
-A = Float64.(rand(N,N) .> .4)
+thr = .5
+A = Float64.(rand(N,N) .> thr)
 
 x = rand(N)
 xs = copy(x)
@@ -49,10 +50,11 @@ for i in 1:c
 end
 Xs = [Xs xs]
 
+figure()
 for i in 1:N
 	PyPlot.plot(ts,Xs[i,:])
 end
-
+title("Threshold = $thr")
 
 
 
