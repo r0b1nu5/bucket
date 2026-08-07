@@ -30,12 +30,14 @@ Y = f_kuramoto(X,zeros(n^2),B,1.,π/4)
 ooi = [2,3]
 dmax = 2
 zer0 = 1e-4
-λ = 0.15
+λ = 0.1
 
 #Ainf,coeff,relerr = this(X,Y,ooi,dmax,λ)
 
 dist_keep = 2.1
 Ainf,coeff,relerr = this_filter_distance(X,Y,ooi,dmax,dist_keep,coord,λ)
+
+k2Ainf = Dict{Int64,Any}(0 => Ainf)
 
 m2max = 1.
 m3max = 1.
@@ -43,7 +45,8 @@ m3max = 1.
 #m3max = (n*(n-1)*(n-2))
 m2 = [sum(abs.(Ainf[2][:,3]) .> zer0)/m2max,]
 m3 = [sum(abs.(Ainf[3][:,4]) .> zer0)/m3max,]
- 
+m2true = [2*(n-1)^2+2*(n-1),]
+
 # Contribution of 2-edges to the dynamics
 global mag2 = zeros(size(X)[2])
 for i in 1:size(Ainf[2])[1]
@@ -70,10 +73,13 @@ for k in ks
 	X2 = X
 	Y2 = Y
 	global n = Int64(n/2)
+	push!(m2true,2*(n-1)^2 + 2*(n-1))
 
 	A,B,coord = gen_square_lattice(n)
 #	Ainf2,coeff2,relerr2 = this(X2,Y2,ooi,dmax,λ)
 	Ainf2,coeff2,relerr2 = this_filter_distance(X2,Y2,ooi,dmax,dist_keep,coord,λ)
+
+	global k2Ainf[k] = Ainf2
 
 	push!(m2,sum(abs.(Ainf2[2][:,3]) .> zer0))
 	push!(m3,sum(abs.(Ainf2[3][:,4]) .> zer0))
@@ -103,6 +109,7 @@ end
 fig1, (ax11,ax21) = subplots(1,2,figsize=(15,5))
 
 ax11.plot([0;ks], m2, color="C0")
+ax11.plot([0;ks], 2*m2true, "ok")
 ax11.set_xlabel("k")
 ax11.set_ylabel("#2-edges", color="C0")
 ax11.set_ylim(-maximum(m2)*0.05,maximum(m2)*1.05)
