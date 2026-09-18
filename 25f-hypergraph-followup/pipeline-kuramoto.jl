@@ -6,8 +6,8 @@ include("tools.jl")
 
 include("../../THIS/this.jl")
 
-n = 10
-p = .1
+n = 50
+p = .01
 ω0 = .0
 ξ0 = 5.
 ρ = 5.
@@ -21,6 +21,7 @@ niter1 = 10000
 #niter2 = 2000; niter3 = 8000
 niter2 = 1000; niter3 = 2000
 niter2 = 500; niter2bis = 50; niter3 = 1450
+niter2 = 1500; niter2bis = 150; niter3 = 4350
 
 cm1 = get_cmap("Greens")
 cm2 = get_cmap("Purples")
