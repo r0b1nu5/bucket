@@ -8,6 +8,7 @@ function hyper_lv(A2::Array{Float64,2},
 		 h::Float64=.01, 
 		 max_iter::Int64=10000, 
 		 tol::Float64=1e-6,
+                 zer0::Float64=1e-10,
 		 verb::Bool = false)
 
 	n = length(r)
@@ -29,6 +30,7 @@ function hyper_lv(A2::Array{Float64,2},
 
 		dx = (k1 + 2*k2 + 2*k3 + k4)/6
                 x += h*dx
+                x .*= (x .> zer0) # lv threshold
 
 		xs = [xs x]
 		dxs = [dxs dx]
@@ -72,6 +74,7 @@ function hyper_lv_gaussian_noise(A2::Array{Float64,2},
 				 h::Float64=.01, 
 				 max_iter::Int64=10000, 
 				 tol::Float64=1e-6,
+                                 zer0::Float64=1e-10,
 				 verb::Bool = false)
 
 	n = length(r)
@@ -92,8 +95,9 @@ function hyper_lv_gaussian_noise(A2::Array{Float64,2},
 		k3 = f_lv_3rd(x+h/2*k2,A2,A3,r,l)
 		k4 = f_lv_3rd(x+h*k3,A2,A3,r,l)
 
-                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0)
+                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0).*(x .> zer0)
                 x += h*dx
+                x .*= (x .> zer0) # lv threshold
 		
 		xs = [xs x]
 		dxs = [dxs dx]
@@ -138,6 +142,7 @@ function hyper_lv_drooped_gaussian_noise(A2::Array{Float64,2},
 					 h::Float64=.01, 
 					 max_iter::Int64=10000, 
 					 tol::Float64=1e-6,
+                                         zer0::Float64=1e-10,
 					 verb::Bool = false)
 
 	n = length(r)
@@ -158,9 +163,10 @@ function hyper_lv_drooped_gaussian_noise(A2::Array{Float64,2},
 		k3 = f_lv_3rd_droop(x+h/2*k2,A2,A3,r,l,b,xstar)
 		k4 = f_lv_3rd_droop(x+h*k3,A2,A3,r,l,b,xstar)
 
-		dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0)
+                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0).*(x .> zer0)
 
                 x += h*dx
+                x .*= (x .> zer0) # lv threshold
 
 		xs = [xs x]
 		dxs = [dxs dx]
@@ -204,6 +210,7 @@ function hyper_lv_damped_gaussian_noise(A2::Array{Float64,2},
 					h::Float64=.01, 
 					max_iter::Int64=10000, 
 					tol::Float64=1e-6,
+                                        zer0::Float64=1e-10,
 					verb::Bool = false)
 
 	n = length(r)
@@ -223,8 +230,9 @@ function hyper_lv_damped_gaussian_noise(A2::Array{Float64,2},
 		k3 = f_lv_3rd(x+h/2*k2,A2,A3,r,l)
 		k4 = f_lv_3rd(x+h*k3,A2,A3,r,l)
 
-		dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)
+                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n).*(x .> zer0)
 		x += h*dx.*(1 .- d)
+                x .*= (x .> zer0) # lv threshold
 
 
 		xs = [xs x]
@@ -321,5 +329,5 @@ function f_lv_3rd_droop(x::Vector{Float64}, A2l::Array{Float64,2}, A3l::Array{Fl
 		fx[i] += a*x[i]*x[j]*x[k]
 	end
 
-	return fx - b.*(x - xstar)
+        return fx - b.*(x - xstar).*(x .> 1e-10)
 end
