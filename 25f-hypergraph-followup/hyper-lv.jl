@@ -95,7 +95,8 @@ function hyper_lv_gaussian_noise(A2::Array{Float64,2},
 		k3 = f_lv_3rd(x+h/2*k2,A2,A3,r,l)
 		k4 = f_lv_3rd(x+h*k3,A2,A3,r,l)
 
-                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0).*(x .> zer0)
+#                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0).*(x .> zer0)
+                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0) # extinct species have a chance to resurect
                 x += h*dx
                 x .*= (x .> zer0) # lv threshold
 		
@@ -163,7 +164,8 @@ function hyper_lv_drooped_gaussian_noise(A2::Array{Float64,2},
 		k3 = f_lv_3rd_droop(x+h/2*k2,A2,A3,r,l,b,xstar)
 		k4 = f_lv_3rd_droop(x+h*k3,A2,A3,r,l,b,xstar)
 
-                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0).*(x .> zer0)
+#                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0).*(x .> zer0)
+                dx = (k1 + 2*k2 + 2*k3 + k4)/6 + ξ0*randn(n)*(mod(iter,Δ) == 0) # extinct species have a chance to resurect
 
                 x += h*dx
                 x .*= (x .> zer0) # lv threshold
@@ -317,7 +319,7 @@ end
 function f_lv_3rd_droop(x::Vector{Float64}, A2l::Array{Float64,2}, A3l::Array{Float64,2}, r::Vector{Float64}, l::Vector{Float64}, b::Vector{Float64}, xstar::Vector{Float64})
 	n = length(x)
 	
-	fx = r.*x.*(1 .- r./l)
+	fx = r.*x.*(1 .- x./l)
 	for l in 1:size(A2l)[1]
 		i,j = Int64.(A2l[l,1:2])
 		a = A2l[l,3]

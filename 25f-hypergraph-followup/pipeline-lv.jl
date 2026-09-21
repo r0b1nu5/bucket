@@ -6,13 +6,14 @@ include("tools.jl")
 
 include("../../THIS/this.jl")
 
-n = 50
-p = .01
+n = 10
+p = .1
 r0 = 1.
 l0 = 1.
 ξ0 = 1.
 ρ = 5.
 λ = .005
+λ = 1e-5
 zer0 = 1e-10
 
 h = .01
@@ -23,7 +24,7 @@ niter1 = 100
 #niter2 = 5000; niter3 = 5000
 #niter2 = 2000; niter3 = 8000
 niter2 = 1000; niter3 = 2000
-niter2 = 500; niter2bis = 50; niter3 = 1450
+niter2 = 50000; niter2bis = 50; niter3 = 14500
 #niter2 = 1500; niter2bis = 150; niter3 = 4350
 
 cm1 = get_cmap("Greens")
@@ -69,7 +70,7 @@ for i in 1:n
 end
 
 subplot(3,1,3)
-PyPlot.plot(h*(1:(niter2+niter2bis+niter3)),[sum(X2[:,j] .< zer0) for j in 1:(niter2+niter2bis+niter3)],color=cm1(.8))
+PyPlot.plot(h*(1000:(niter2+niter2bis+niter3)),[sum(minimum(X2[:,j-999:j],dims=2) .< zer0) for j in 1000:(niter2+niter2bis+niter3)],color=cm1(.8))
 
 
 #=
@@ -88,8 +89,10 @@ end
 XX = X2[:,1:nstep:niter2]
 XXm = mean(XX,dims=2)
 XX .-= XXm
-XX ./= mean(abs.(XX),dims=2)
+mXX = mean(abs.(XX),dims=2)
+XX ./= mXX
 YY = dX2[:,1:nstep:niter2]
+YY ./= mXX
 ooi = [3,]
 dmax = 2
 
@@ -127,7 +130,7 @@ end
 PyPlot.plot(h*(niter2+niter2bis .+ (1:niter3)),X3[n,:],color=cm2((n+n/2)/(1.5*n)),label="$(Int64(sum(b))) controlled nodes")
 
 subplot(3,1,3)
-PyPlot.plot(h*(niter2+niter2bis .+ (1:niter3)),[sum(X3[:,j] .< zer0) for j in 1:niter3],color=cm2(.8))
+PyPlot.plot(h*(niter2+niter2bis .+ (1000:niter3)),[sum(minimum(X3[:,j-999:j],dims=2) .< zer0) for j in 1000:niter3],color=cm2(.8))
 
 #=
 figure("fig (mod 2π)")
@@ -188,6 +191,7 @@ legend()
 subplot(3,1,3)
 ylabel("# surviving species")
 xlabel("t [a.u.]")
+xlim(xmin,xmax)
 
 ainf2 = Vector{Float64}[]
 if length(Ainf[2]) > 0
