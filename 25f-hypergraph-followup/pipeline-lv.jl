@@ -6,12 +6,14 @@ include("tools.jl")
 
 include("../../THIS/this.jl")
 
+include("structural-controllability.jl")
+
 n = 10
 p = .1
 r0 = 1.
 l0 = 1.
 ξ0 = 2.
-ρ = 5.
+ρ = 10.
 λ = .005
 λ = 2e-5
 zer0 = 1e-10
@@ -20,7 +22,6 @@ h = .01
 nstep = 5
 δt = nstep*h
 niter1 = 10000
-niter1 = 100
 #niter2 = 5000; niter3 = 5000
 #niter2 = 2000; niter3 = 8000
 niter2 = 1000; niter3 = 2000
@@ -33,11 +34,16 @@ cm3 = get_cmap("Oranges")
 
 A2 = zeros(0,3)
 A3,B,B2,E = rand_3_digraph(n,p)
+driver_ref, m_ref, all_driver_ref = brute_force_optimal_drivers(Int64.(A3[:,1:3]),n)
+#########################################
 le = size(A3)[1]
 #A3[:,4] = sign.(3*rand(le) .- 2) .* .003 .* rand(le)
 A3[:,4] = -.003 .* rand(le)
+
+
 l_ref = [A3[i,1:3] for i in 1:length(A3[:,1])]
 idx_ref = get_loose_ends(A2,A3,n)
+#=
 b_ref = zeros(n)
 d_ref = zeros(n)
 if length(idx_ref) == 0
@@ -47,7 +53,12 @@ else
 	b_ref[idx_ref] = ones(length(idx_ref)) 
 	d_ref[idx_ref] = .8*ones(length(idx_ref))
 end
+=#
 connected = (length(idx_ref) == 0)
+
+b_ref = zeros(n)
+b_ref[driver_ref] = ones(m_ref)
+
 r1 = r0*rand(n); r1 .-= mean(r1)
 l1 = ones(n)
 
@@ -99,6 +110,8 @@ ooi = [3,]
 dmax = 2
 
 Ainf,coeff,relerr = this(XX,YY,ooi,dmax,λ)
+driver,m,all_driver = brute_force_optimal_drivers(Int64.(Ainf[3][:,1:3]),n)
+########################################################
 l = [Ainf[3][i,1:3] for i in 1:length(Ainf[3][:,1])]
 idx = get_loose_ends(Ainf[2],Ainf[3],n)
 
@@ -108,6 +121,7 @@ d = .8*ones(n)
 idx = get_loose_ends(A2,A3)
 =#
 
+#=
 b = zeros(n)
 d = zeros(n)
 if length(idx) == 0
@@ -119,6 +133,9 @@ else
 	b[idx] = ones(length(idx)) 
 	d[idx] = .8*ones(length(idx))
 end
+=# 
+b = zeros(n)
+b[driver] = ones(m)
 
 # 3. Run the damped system
 X3,dX3,iter3 = hyper_lv_drooped_gaussian_noise(A2,A3,r1,l1,X2[:,niter2+niter2bis],ρ*b,xstar,ξ0,δt,h,niter3,-1.)
@@ -164,7 +181,9 @@ for i in 1:n
 end
 =#
 
-@info "$(length(idx)) controlled nodes out of $(length(idx_ref)) needed"
+@info "$m controlled nodes ($m_ref needed)"
+@info "Identified drivers: $driver"
+@info "Real drivers: $driver_ref"
 
 H2_1 = sum((X2 .- xstar).^2)*h/niter2
 H2_2 = sum((X3 .- xstar).^2)*h/niter3
